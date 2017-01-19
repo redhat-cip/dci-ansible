@@ -1,0 +1,168 @@
+---
+# Initial Step:
+#
+# Schedule a new job giving a specific topic and specifying the remote CI.
+# The return of this action contains all the data associated with the job,
+# we hence register those data for later consumptions
+#
+- hosts: localhost
+  tasks:
+    - name: Schedule a new job
+      dci_job:
+        topic: 'OSP8'
+        remoteci: 'dci-env-ovb-1'
+      register: job_informations
+
+
+# New state
+#
+# User is free to do whaterver she needs before entering pre-run state.
+# Usually this is used to sync the components the job is relying on.
+#
+- hosts: localhost
+  vars:
+    dci_status: 'new'
+    dci_comment: 'Creating OSP 8 local mirrors and synchronizing them'
+    components: "{{ job_informations['components'] }}"
+    job_id: "{{ job_informations['job_id'] }}"
+  tasks:
+    - block:
+      - name: Ensure proper directories are created
+        file:
+          path: '{{ dci_mirror_location }}/{{ job_id }}'
+          state: directory
+        with_items: "{{ components }}"
+
+      - name: Retrieve component
+        dci_component:
+          dest: '{{ dci_mirror_location }}/{{ item["id"] }}.tar'
+          component_id: '{{ item["id"] }}'
+        with_items: "{{ components }}"
+
+      - name: Unarchive component
+        unarchive:
+          src: '{{ dci_mirror_location }}/{{ item["id"] }}.tar'
+          dest: '{{ dci_mirror_location }}/{{ job_id }}'
+          remote_src: True
+        with_items: "{{ components }}"
+
+      rescue:
+      - name: Fail properly
+        fail:
+          msg: 'Something went wrong with the installation'
+
+
+# Pre-run state
+#
+# User is free to do whaterver she needs before entering pre-run state.
+# Usually this is used to spawn the undercloud vm
+#
+- hosts: localhost
+  vars:
+    dci_status: 'pre-run'
+    dci_comment: 'Spawning the Undercloud VM'
+  tasks:
+    - block:
+      - name: Ensure the undercloud VM is absent
+        os_server:
+          state: absent
+          name: rdo-undercloud
+
+      - name: Spawn the undercloud VM
+        os_server:
+          name: rdo-undercloud
+          key_name: spredzy
+          image: 'CentOS 7 (1603) x86_64'
+          timeout: 200
+          flavor: 'm1.medium'
+          nics:
+            - net-name: private
+          security_groups:
+            - ssh
+          floating_ips:
+            - UNDERCLOUD.IP
+      rescue:
+      - name: Fail properly
+        fail:
+          msg: 'Something went wrong with the installation'
+
+
+# Pre-run state
+#
+# User is free to do whaterver she needs before entering pre-run state.
+# Usually this is used to provision undercloud and overcloud
+#
+- hosts: UNDERCLOUD.IP
+  user: centos
+  become: true
+  vars:
+    dci_status: 'running'
+    components: '{{ hostvars.localhost.job_informations["components"] }}'
+    job_id: '{{ hostvars.localhost.job_informations["job_id"] }}'
+  tasks:
+    - block:
+      - name: Set hostname
+        hostname:
+          name: 'rdo-undercloud.localdomain'
+
+      - name: undercloud - create the stack user
+        user:
+          name: stack
+          password: r4nd0m!p4ssw0rd!
+
+      - name: undercloud - create the sudoers.d entry
+        lineinfile:
+          create: yes
+          dest: /etc/sudoers.d/stack
+          line: 'stack ALL=(root) NOPASSWD:ALL'
+
+      - name: Add repository
+        yum_repository:
+          name: '{{ item["canonical_project_name"] }}'
+          description: '{{ item["canonical_project_name"] }}'
+          baseurl: '{{ mirror_url }}/{{ job_id }}/{{ item["canonical_project_name"] }}'
+          priority: 1
+        with_items: "{{ components }}"
+
+      - name: undercloud - install yum-plugin-priorities
+        package:
+          name: yum-plugin-priorities
+
+      - name: undercloud - install instack-undercloud
+        package:
+          name: instack-undercloud
+
+      - name: undercloud - update all packages
+        shell: yum -y update
+
+      - name: restart machine
+        shell: reboot
+        async: 0
+        poll: 0
+        ignore_errors: true
+
+      - name: Wait for the undercloud VM ssh server
+        wait_for:
+          host: UNDERCLOUD.IP
+          port: 22
+
+      rescue:
+      - name: Tear me down
+        shell: echo 'Tear me down'
+
+      - name: Fail properly
+        fail:
+          msg: 'Something went wrong with the installation'
+
+
+# Success state
+# 
+# User is free to do whaterver she needs before entering pre-run state.
+# Usually this is used to teardown the plateform
+#
+- hosts: localhost
+  vars:
+    dci_status: 'success'
+  tasks:
+    - name: Drop the undercloud 'VM'
+      shell: echo 'Succes'

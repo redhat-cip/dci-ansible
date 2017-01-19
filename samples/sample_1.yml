@@ -1,0 +1,83 @@
+---
+# Initial Step:
+#
+# Schedule a new job giving a specific topic and specifying the remote CI.
+# The return of this action contains all the data associated with the job,
+# we hence register those data for later consumptions
+#
+- hosts: localhost
+  tasks:
+    - name: Schedule a new job
+      dci_job:
+        topic: 'OSP8'
+        remoteci: 'dci-env-ovb-1'
+      register: job_informations
+
+
+# New state
+#
+# User is free to do whaterver she needs before entering pre-run state.
+# Usually this is used to sync the components the job is relying on.
+#
+- hosts: localhost
+  vars:
+    dci_status: 'new'
+  tasks:
+    - name: echo 'New'
+      shell: echo 'New'
+
+
+# Pre-run state
+#
+# User is free to do whaterver she needs before entering pre-run state.
+# Usually this is used to spawn the undercloud vm
+#
+- hosts: localhost
+  vars:
+    dci_status: 'pre-run'
+    dci_comment: 'Pre-run state commands'
+  tasks:
+    - name: echo 'Pre-run'
+      shell: echo 'pre-run'
+
+
+# Running state
+#
+# User is free to do whaterver she needs before entering running state.
+# Usually this is used to provision the undercloud and the overcloud
+#
+- hosts: localhost
+  vars:
+    dci_status: 'running'
+    dci_comment: 'Running state commands'
+  tasks:
+    - name: echo 'Running'
+      shell: echo 'Running'
+
+
+# Post-run state
+#
+# User is free to do whaterver she needs before entering post-run state.
+# Usually this is used to run tests on the overcloud
+#
+- hosts: localhost
+  vars:
+    dci_status: 'post-run'
+    dci_comment: 'Post-run state commands'
+  tasks:
+    - name: echo 'Post-run'
+      shell: echo 'Post-run'
+
+
+# Success state
+# 
+# User is free to do whaterver she needs before entering pre-run state.
+# Usually this is used to teardown the plateform
+#
+- hosts: localhost
+  vars:
+    dci_status: 'success'
+    dci_comment: 'Success state commands'
+  tasks:
+    - name: echo 'Success'
+      shell: echo 'Succes'
