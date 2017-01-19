@@ -5,6 +5,8 @@ so a user can freely interact with DCI.
 
 ## Installation
 
+**Note**: There is also a package for it.
+
 1. Create the necessary folder.
 
 ```
