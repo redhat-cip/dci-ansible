@@ -100,12 +100,12 @@ def main():
             id=dict(type='str'),
             dest=dict(type='str'),
             export_control=dict(type='bool'),
-            #title=dict(type='str'),
-            #message=dict(type='str'),
-            #canonical_project_name=dict(type='str'),
-            #component_url=dict(type='str'),
-            #type=dict(type='str'),
-            #active=dict(type='str'),
+            name=dict(type='str'),
+            type=dict(type='str'),
+            canonical_project_name=dict(type='str'),
+            component_url=dict(type='str'),
+            data=dict(type='dict'),
+            topic_id=dict(type='str'),
         ),
     )
 
@@ -164,12 +164,25 @@ def main():
     #
     # Create a new component
     else:
-        # TODO
-        module.fail_json(msg='Not implemented yet')
-        # kwargs = {}
-        # if module.params['export_control']:
-        #    kwargs['export_control'] = module.params['export_control']
-        #res = dci_component.create(ctx, **kwargs)
+        if not module.params['name']:
+            module.fail_json(msg='name parameter must be speficied')
+        if not module.params['type']:
+            module.fail_json(msg='type parameter must be speficied')
+
+        kwargs = {
+            'name': module.params['name'],
+            'type': module.params['type'],
+        }
+
+        if module.params['canonical_project_name']:
+            kwargs['canonical_project_name'] = module.params['canonical_project_name']
+        if module.params['component_url']:
+            kwargs['url'] = module.params['component_url']
+        if module.params['data']:
+            kwargs['data'] = module.params['data']
+        if module.params['topic_id']:
+            kwargs['topic_id'] = module.params['topic_id']
+        res = dci_component.create(ctx, **kwargs)
 
     try:
         result = res.json()
