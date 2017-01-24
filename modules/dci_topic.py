@@ -59,7 +59,7 @@ EXAMPLES = '''
     name: 'Soft21'
 
 
-- name: Create a new topic 
+- name: Create a new topic
   dci_topic:
     name: 'Soft42'
     label: 'The latest version of Soft with the 42 feature'
@@ -162,7 +162,6 @@ def main():
                 kwargs['label'] = module.params['label']
             res = dci_topic.update(ctx, **kwargs)
 
-
     # Action required: Creat a topic with the specified content
     # Endpoint called: /topics POST via dci_topic.create()
     #
@@ -182,6 +181,7 @@ def main():
         if res.status_code == 404:
             module.fail_json(msg='The resource does not exist')
         if res.status_code == 422:
+            result = dci_topic.get(ctx, module.params['name']).json()
             result['changed'] = False
         else:
             result['changed'] = True
