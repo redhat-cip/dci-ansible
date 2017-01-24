@@ -3,11 +3,12 @@ Version:	0.0.VERS
 Release:	1%{?dist}
 Summary:	DCI Ansible modules and callback
 License:	ASL 2.0
-URL:		https://github.com/Spredzy/dci-ansible
+URL:		https://github.com/redhat-cip/dci-ansible
 Source0:	dci-ansible-%{version}.tar.gz
 
 BuildArch:	noarch
-Requires:	python-dciclient
+Requires:	ansible
+Requires:	python2-dciclient
 
 %description
 A set of Ansible modules and callback to interact with the DCI
