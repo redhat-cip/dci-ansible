@@ -86,6 +86,7 @@ def get_details(module):
 
     return login, password, url
 
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -106,6 +107,7 @@ def main():
             component_url=dict(type='str'),
             data=dict(type='dict'),
             topic_id=dict(type='str'),
+            path=dict(type='str'),
         ),
     )
 
@@ -127,6 +129,13 @@ def main():
         if not module.params['id']:
             module.fail_json(msg='id parameter is required')
         res = dci_component.delete(ctx, module.params['id'])
+
+    # Action required: Attach a file to a component
+    # Endpoint called: /components/<component_id>/files/ POST via dci_component.file_upload()
+    #
+    # Attach file to a component
+    elif module.params['path']:
+        res = dci_component.file_upload(ctx, module.params['id'], module.params['path'])
 
     # Action required: Download a component
     # Endpoint called: /components/<component_id>/files/<file_id>/content GET via dci_component.file_download()
