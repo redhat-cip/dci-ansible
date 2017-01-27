@@ -63,6 +63,9 @@ options:
   configuration:
     required: false
     description: Configuration attached to the job
+  metadata:
+    required: false
+    description: Metadatas attached to the job
 '''
 
 EXAMPLES = '''
@@ -119,6 +122,7 @@ def main():
             comment=dict(type='str'),
             status=dict(type='str'),
             configuration=dict(type='dict'),
+            metadata=dict(type='dict'),
         ),
     )
 
@@ -154,7 +158,7 @@ def main():
     # Endpoint called: /jobs/<job_id> GET via dci_job.get()
     #
     # Get job informations
-    elif module.params['id'] and not module.params['comment'] and not module.params['status'] and not module.params['configuration']:
+    elif module.params['id'] and not module.params['comment'] and not module.params['status'] and not module.params['configuration'] and not module.params['metadata']:
         res = dci_job.get(ctx, module.params['id'])
 
     # Action required: Update an existing job
@@ -174,6 +178,9 @@ def main():
                 kwargs['status'] = module.params['status']
             if module.params['configuration']:
                 kwargs['configuration'] = module.params['configuration']
+            if module.params['metadata']:
+                for k, v in module.params['metadata'].items():
+                    dci_job.set_meta(ctx, module.params['id'], k, v)
             res = dci_job.update(ctx, **kwargs)
 
     # Action required: Schedule a new job
