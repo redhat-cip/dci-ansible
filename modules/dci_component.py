@@ -46,17 +46,9 @@ options:
   export_control:
     required: false
     description: Wether or not the component has been export_control approved
-  dest:
-    required: true
-    description: Path where to drop the retrieved component
 '''
 
 EXAMPLES = '''
-- name: Download a component
-  dci_component:
-    id: {{ component_id }}
-    dest: /srv/dci/components/{{ component_id }}
-
 - name: Retrieve component informations
   dci_component:
     id: {{ component_id }}
@@ -136,14 +128,6 @@ def main():
     # Attach file to a component
     elif module.params['path']:
         res = dci_component.file_upload(ctx, module.params['id'], module.params['path'])
-
-    # Action required: Download a component
-    # Endpoint called: /components/<component_id>/files/<file_id>/content GET via dci_component.file_download()
-    #
-    # Download the component
-    elif module.params['dest']:
-        component_file = dci_component.file_list(ctx, module.params['id']).json()['component_files'][0]
-        res = dci_component.file_download(ctx, module.params['id'], component_file['id'], module.params['dest'])
 
     # Action required: Get component informations
     # Endpoint called: /components/<component_id> GET via dci_component.get()
