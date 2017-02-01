@@ -111,6 +111,15 @@ def get_details(module):
     return login, password, url
 
 
+def module_params_empty(module_params):
+
+    for item in module_params:
+        if item != 'state' and module_params[item] is not None:
+            return False
+
+    return True
+
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -139,12 +148,19 @@ def main():
 
     ctx = dci_context.build_dci_context(url, login, password, 'Ansible')
 
+    # Action required: List all teams
+    # Endpoint called: /teams GET via dci_team.list()
+    #
+    # List all teams
+    if module_params_empty(module.params):
+        res = dci_team.list(ctx)
+
     # Action required: Delete the team matching team id
     # Endpoint called: /teams/<team_id> DELETE via dci_team.delete()
     #
     # If the team exists and it has been succesfully deleted the changed is
     # set to true, else if the team does not exist changed is set to False
-    if module.params['state'] == 'absent':
+    elif module.params['state'] == 'absent':
         if not module.params['id']:
             module.fail_json(msg='id parameter is required')
         res = dci_team.get(ctx, module.params['id'])
@@ -182,7 +198,6 @@ def main():
             if module.params['notification'] is not None:
                 kwargs['notification'] = module.params['notification']
             res = dci_team.update(ctx, **kwargs)
-
 
     # Action required: Creat a team with the specified content
     # Endpoint called: /teams POST via dci_team.create()

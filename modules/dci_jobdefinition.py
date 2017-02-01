@@ -110,6 +110,15 @@ def get_details(module):
     return login, password, url
 
 
+def module_params_empty(module_params):
+
+    for item in module_params:
+        if item != 'state' and module_params[item] is not None:
+            return False
+
+    return True
+
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -140,12 +149,19 @@ def main():
 
     ctx = dci_context.build_dci_context(url, login, password, 'Ansible')
 
+    # Action required: List all jobdefinitions
+    # Endpoint called: /jobdefinitions GET via dci_jobdefinition.list()
+    #
+    # List all jobdefinitions
+    if module_params_empty(module.params):
+        res = dci_jobdefinition.list(ctx)
+
     # Action required: Delete the jobdefinition matching jobdefinition id
     # Endpoint called: /jobdefinitions/<jobdefinition_id> DELETE via dci_jobdefinition.delete()
     #
     # If the jobdefinition exists and it has been succesfully deleted the changed is
     # set to true, else if the jobdefinition does not exist changed is set to False
-    if module.params['state'] == 'absent':
+    elif module.params['state'] == 'absent':
         if not module.params['id']:
             module.fail_json(msg='id parameter is required')
         res = dci_jobdefinition.get(ctx, module.params['id'])

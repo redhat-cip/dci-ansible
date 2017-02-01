@@ -102,6 +102,15 @@ def get_details(module):
     return login, password, url
 
 
+def module_params_empty(module_params):
+
+    for item in module_params:
+        if item != 'state' and module_params[item] is not None:
+            return False
+
+    return True
+
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -128,12 +137,19 @@ def main():
 
     ctx = dci_context.build_dci_context(url, login, password, 'Ansible')
 
+    # Action required: List all topics
+    # Endpoint called: /topics GET via dci_topic.list()
+    #
+    # List all topics
+    if module_params_empty(module.params):
+        res = dci_topic.list(ctx)
+
     # Action required: Delete the topic matching topic id
     # Endpoint called: /topics/<topic_id> DELETE via dci_topic.delete()
     #
     # If the topic exists and it has been succesfully deleted the changed is
     # set to true, else if the topic does not exist changed is set to False
-    if module.params['state'] == 'absent':
+    elif module.params['state'] == 'absent':
         if not module.params['id']:
             module.fail_json(msg='id parameter is required')
         res = dci_topic.delete(ctx, module.params['id'])
