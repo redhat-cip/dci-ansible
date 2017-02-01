@@ -1,0 +1,68 @@
+---
+- hosts: localhost
+  tasks:
+    # Step1: List current topics, by default 3 are created in our
+    #        dci-dev-env setup
+    #
+    - name: Register all topics
+      dci_topic:
+      register: topics
+
+    - assert:
+        that:
+          - 'topics._meta.count == 3'
+
+
+    # Step2: Create two additionals topics
+    #
+    - name: Create new topics
+      dci_topic:
+        name: '{{ item }}'
+      with_items:
+        - topica
+        - topicb
+
+    - name: Register all topics
+      dci_topic:
+      register: topics
+
+    - assert:
+        that:
+          - 'topics._meta.count == 5'
+          - 'topics.topics[4].name == "topicb"'
+
+
+    # Step3: Update one of the newly created topic
+    #
+    - name: Update topicb to topicc
+      dci_topic:
+        id: '{{ topics.topics[4].id }}'
+        name: topicc
+
+    - name: Register all topics
+      dci_topic:
+      register: topics
+
+    - assert:
+        that:
+          - 'topics._meta.count == 5'
+          - 'topics.topics[4].name == "topicc"'
+
+
+    # Step4: Remove a topic
+    #
+    - name: Remove topics
+      dci_topic:
+        id: '{{ item }}'
+        state: absent
+      with_items:
+        - '{{ topics.topics[3].id }}'
+        - '{{ topics.topics[4].id }}'
+
+    - name: Register all topics
+      dci_topic:
+      register: topics
+
+    - assert:
+        that:
+          - 'topics._meta.count == 3'

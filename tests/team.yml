@@ -1,0 +1,68 @@
+---
+- hosts: localhost
+  tasks:
+    # Step1: List current teams, by default 3 are created in our
+    #        dci-dev-env setup
+    #
+    - name: Register all teams
+      dci_team:
+      register: teams
+
+    - assert:
+        that:
+          - 'teams._meta.count == 3'
+
+
+    # Step2: Create two additionals teams
+    #
+    - name: Create new teams
+      dci_team:
+        name: '{{ item }}'
+      with_items:
+        - teama
+        - teamb
+
+    - name: Register all teams
+      dci_team:
+      register: teams
+
+    - assert:
+        that:
+          - 'teams._meta.count == 5'
+          - 'teams.teams[4].name == "teamb"'
+
+
+    # Step3: Update one of the newly created team
+    #
+    - name: Update teamb to teamc
+      dci_team:
+        id: '{{ teams.teams[4].id }}'
+        name: teamc
+
+    - name: Register all teams
+      dci_team:
+      register: teams
+
+    - assert:
+        that:
+          - 'teams._meta.count == 5'
+          - 'teams.teams[4].name == "teamc"'
+
+
+    # Step4: Remove a team
+    #
+    - name: Remove teams
+      dci_team:
+        id: '{{ item }}'
+        state: absent
+      with_items:
+        - '{{ teams.teams[3].id }}'
+        - '{{ teams.teams[4].id }}'
+
+    - name: Register all teams
+      dci_team:
+      register: teams
+
+    - assert:
+        that:
+          - 'teams._meta.count == 3'
