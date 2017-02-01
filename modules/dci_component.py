@@ -34,13 +34,13 @@ options:
     required: false
     default: present
     description: Desired state of the resource
-  login:
+  dci_login:
     required: false
     description: User's DCI login
-  password:
+  dci_password:
     required: false
     description: User's DCI password
-  url:
+  dci_cs_url:
     required: false
     description: DCI Control Server URL
   export_control:
@@ -75,13 +75,13 @@ RETURN = '''
 def get_details(module):
     """Method that retrieves the appropriate credentials. """
 
-    login_list = [module.params['login'], os.getenv('DCI_LOGIN')]
+    login_list = [module.params['dci_login'], os.getenv('DCI_LOGIN')]
     login = next((item for item in login_list if item is not None), None)
 
-    password_list = [module.params['password'], os.getenv('DCI_PASSWORD')]
+    password_list = [module.params['dci_password'], os.getenv('DCI_PASSWORD')]
     password = next((item for item in password_list if item is not None), None)
 
-    url_list = [module.params['url'], os.getenv('DCI_CS_URL')]
+    url_list = [module.params['dci_cs_url'], os.getenv('DCI_CS_URL')]
     url = next((item for item in url_list if item is not None), 'https://api.distributed-ci.io')
 
     return login, password, url
@@ -93,9 +93,9 @@ def main():
             state=dict(default='present', choices=['present', 'absent'], type='str'),
             # Authentication related parameters
             #
-            login=dict(required=False, type='str'),
-            password=dict(required=False, type='str'),
-            url=dict(required=False, type='str'),
+            dci_login=dict(required=False, type='str'),
+            dci_password=dict(required=False, type='str'),
+            dci_cs_url=dict(required=False, type='str'),
             # Resource related parameters
             #
             id=dict(type='str'),
@@ -104,7 +104,7 @@ def main():
             name=dict(type='str'),
             type=dict(type='str'),
             canonical_project_name=dict(type='str'),
-            component_url=dict(type='str'),
+            url=dict(type='str'),
             data=dict(type='dict'),
             topic_id=dict(type='str'),
             path=dict(type='str'),
@@ -185,8 +185,8 @@ def main():
 
         if module.params['canonical_project_name']:
             kwargs['canonical_project_name'] = module.params['canonical_project_name']
-        if module.params['component_url']:
-            kwargs['url'] = module.params['component_url']
+        if module.params['url']:
+            kwargs['url'] = module.params['url']
         if module.params['data']:
             kwargs['data'] = module.params['data']
         if module.params['topic_id']:

@@ -33,13 +33,13 @@ module: dci_run_tests
 short_description: An ansible module to run tests attached to a job
 version_added: 2.2
 options:
-  login:
+  dci_login:
     required: false
     description: User's DCI login
-  password:
+  dci_password:
     required: false
     description: User's DCI password
-  url:
+  dci_cs_url:
     required: false
     description: DCI Control Server URL
   undercloud_ip:
@@ -80,13 +80,13 @@ RETURN = '''
 def get_details(module):
     """Method that retrieves the appropriate credentials. """
 
-    login_list = [module.params['login'], os.getenv('DCI_LOGIN')]
+    login_list = [module.params['dci_login'], os.getenv('DCI_LOGIN')]
     login = next((item for item in login_list if item is not None), None)
 
-    password_list = [module.params['password'], os.getenv('DCI_PASSWORD')]
+    password_list = [module.params['dci_password'], os.getenv('DCI_PASSWORD')]
     password = next((item for item in password_list if item is not None), None)
 
-    url_list = [module.params['url'], os.getenv('DCI_CS_URL')]
+    url_list = [module.params['dci_cs_url'], os.getenv('DCI_CS_URL')]
     url = next((item for item in url_list if item is not None), 'https://api.distributed-ci.io')
 
     return login, password, url
@@ -96,15 +96,15 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             state=dict(default='present', choices=['present', 'absent'], type='str'),
-            login=dict(required=False, type='str'),
-            password=dict(required=False, type='str'),
+            dci_login=dict(required=False, type='str'),
+            dci_password=dict(required=False, type='str'),
+            dci_cs_url=dict(required=False, type='str'),
             undercloud_ip=dict(type='str'),
             undercloud_user=dict(required=False, default='stack', type='str'),
             remoteci=dict(type='str'),
             job_id=dict(type='str'),
             key_filename=dict(default='text/plain', type='str'),
             stack_name=dict(required=False, default='overcloud', type='str'),
-            url=dict(required=False, type='str'),
         ),
     )
 
