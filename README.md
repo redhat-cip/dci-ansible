@@ -49,15 +49,15 @@ export DCI_CS_URL=https://api.distributed-ci.io
 `DCI_CS_URL` will default to 'https://api.distributed-ci.io' if not specified.
 
 
-### dci_new_job
+### dci_job
 
-`dci_new_job` is an ansible module to schedule a new job with DCI. It will rely on the exported environment variable to authenticate and retrieve information from the DCI control server.
+`dci_job` is an ansible module to schedule a new job with DCI. It will rely on the exported environment variable to authenticate and retrieve information from the DCI control server.
 
 Its usage looks like:
 
 ```
 - name: Schedule a new job
-  dci_new_job:
+  dci_job:
     topic: RDO-Ocata
     remoteci: dci-env-ovb-1
   register: job_informations
@@ -86,9 +86,9 @@ Its usage looks like:
 
 This sample will download the components from the DCI control-server and write them to the `dest` path.
 
-### dci_upload
+### dci_file
 
-`dci_upload` is an ansible module to attach a file to a job. It will rely on the exported environment variable to authenticate and retrieve information from the DCI control server.
+`dci_file` is an ansible module to attach a file to a job. It will rely on the exported environment variable to authenticate and retrieve information from the DCI control server.
 
 Its usage looks like:
 
@@ -98,7 +98,7 @@ Its usage looks like:
     job_id: "{{ job_informations['job_id'] }}"
   tasks:
     - name: attach files to job
-      dci_upload:
+      dci_file:
         path: '{{ item.path }}'
         name: '{{ item.name }}'
         job_id: '{{ job_id }}'
@@ -116,7 +116,7 @@ This sample will attach the two files listed to this specific job.
 - hosts: localhost
   tasks:
     - name: Schedule a new job
-      dci_new_job:
+      dci_job:
         topic: 'OSP8'
         remoteci: 'dci-env-ovb-1'
       register: job_informations
@@ -177,7 +177,7 @@ to components.
 - hosts: localhost
   tasks:
     - name: Schedule a new job
-      dci_new_job:
+      dci_job:
         topic: 'OSP8'
         remoteci: 'dci-env-ovb-1'
       register: job_informations
