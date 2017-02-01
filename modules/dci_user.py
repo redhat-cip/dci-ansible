@@ -33,13 +33,13 @@ options:
   state:
     required: false
     description: Desired state of the resource
-  login:
+  dci_login:
     required: false
     description: User's DCI login
-  password:
+  dci_password:
     required: false
     description: User's DCI password
-  url:
+  dci_cs_url:
     required: false
     description: DCI Control Server URL
   id:
@@ -94,13 +94,13 @@ RETURN = '''
 def get_details(module):
     """Method that retrieves the appropriate credentials. """
 
-    login_list = [module.params['login'], os.getenv('DCI_LOGIN')]
+    login_list = [module.params['dci_login'], os.getenv('DCI_LOGIN')]
     login = next((item for item in login_list if item is not None), None)
 
-    password_list = [module.params['password'], os.getenv('DCI_PASSWORD')]
+    password_list = [module.params['dci_password'], os.getenv('DCI_PASSWORD')]
     password = next((item for item in password_list if item is not None), None)
 
-    url_list = [module.params['url'], os.getenv('DCI_CS_URL')]
+    url_list = [module.params['dci_cs_url'], os.getenv('DCI_CS_URL')]
     url = next((item for item in url_list if item is not None), 'https://api.distributed-ci.io')
 
     return login, password, url
@@ -112,14 +112,14 @@ def main():
             state=dict(default='present', choices=['present', 'absent'], type='str'),
             # Authentication related parameters
             #
-            login=dict(required=False, type='str'),
-            password=dict(required=False, type='str'),
-            url=dict(required=False, type='str'),
+            dci_login=dict(required=False, type='str'),
+            dci_password=dict(required=False, type='str'),
+            dci_cs_url=dict(required=False, type='str'),
             # Resource related parameters
             #
             id=dict(type='str'),
             name=dict(type='str'),
-            passwd=dict(type='str'),
+            password=dict(type='str'),
             role=dict(choices=['user', 'admin'], type='str'),
             team_id=dict(type='str'),
         ),
@@ -154,7 +154,7 @@ def main():
     # Endpoint called: /user/<user_id> GET via dci_user.get()
     #
     # Get user informations
-    elif module.params['id'] and not module.params['name'] and not module.params['passwd'] and not module.params['role'] and not module.params['team_id']:
+    elif module.params['id'] and not module.params['name'] and not module.params['password'] and not module.params['role'] and not module.params['team_id']:
         res = dci_user.get(ctx, module.params['id'])
 
     # Action required: Update an user
@@ -171,7 +171,7 @@ def main():
             if module.params['name']:
                 kwargs['name'] = module.params['name']
             if module.params['password']:
-                kwargs['password'] = module.params['passwd']
+                kwargs['password'] = module.params['password']
             if module.params['role']:
                 kwargs['role'] = module.params['role']
             if module.params['team_id']:
@@ -185,8 +185,8 @@ def main():
     else:
         if not module.params['name']:
             module.fail_json(msg='name parameter must be specified')
-        if not module.params['passwd']:
-            module.fail_json(msg='passwd parameter must be specified')
+        if not module.params['password']:
+            module.fail_json(msg='password parameter must be specified')
         if not module.params['team_id']:
             module.fail_json(msg='team_id parameter must be specified')
         if not module.params['role']:
@@ -194,7 +194,7 @@ def main():
 
         kwargs = {
             'name': module.params['name'],
-            'password': module.params['passwd'],
+            'password': module.params['password'],
             'role': role,
             'team_id': module.params['team_id'],
         }

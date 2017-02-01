@@ -33,13 +33,13 @@ options:
   state:
     required: false
     description: Desired state of the resource
-  login:
+  dci_login:
     required: false
     description: User's DCI login
-  password:
+  dci_password:
     required: false
     description: User's DCI password
-  url:
+  dci_cs_url:
     required: false
     description: DCI Control Server URL
   job_id:
@@ -109,13 +109,13 @@ RETURN = '''
 def get_details(module):
     """Method that retrieves the appropriate credentials. """
 
-    login_list = [module.params['login'], os.getenv('DCI_LOGIN')]
+    login_list = [module.params['dci_login'], os.getenv('DCI_LOGIN')]
     login = next((item for item in login_list if item is not None), None)
 
-    password_list = [module.params['password'], os.getenv('DCI_PASSWORD')]
+    password_list = [module.params['dci_password'], os.getenv('DCI_PASSWORD')]
     password = next((item for item in password_list if item is not None), None)
 
-    url_list = [module.params['url'], os.getenv('DCI_CS_URL')]
+    url_list = [module.params['dci_cs_url'], os.getenv('DCI_CS_URL')]
     url = next((item for item in url_list if item is not None), 'https://api.distributed-ci.io')
 
     return login, password, url
@@ -127,9 +127,9 @@ def main():
             state=dict(default='present', choices=['present', 'absent'], type='str'),
             # Authentication related parameters
             #
-            login=dict(required=False, type='str'),
-            password=dict(required=False, type='str'),
-            url=dict(required=False, type='str'),
+            dci_login=dict(required=False, type='str'),
+            dci_password=dict(required=False, type='str'),
+            dci_cs_url=dict(required=False, type='str'),
             # Resource related parameters
             #
             id=dict(type='str'),
