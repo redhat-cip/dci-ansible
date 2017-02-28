@@ -167,7 +167,7 @@ def main():
     # Update the topic with the specified characteristics.
     elif module.params['id']:
         res = dci_topic.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 422]:
+        if res.status_code not in [400, 401, 404, 409]:
             kwargs = {
                 'id': module.params['id'],
                 'etag': res.json()['topic']['etag']
@@ -196,7 +196,7 @@ def main():
         result = res.json()
         if res.status_code == 404:
             module.fail_json(msg='The resource does not exist')
-        if res.status_code == 422:
+        if res.status_code == 409:
             result = dci_topic.get(ctx, module.params['name']).json()
             result['changed'] = False
         else:

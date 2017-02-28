@@ -163,7 +163,7 @@ def main():
         if not module.params['id']:
             module.fail_json(msg='id parameter is required')
         res = dci_job.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 422]:
+        if res.status_code not in [400, 401, 404, 409]:
             kwargs = {
                 'id': module.params['id'],
                 'etag': res.json()['job']['etag']
@@ -183,7 +183,7 @@ def main():
     # Update the job with the specified characteristics.
     elif module.params['id']:
         res = dci_job.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 422]:
+        if res.status_code not in [400, 401, 404, 409]:
             kwargs = {
                 'id': module.params['id'],
                 'etag': res.json()['job']['etag']
@@ -209,14 +209,14 @@ def main():
         remoteci_id = remoteci['remoteci']['id']
 
         res = dci_job.schedule(ctx, remoteci_id, topic_id=topic_id)
-        if res.status_code not in [400, 401, 404, 422]:
+        if res.status_code not in [400, 401, 404, 409]:
             res = dci_job.get_full_data(ctx, ctx.last_job_id)
 
     try:
         result = res.json()
         if res.status_code == 404:
             module.fail_json(msg='The resource does not exist')
-        if res.status_code in [400, 401, 422]:
+        if res.status_code in [400, 401, 409]:
             result['changed'] = False
         else:
             result['changed'] = True

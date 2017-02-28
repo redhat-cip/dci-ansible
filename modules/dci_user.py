@@ -159,7 +159,7 @@ def main():
         if not module.params['id']:
             module.fail_json(msg='id parameter is required')
         res = dci_user.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 422]:
+        if res.status_code not in [400, 401, 404, 409]:
             kwargs = {
                 'id': module.params['id'],
                 'etag': res.json()['user']['etag']
@@ -179,7 +179,7 @@ def main():
     # Update the user with the specified characteristics.
     elif module.params['id']:
         res = dci_user.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 422]:
+        if res.status_code not in [400, 401, 404, 409]:
             kwargs = {
                 'id': module.params['id'],
                 'etag': res.json()['user']['etag']
@@ -221,7 +221,7 @@ def main():
         result = res.json()
         if res.status_code == 404:
             module.fail_json(msg='The resource does not exist')
-        if res.status_code == 422:
+        if res.status_code == 409:
             result['changed'] = False
         else:
             result['changed'] = True

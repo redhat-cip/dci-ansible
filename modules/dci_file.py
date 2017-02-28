@@ -229,7 +229,7 @@ def main():
         result = res.json()
         if res.status_code == 404:
             module.fail_json(msg='The resource does not exist')
-        if res.status_code == 422:
+        if res.status_code == 409:
             result['changed'] = False
         else:
             result['changed'] = True
