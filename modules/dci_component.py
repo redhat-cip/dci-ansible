@@ -14,6 +14,7 @@
 from ansible.module_utils.basic import *
 
 import os
+import os.path
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -87,6 +88,27 @@ def get_details(module):
     return login, password, url
 
 
+def download_file(module, ctx):
+    if os.path.isdir(module.params['dest']):
+        dest_file = os.path.join(
+            module.params['dest'],
+            module.params['id'] + '.tar')
+    else:
+        dest_file = module.params['dest']
+
+    if os.path.isfile(dest_file):
+        module.exit_json(changed=False)
+    else:
+        component_files = dci_component.file_list(
+            ctx,
+            module.params['id']).json()['component_files']
+        component_file_id = component_files[0]['id']
+        return dci_component.file_download(
+            ctx,
+            module.params['id'],
+            component_file_id,
+            dest_file)
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -142,8 +164,7 @@ def main():
     #
     # Download the component
     elif module.params['dest']:
-        component_file = dci_component.file_list(ctx, module.params['id']).json()['component_files'][0]
-        res = dci_component.file_download(ctx, module.params['id'], component_file['id'], module.params['dest'])
+        download_file(module, ctx)
 
     # Action required: Get component informations
     # Endpoint called: /components/<component_id> GET via dci_component.get()
