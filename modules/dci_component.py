@@ -88,6 +88,31 @@ def get_details(module):
     return login, password, url
 
 
+def download_file(module, ctx):
+    if os.path.isdir(module.params['dest']):
+        dest_file = os.path.join(
+            module.params['dest'],
+            module.params['id'] + '.tar')
+    else:
+        dest_file = module.params['dest']
+
+    if os.path.isfile(dest_file):
+        module.exit_json(changed=False)
+    else:
+        try:
+            component_files = dci_component.file_list(
+                ctx,
+                module.params['id']).json()['component_files']
+            component_file_id = component_files[4]['id']
+        except (KeyError, IndexError):
+            module.fail_json(
+                msg='Failed to get the component_files from the server.')
+        return dci_component.file_download(
+            ctx,
+            module.params['id'],
+            component_file_id,
+            dest_file)
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -143,8 +168,7 @@ def main():
     #
     # Download the component
     elif module.params['dest']:
-        component_file = dci_component.file_list(ctx, module.params['id']).json()['component_files'][0]
-        res = dci_component.file_download(ctx, module.params['id'], component_file['id'], module.params['dest'])
+        res = download_file(module, ctx)
 
     # Action required: Get component informations
     # Endpoint called: /components/<component_id> GET via dci_component.get()
