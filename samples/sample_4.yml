@@ -36,7 +36,7 @@
       - name: Retrieve component
         dci_component:
           dest: '{{ dci_mirror_location }}/{{ item["id"] }}.tar'
-          component_id: '{{ item["id"] }}'
+          id: '{{ item["id"] }}'
         with_items: "{{ components }}"
 
       - name: Unarchive component
