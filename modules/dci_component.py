@@ -14,6 +14,8 @@
 from ansible.module_utils.basic import *
 
 import os
+import os.path
+import shutil
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -49,6 +51,9 @@ options:
   dest:
     required: true
     description: Path where to drop the retrieved component
+  cache:
+    required: false
+    description: Directory where to cache the downloaded files.
 '''
 
 EXAMPLES = '''
@@ -87,6 +92,27 @@ def get_details(module):
     return login, password, url
 
 
+def download_file(module, ctx):
+    component_files = dci_component.file_list(ctx, module.params['id']).json()['component_files']
+    dest_file = module.params['dest']
+    cached_file = None
+    res = None
+    if module.params.get('cache'):
+        cached_file = module.params['cache'] + '/' + component_files[0]['id'] + '.tar'
+    if cached_file and os.path.exists(cached_file):
+        shutil.copyfile(cached_file, dest_file)
+    else:
+        res = dci_component.file_download(
+            ctx,
+            module.params['id'],
+            component_files[0]['id'],
+            dest_file)
+    if cached_file:
+        shutil.copyfile(
+            dest_file,
+            cached_file)
+    return res
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -108,6 +134,7 @@ def main():
             data=dict(type='dict'),
             topic_id=dict(type='str'),
             path=dict(type='str'),
+            cache=dict(type='str'),
         ),
     )
 
@@ -142,8 +169,7 @@ def main():
     #
     # Download the component
     elif module.params['dest']:
-        component_file = dci_component.file_list(ctx, module.params['id']).json()['component_files'][0]
-        res = dci_component.file_download(ctx, module.params['id'], component_file['id'], module.params['dest'])
+        download_file(module, ctx)
 
     # Action required: Get component informations
     # Endpoint called: /components/<component_id> GET via dci_component.get()
