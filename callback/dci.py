@@ -8,11 +8,38 @@ from ansible.plugins.callback import CallbackBase
 
 
 import os
+import yaml
 from dciclient.v1.api import context as dci_context
 from dciclient.v1.api import jobstate as dci_jobstate
 from dciclient.v1.api import job as dci_job
 from dciclient.v1.api import file as dci_file
 from dciclient.v1.api import remoteci as dci_remoteci
+
+
+def get_config():
+    from_file = {}
+    if os.path.exists('/etc/dci/dci.yaml'):
+        with open('/etc/dci/dci.yaml') as fd:
+            from_file = yaml.load(fd)
+
+    return {
+        'login':
+            os.getenv('DCI_LOGIN')
+            or from_file.get('login'),
+        'password':
+            os.getenv('DCI_PASSWORD')
+            or from_file.get('password'),
+        'cs_url':
+            os.getenv('DCI_CS_URL')
+            or from_file.get('cs_url')
+            or 'https://api.distributed-ci.io',
+        'remoteci':
+            os.getenv('DCI_REMOTECI')
+            or from_file.get('remoteci'),
+        'topic':
+            os.getenv('DCI_TOPIC')
+            or from_file.get('topic')
+        }
 
 
 class CallbackModule(CallbackBase):
@@ -23,9 +50,13 @@ class CallbackModule(CallbackBase):
     CALLBACK_NAME = 'dci'
     CALLBACK_NEEDS_WHITELIST = True
 
+
     def _build_dci_context(self):
-        return dci_context.build_dci_context(os.getenv('DCI_CS_URL'), os.getenv('DCI_LOGIN'),
-                                             os.getenv('DCI_PASSWORD'), 'ansible')
+        return dci_context.build_dci_context(
+            self.config['cs_url'],
+            self.config['login'],
+            self.config['password'],
+            'ansible')
 
     def format_output(self, result):
         """ Return the proper output for a given task output.
@@ -84,6 +115,7 @@ class CallbackModule(CallbackBase):
 
         super(CallbackModule, self).__init__()
 
+        self.config = get_config()
         self._mime_type = None
         self._job_id = None
         self._remoteci_id = None
