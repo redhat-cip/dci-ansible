@@ -91,19 +91,35 @@ RETURN = '''
 '''
 
 
-def get_details(module):
-    """Method that retrieves the appropriate credentials. """
+def get_config(module):
+    from_file = {}
+    if os.path.exists('/etc/dci/dci.yaml'):
+        with open('/etc/dci/dci.yaml') as fd:
+            from_file = yaml.load(fd)
 
-    login_list = [module.params['dci_login'], os.getenv('DCI_LOGIN')]
-    login = next((item for item in login_list if item is not None), None)
-
-    password_list = [module.params['dci_password'], os.getenv('DCI_PASSWORD')]
-    password = next((item for item in password_list if item is not None), None)
-
-    url_list = [module.params['dci_cs_url'], os.getenv('DCI_CS_URL')]
-    url = next((item for item in url_list if item is not None), 'https://api.distributed-ci.io')
-
-    return login, password, url
+    return {
+        'login':
+            module.params.get('dci_login')
+            or os.getenv('DCI_LOGIN')
+            or from_file.get('login'),
+        'password':
+            module.params.get('dci_password')
+            or os.getenv('DCI_PASSWORD')
+            or from_file.get('password'),
+        'cs_url':
+            module.params.get('dci_cs_url')
+            or os.getenv('DCI_CS_URL')
+            or from_file.get('cs_url')
+            or 'https://api.distributed-ci.io',
+        'remoteci':
+            module.params.get('remoteci')
+            or os.getenv('DCI_REMOTECI')
+            or from_file.get('remoteci'),
+        'topic':
+            module.params.get('topic')
+            or os.getenv('DCI_TOPIC')
+            or from_file.get('topic')
+        }
 
 
 def module_params_empty(module_params):
@@ -134,14 +150,17 @@ def main():
         ),
     )
 
+    config = get_config(module)
+
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
-    login, password, url = get_details(module)
-    if not login or not password:
+    if not set(['login', 'password']).issubset(config):
         module.fail_json(msg='login and/or password have not been specified')
 
-    ctx = dci_context.build_dci_context(url, login, password, 'Ansible')
+    ctx = dci_context.build_dci_context(
+        config['cs_url'], config['login'],
+        config['password'], 'Ansible')
 
     # Action required: List all users
     # Endpoint called: /users GET via dci_user.list()
@@ -179,7 +198,7 @@ def main():
     # Update the user with the specified characteristics.
     elif module.params['id']:
         res = dci_user.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
+        if res.status_code not in [400, 401, 404, 422]:
             kwargs = {
                 'id': module.params['id'],
                 'etag': res.json()['user']['etag']
@@ -221,7 +240,7 @@ def main():
         result = res.json()
         if res.status_code == 404:
             module.fail_json(msg='The resource does not exist')
-        if res.status_code == 409:
+        if res.status_code == 422:
             result['changed'] = False
         else:
             result['changed'] = True
