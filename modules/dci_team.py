@@ -66,7 +66,7 @@ EXAMPLES = '''
     country: 'USA'
 
 
-- name: Create a new team 
+- name: Create a new team
   dci_team:
     name: 'A-Team'
     country: 'USA'
