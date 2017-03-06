@@ -36,17 +36,18 @@ so a user can freely interact with DCI.
 
 ### dcirc.sh
 
-In order to run your playbook with the DCI ansible modules and callback one needs to source a file to export ones credentials.
+In order to run your playbook with the DCI ansible modules and callback one
+needs a /etc/dci/dci.yaml configuration file to expose ones credentials.
 
-The file should look like:
-
+The /etc/dci/dci.yaml file should look like:
 ```
-export DCI_LOGIN=jdoe
-export DCI_PASSWORD=p4ssw0rd!
-export DCI_CS_URL=https://api.distributed-ci.io
+cs_url: "https://api.distributed-ci.io/"
+login: "my_account"
+password: "my_pw"
+remoteci: "test-ovb-0"
 ```
 
-`DCI_CS_URL` will default to 'https://api.distributed-ci.io' if not specified.
+`cs_url` will default to 'https://api.distributed-ci.io' if not specified.
 
 
 ### dci_job

@@ -14,6 +14,7 @@
 from ansible.module_utils.basic import *
 
 import os
+import yaml
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -90,21 +91,6 @@ RETURN = '''
 '''
 
 
-def get_details(module):
-    """Method that retrieves the appropriate credentials. """
-
-    login_list = [module.params['dci_login'], os.getenv('DCI_LOGIN')]
-    login = next((item for item in login_list if item is not None), None)
-
-    password_list = [module.params['dci_password'], os.getenv('DCI_PASSWORD')]
-    password = next((item for item in password_list if item is not None), None)
-
-    url_list = [module.params['dci_cs_url'], os.getenv('DCI_CS_URL')]
-    url = next((item for item in url_list if item is not None), 'https://api.distributed-ci.io')
-
-    return login, password, url
-
-
 def module_params_empty(module_params):
 
     for item in module_params:
@@ -112,6 +98,32 @@ def module_params_empty(module_params):
             return False
 
     return True
+
+
+def get_config(module):
+    from_file = {}
+    if os.path.exists('/etc/dci/dci.yaml'):
+        with open('/etc/dci/dci.yaml') as fd:
+            from_file = yaml.load(fd)
+
+    return {
+        'login':
+            module.params.get('dci_login')
+            or from_file.get('login'),
+        'password':
+            module.params.get('dci_password')
+            or from_file.get('password'),
+        'cs_url':
+            module.params.get('dci_cs_url')
+            or from_file.get('cs_url')
+            or 'https://api.distributed-ci.io',
+        'remoteci':
+            module.params.get('remoteci')
+            or from_file.get('remoteci'),
+        'topic':
+            module.params.get('topic')
+            or from_file.get('topic')
+        }
 
 
 def main():
@@ -127,25 +139,24 @@ def main():
             #
             id=dict(type='str'),
             topic=dict(required=False, type='str'),
-            remoteci=dict(type='str'),
+            remoteci=dict(required=False, type='str'),
             comment=dict(type='str'),
             status=dict(type='str'),
             configuration=dict(type='dict'),
             metadata=dict(type='dict'),
         ),
     )
+    config = get_config(module)
 
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
-    topic_list = [module.params['topic'], os.getenv('DCI_TOPIC')]
-    topic = next((item for item in topic_list if item is not None), None)
-
-    login, password, url = get_details(module)
-    if not login or not password:
+    if not set(['login', 'password']).issubset(config):
         module.fail_json(msg='login and/or password have not been specified')
 
-    ctx = dci_context.build_dci_context(url, login, password, 'Ansible')
+    ctx = dci_context.build_dci_context(
+        config['cs_url'], config['login'],
+        config['password'], 'Ansible')
 
     # Action required: List all jobs
     # Endpoint called: /jobs GET via dci_job.list()
@@ -204,8 +215,8 @@ def main():
     #
     # Schedule a new job against the DCI Control-Server
     else:
-        topic_id = dci_topic.list(ctx, where='name:' + module.params['topic']).json()['topics'][0]['id']
-        remoteci_id = dci_remoteci.list(ctx, where='name:' + module.params['remoteci']).json()['remotecis'][0]['id']
+        topic_id = dci_topic.list(ctx, where='name:' + config['topic']).json()['topics'][0]['id']
+        remoteci_id = dci_remoteci.list(ctx, where='name:' + config['remoteci']).json()['remotecis'][0]['id']
 
         res = dci_job.schedule(ctx, remoteci_id, topic_id=topic_id)
         if res.status_code not in [400, 401, 404, 409]:

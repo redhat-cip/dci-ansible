@@ -14,6 +14,7 @@
 from ansible.module_utils.basic import *
 
 import os
+import yaml
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -87,19 +88,30 @@ RETURN = '''
 '''
 
 
-def get_details(module):
-    """Method that retrieves the appropriate credentials. """
+def get_config(module):
+    from_file = {}
+    if os.path.exists('/etc/dci/dci.yaml'):
+        with open('/etc/dci/dci.yaml') as fd:
+            from_file = yaml.load(fd)
 
-    login_list = [module.params['login'], os.getenv('DCI_LOGIN')]
-    login = next((item for item in login_list if item is not None), None)
-
-    password_list = [module.params['password'], os.getenv('DCI_PASSWORD')]
-    password = next((item for item in password_list if item is not None), None)
-
-    url_list = [module.params['url'], os.getenv('DCI_CS_URL')]
-    url = next((item for item in url_list if item is not None), 'https://api.distributed-ci.io')
-
-    return login, password, url
+    return {
+        'login':
+            module.params.get('dci_login')
+            or from_file.get('login'),
+        'password':
+            module.params.get('dci_password')
+            or from_file.get('password'),
+        'cs_url':
+            module.params.get('dci_cs_url')
+            or from_file.get('cs_url')
+            or 'https://api.distributed-ci.io',
+        'remoteci':
+            module.params.get('remoteci')
+            or from_file.get('remoteci'),
+        'topic':
+            module.params.get('topic')
+            or from_file.get('topic')
+        }
 
 
 def module_params_empty(module_params):
@@ -127,15 +139,17 @@ def main():
             label=dict(type='str'),
         ),
     )
+    config = get_config(module)
 
     if not dciclient_found:
-        module.fail_json(msg='The python dciclient module is required')
+        module.fail_json(msg='the python dciclient module is required')
 
-    login, password, url = get_details(module)
-    if not login or not password:
+    if not set(['login', 'password']).issubset(config):
         module.fail_json(msg='login and/or password have not been specified')
 
-    ctx = dci_context.build_dci_context(url, login, password, 'Ansible')
+    ctx = dci_context.build_dci_context(
+        config['cs_url'], config['login'],
+        config['password'], 'ansible')
 
     # Action required: List all topics
     # Endpoint called: /topics GET via dci_topic.list()
