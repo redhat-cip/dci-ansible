@@ -12,6 +12,7 @@ from dciclient.v1.api import context as dci_context
 from dciclient.v1.api import jobstate as dci_jobstate
 from dciclient.v1.api import job as dci_job
 from dciclient.v1.api import file as dci_file
+from dciclient.v1.api import remoteci as dci_remoteci
 
 
 class CallbackModule(CallbackBase):
@@ -84,9 +85,45 @@ class CallbackModule(CallbackBase):
         super(CallbackModule, self).__init__()
 
         self._mime_type = None
-        self._jobstate_id = None
         self._job_id = None
+        self._remoteci_id = None
         self._dci_context = self._build_dci_context()
+        self._previous_job_id = self.get_current_job_id()
+
+    def remoteci_id(self):
+        if self._remoteci_id:
+            return self._remoteci_id
+        r = dci_remoteci.list(self._dci_context, where='name:' + self.config['remoteci'])
+        self._remoteci_id = r.json()['remotecis'][0]['id']
+        return self._remoteci_id
+
+    def get_current_job_id(self):
+        r = dci_job.list(self._dci_context, where='remoteci_id:' + self.remoteci_id(), limit=1)
+        if not len(r.json()['jobs']):
+            return
+        return r.json()['jobs'][0]['id']
+
+    def job_id(self):
+        if self._job_id:
+            return self._job_id
+        current_job_id = self.get_current_job_id()
+        if current_job_id != self._previous_job_id:
+            self._job_id = current_job_id
+        return self._job_id
+
+    def jobstate_id(self):
+        job_id = self.job_id()
+        if not job_id:
+            return
+        r = dci_jobstate.list(
+            self._dci_context,
+            where='job_id:' + self.job_id(),
+            sort='-created_at',
+            limit=1)
+        if not len(r.json()['jobstates']):
+            return
+        last_jobstate = r.json()['jobstates'][0]
+        return last_jobstate['id']
 
     def v2_runner_on_ok(self, result, **kwargs):
         """Event executed after each command when it succeed. Get the output
@@ -100,19 +137,19 @@ class CallbackModule(CallbackBase):
 
         if (result._task.get_name() != 'setup' and
                 self._mime_type == 'application/junit'):
-            dci_file.create(
+            r = dci_file.create(
                 self._dci_context,
                 name=result._task.get_name().encode('UTF-8'),
                 content=output.encode('UTF-8'),
                 mime=self._mime_type,
-                job_id=self._job_id)
+                job_id=self.job_id())
         elif result._task.get_name() != 'setup' and output != '\n':
-            dci_file.create(
+            r = dci_file.create(
                 self._dci_context,
                 name=result._task.get_name().encode('UTF-8'),
                 content=output.encode('UTF-8'),
                 mime=self._mime_type,
-                jobstate_id=self._jobstate_id)
+                jobstate_id=self.jobstate_id())
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         """Event executed after each command when it fails. Get the output
@@ -127,9 +164,9 @@ class CallbackModule(CallbackBase):
             self._dci_context,
             status='failure',
             comment='',
-            job_id=self._job_id).json()
+            job_id=self.job_id()).json()
         self._jobstate_id = new_state['jobstate']['id']
-        dci_file.create(
+        r = dci_file.create(
             self._dci_context,
             name=result._task.get_name().encode('UTF-8'),
             content=output.encode('UTF-8'),
@@ -166,14 +203,13 @@ class CallbackModule(CallbackBase):
         status = None
         comment = _get_comment(play)
         if play.get_vars():
-            status = play.get_vars()['dci_status']
+            status = play.get_vars().get('dci_status')
             if 'dci_mime_type' in play.get_vars():
                 self._mime_type = play.get_vars()['dci_mime_type']
             else:
                 self._mime_type = 'text/plain'
 
-        if status:
-            self._job_id = dci_job.list(self._dci_context).json()['jobs'][0]['id']
+        if status and self.job_id():
             ns = dci_jobstate.create(self._dci_context, status=status,
-                                     comment=comment, job_id=self._job_id).json()
+                                     comment=comment, job_id=self.job_id()).json()
             self._jobstate_id = ns['jobstate']['id']
