@@ -22,6 +22,30 @@
       "revId": "a9d80feccd83541827361ca6857c423cbd2718fe",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a72e520_ff4a1fab",
+        "filename": "modules/dci_component.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 97,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-16T13:55:23Z",
+      "side": 1,
+      "message": "Not sure this improve the readability a lot since you add a line and a new variable.",
+      "parentUuid": "5a72e520_bf2267ff",
+      "range": {
+        "startLine": 92,
+        "startChar": 0,
+        "endLine": 97,
+        "endChar": 41
+      },
+      "revId": "a9d80feccd83541827361ca6857c423cbd2718fe",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
