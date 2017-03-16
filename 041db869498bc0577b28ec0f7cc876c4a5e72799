@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a72e520_54b07add",
+        "filename": "modules/dci_component.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-03-16T09:02:00Z",
+      "side": 1,
+      "message": "because of variable scope, you probably should move component.file_list when used\n\n\ndef download_file(module, ctx):\n    if os.path.isdir(module.params[\u0027dest\u0027]):\n        dest_file \u003d os.path.join(\n            module.params[\u0027dest\u0027],\n            module.params[\u0027id\u0027] + \u0027.tar\u0027)\n    else:\n        dest_file \u003d module.params[\u0027dest\u0027]\n\n    if os.path.isfile(dest_file):\n        module.exit_json(changed\u003dFalse)\n    else:\n        files \u003d dci_component.file_list(ctx, module.params[\u0027id\u0027]).json()\n        component_file_id \u003d files[\u0027component_files\u0027][0][\u0027id\u0027]\n        return dci_component.file_download(\n            ctx,\n            module.params[\u0027id\u0027],\n            component_file_id,\n            dest_file)",
+      "range": {
+        "startLine": 91,
+        "startChar": 0,
+        "endLine": 110,
+        "endChar": 22
+      },
+      "revId": "041db869498bc0577b28ec0f7cc876c4a5e72799",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
