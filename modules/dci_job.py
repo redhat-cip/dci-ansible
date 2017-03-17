@@ -204,9 +204,8 @@ def main():
     #
     # Schedule a new job against the DCI Control-Server
     else:
-        topic_id = dci_topic.get(ctx, topic).json()['topic']['id']
-        remoteci = dci_remoteci.get(ctx, module.params['remoteci']).json()
-        remoteci_id = remoteci['remoteci']['id']
+        topic_id = dci_topic.list(ctx, where='name:' + module.params['topic']).json()['topics'][0]['id']
+        remoteci_id = dci_remoteci.list(ctx, where='name:' + module.params['remoteci']).json()['remotecis'][0]['id']
 
         res = dci_job.schedule(ctx, remoteci_id, topic_id=topic_id)
         if res.status_code not in [400, 401, 404, 409]:
