@@ -198,7 +198,7 @@ def main():
         if res.status_code == 404:
             module.fail_json(msg='The resource does not exist')
         if res.status_code == 409:
-            result =  dci_component.get(ctx, module.params['name']).json()
+            result = dci_topic.list_components(ctx, module.params['topic_id'], where='name:' + module.params['name']).json()['components'][0]
         if res.status_code in [400, 401, 409]:
             result['changed'] = False
         else:
