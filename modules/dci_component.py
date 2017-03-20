@@ -18,6 +18,7 @@ import os
 try:
     from dciclient.v1.api import context as dci_context
     from dciclient.v1.api import component as dci_component
+    from dciclient.v1.api import topic as dci_topic
 except ImportError:
     dciclient_found = False
 else:
