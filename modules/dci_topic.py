@@ -197,7 +197,12 @@ def main():
         if res.status_code == 404:
             module.fail_json(msg='The resource does not exist')
         if res.status_code == 409:
-            result = dci_topic.list(ctx, where='name:' + module.params['name']).json()['topics'][0]
+            result = {
+                'topic': dci_topic.list(
+                         ctx,
+                         where='name:' + module.params['name']
+                         ).json()['topics'][0],
+            }
             result['changed'] = False
         else:
             result['changed'] = True
