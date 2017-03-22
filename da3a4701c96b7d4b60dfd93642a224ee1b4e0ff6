@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a72e520_b867d8e9",
+        "filename": "callback/dci.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-03-22T16:04:21Z",
+      "side": 1,
+      "message": "remotecis name are unique",
+      "range": {
+        "startLine": 96,
+        "startChar": 90,
+        "endLine": 96,
+        "endChar": 97
+      },
+      "revId": "da3a4701c96b7d4b60dfd93642a224ee1b4e0ff6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a72e520_d8abb4d4",
+        "filename": "callback/dci.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-03-22T16:04:21Z",
+      "side": 1,
+      "message": "Did you test that ?\nBecause on my side jobstate.list with limit doesn\u0027t work at all :\ncurl https://api.distributed-ci.io/api/v1/jobstates?where\u003djob_id:\u003cJ_UUID\u003e\u0026limit\u003d1\u0027| jq \u0027.jobstates|length\u0027\n56",
+      "range": {
+        "startLine": 118,
+        "startChar": 101,
+        "endLine": 118,
+        "endChar": 108
+      },
+      "revId": "da3a4701c96b7d4b60dfd93642a224ee1b4e0ff6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a72e520_389be8ca",
+        "filename": "callback/dci.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-03-22T16:04:21Z",
+      "side": 1,
+      "message": "with this filter you will have the first jobstate of the job. The latest is provide by \u0027sort\u003d-created_at\u0027 which is btw the default value of the sort.",
+      "range": {
+        "startLine": 118,
+        "startChar": 82,
+        "endLine": 118,
+        "endChar": 99
+      },
+      "revId": "da3a4701c96b7d4b60dfd93642a224ee1b4e0ff6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
