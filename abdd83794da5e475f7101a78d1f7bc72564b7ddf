@@ -16,6 +16,24 @@
       "revId": "abdd83794da5e475f7101a78d1f7bc72564b7ddf",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a72e520_53d88753",
+        "filename": "callback/dci.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-23T13:32:17Z",
+      "side": 1,
+      "message": "Or we can just ignore the environment variable. WDYT?",
+      "parentUuid": "5a72e520_1317efee",
+      "revId": "abdd83794da5e475f7101a78d1f7bc72564b7ddf",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
