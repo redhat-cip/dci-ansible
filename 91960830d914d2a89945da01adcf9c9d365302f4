@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a72e520_7399036e",
+        "filename": "modules/dci_jobstate.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-03-23T14:02:29Z",
+      "side": 1,
+      "message": "job_id",
+      "range": {
+        "startLine": 204,
+        "startChar": 19,
+        "endLine": 204,
+        "endChar": 24
+      },
+      "revId": "91960830d914d2a89945da01adcf9c9d365302f4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
