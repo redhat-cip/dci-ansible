@@ -22,12 +22,12 @@ control server
 %build
 
 %install
-mkdir -p %{buildroot}/usr/share/dci
-cp -r modules %{buildroot}/usr/share/dci/
-cp -r callback %{buildroot}/usr/share/dci/
-chmod 755 %{buildroot}/usr/share/dci
-chmod 755 %{buildroot}/usr/share/dci/modules
-chmod 755 %{buildroot}/usr/share/dci/callback
+mkdir -p %{buildroot}%{_datadir}/dci
+cp -r modules %{buildroot}%{_datadir}/dci/
+cp -r callback %{buildroot}%{_datadir}/dci/
+chmod 755 %{buildroot}%{_datadir}/dci
+chmod 755 %{buildroot}%{_datadir}/dci/modules
+chmod 755 %{buildroot}%{_datadir}/dci/callback
 
 
 %files
