@@ -198,7 +198,6 @@ def main():
                 kwargs['team_id'] = module.params['team_id']
             if module.params['active'] is not None:
                 kwargs['active'] = module.params['active']
-            open('/tmp/tuiti', 'w').write(str(kwargs.keys()))
             res = dci_remoteci.update(ctx, **kwargs)
 
     # Action required: Create a remoteci with the specified content
