@@ -13,6 +13,8 @@ from dciclient.v1.api import jobstate as dci_jobstate
 from dciclient.v1.api import job as dci_job
 from dciclient.v1.api import file as dci_file
 
+FIELDS = ['cmd', 'command', 'start', 'end', 'delta', 'msg', 'stdout', 'stderr', 'module_stdout', 'module_stderr', 'item']
+
 
 class CallbackModule(CallbackBase):
     """
@@ -35,49 +37,30 @@ class CallbackModule(CallbackBase):
             value.
         """
 
-        if 'stderr' in result and result['stderr']:
-            if result['stdout']:
-                output = 'Error Output:\n\n%s\n\nStandard Output:\n\n%s' % (
-                    result['stderr'], result['stdout']
-                )
-            else:
-                output = result['stderr']
+        output = ''
+        if type(result) == type(dict()):
+            for field in FIELDS:
+                if field in result.keys():
+                    if not field:
+                        continue
+                    output += '\n{0}: {1}'.format(field, result[field])
+        return output
 
+    def post_message(self, result, output):
+        dci_file.create(
+            self._dci_context,
+            name=self.task_name(result),
+            content=output.encode('UTF-8'),
+            mime=self._mime_type,
+            jobstate_id=self._jobstate_id)
+
+    def task_name(self, result):
+        """Ensure we alway return a string"""
+        name = result._task.get_name()
+        if name:
+            return name.encode('UTF-8')
         else:
-            # The following if/elif/else block is due to lack of consistency in the object
-            # returned by ansible. Ideally the result['invocation']['module_name'] should
-            # work for all modules.
-            if 'invocation' not in result:
-                module_name = 'file'
-            elif 'extract_result' in result:
-                module_name = 'unarchive'
-            elif 'module_name' not in result['invocation']:
-                module_name = 'package'
-            else:
-                module_name = result['invocation']['module_name']
-
-            if module_name == 'os_server':
-                output = '%s - %s' % (result['server']['status'], result['server']['id'])
-            elif module_name == 'hostname':
-                output = 'Hostname: %s' % result['name']
-            elif module_name == 'user':
-                output = 'Name: %s - uid: %s - gid: %s' % (result['name'], result['uid'], result['group'])
-            elif module_name == 'lineinfile':
-                output = '%s - %s' % (result['invocation']['module_args']['line'], result['msg'])
-            elif module_name == 'get_url':
-                output = '%s - %s' % (result['dest'], result['msg'])
-            elif module_name == 'unarchive':
-                output = '%s unarchived in %s' % (result['src'], result['dest'])
-            elif module_name == 'package':
-                output = result['results']
-            elif 'stdout_lines' in result:
-                output = '\n'.join(result['stdout_lines'])
-            elif 'msg' in result:
-                output = result['msg']
-            else:
-                output = 'All items completed'
-
-        return '%s\n' % output
+            return ''
 
     def __init__(self):
 
@@ -98,21 +81,17 @@ class CallbackModule(CallbackBase):
 
         output = self.format_output(result._result)
 
-        if (result._task.get_name() != 'setup' and
-                self._mime_type == 'application/junit'):
+        if (self._mime_type == 'application/junit'):
             dci_file.create(
                 self._dci_context,
-                name=result._task.get_name().encode('UTF-8'),
-                content=output.encode('UTF-8'),
+                name=task_name(result),
+                content=output and output.encode('UTF-8'),
                 mime=self._mime_type,
                 job_id=self._job_id)
-        elif result._task.get_name() != 'setup' and output != '\n':
-            dci_file.create(
-                self._dci_context,
-                name=result._task.get_name().encode('UTF-8'),
-                content=output.encode('UTF-8'),
-                mime=self._mime_type,
-                jobstate_id=self._jobstate_id)
+            return
+
+        if self.task_name(result) != 'setup':
+            self.post_message(result, output)
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         """Event executed after each command when it fails. Get the output
@@ -123,15 +102,19 @@ class CallbackModule(CallbackBase):
 
         output = self.format_output(result._result)
 
+        if ignore_errors:
+            self.post_message(result, output)
+            return
+
         new_state = dci_jobstate.create(
             self._dci_context,
             status='failure',
-            comment='',
+            comment=self.task_name(result),
             job_id=self._job_id).json()
         self._jobstate_id = new_state['jobstate']['id']
         dci_file.create(
             self._dci_context,
-            name=result._task.get_name().encode('UTF-8'),
+            name=self.task_name(result),
             content=output.encode('UTF-8'),
             mime=self._mime_type,
             jobstate_id=self._jobstate_id)
@@ -166,7 +149,7 @@ class CallbackModule(CallbackBase):
         status = None
         comment = _get_comment(play)
         if play.get_vars():
-            status = play.get_vars()['dci_status']
+            status = play.get_vars().get('dci_status')
             if 'dci_mime_type' in play.get_vars():
                 self._mime_type = play.get_vars()['dci_mime_type']
             else:
