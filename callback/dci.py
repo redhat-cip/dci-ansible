@@ -68,8 +68,6 @@ class CallbackModule(CallbackBase):
                 output = '%s - %s' % (result['dest'], result['msg'])
             elif module_name == 'unarchive':
                 output = '%s unarchived in %s' % (result['src'], result['dest'])
-            elif module_name == 'package':
-                output = result['results']
             elif 'stdout_lines' in result:
                 output = '\n'.join(result['stdout_lines'])
             elif 'msg' in result:
