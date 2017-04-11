@@ -98,7 +98,7 @@ class CallbackModule(CallbackBase):
 
         output = self.format_output(result._result)
 
-        if (result._task.get_name() != 'setup' and
+        if (result._task.action != 'setup' and
                 self._mime_type == 'application/junit'):
             dci_file.create(
                 self._dci_context,
@@ -106,7 +106,7 @@ class CallbackModule(CallbackBase):
                 content=output.encode('UTF-8'),
                 mime=self._mime_type,
                 job_id=self._job_id)
-        elif result._task.get_name() != 'setup' and output != '\n':
+        elif (result._task.action != 'setup' and output != '\n'):
             dci_file.create(
                 self._dci_context,
                 name=result._task.get_name().encode('UTF-8'),
