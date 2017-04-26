@@ -77,6 +77,26 @@ class CallbackModule(CallbackBase):
 
         return '%s\n' % output
 
+    def post_message(self, result, output):
+        kwargs = {
+            'name': self.task_name(result),
+            'content': output and output.encode('UTF-8'),
+            'mime': self._mime_type}
+
+        if self._mime_type == 'application/junit':
+            kwargs['job_id'] = self._job_id
+        else:
+            kwargs['jobstate_id'] = self._jobstate_id
+
+        dci_file.create(
+            self._dci_context,
+            **kwargs)
+
+    def task_name(self, result):
+        """Ensure we alway return a string"""
+        name = result._task.get_name()
+        return name.encode('UTF-8')
+
     def __init__(self):
 
         super(CallbackModule, self).__init__()
@@ -96,21 +116,7 @@ class CallbackModule(CallbackBase):
 
         output = self.format_output(result._result)
 
-        if (result._task.action != 'setup' and
-                self._mime_type == 'application/junit'):
-            dci_file.create(
-                self._dci_context,
-                name=result._task.get_name().encode('UTF-8'),
-                content=output.encode('UTF-8'),
-                mime=self._mime_type,
-                job_id=self._job_id)
-        elif (result._task.action != 'setup' and output != '\n'):
-            dci_file.create(
-                self._dci_context,
-                name=result._task.get_name().encode('UTF-8'),
-                content=output.encode('UTF-8'),
-                mime=self._mime_type,
-                jobstate_id=self._jobstate_id)
+        self.post_message(result, output)
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         """Event executed after each command when it fails. Get the output
@@ -121,18 +127,17 @@ class CallbackModule(CallbackBase):
 
         output = self.format_output(result._result)
 
+        if ignore_errors:
+            self.post_message(result, output)
+            return
+
         new_state = dci_jobstate.create(
             self._dci_context,
             status='failure',
-            comment='',
+            comment=self.task_name(result),
             job_id=self._job_id).json()
         self._jobstate_id = new_state['jobstate']['id']
-        dci_file.create(
-            self._dci_context,
-            name=result._task.get_name().encode('UTF-8'),
-            content=output.encode('UTF-8'),
-            mime=self._mime_type,
-            jobstate_id=self._jobstate_id)
+        self.post_message(result, output)
 
     def v2_playbook_on_play_start(self, play):
         """Event executed before each play. Create a new jobstate and save
@@ -164,7 +169,7 @@ class CallbackModule(CallbackBase):
         status = None
         comment = _get_comment(play)
         if play.get_vars():
-            status = play.get_vars()['dci_status']
+            status = play.get_vars().get('dci_status')
             if 'dci_mime_type' in play.get_vars():
                 self._mime_type = play.get_vars()['dci_mime_type']
             else:
