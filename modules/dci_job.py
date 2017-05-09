@@ -66,13 +66,15 @@ options:
   metadata:
     required: false
     description: Metadatas attached to the job
+  upgrade:
+    required: false
+    description: Schedule an upgrade job
 '''
 
 EXAMPLES = '''
 - name: Schedule a new job
   dci_job:
     remoteci: 'MyRCI'
-
 
 - name: Update job
   dci_job:
@@ -83,6 +85,11 @@ EXAMPLES = '''
   dci_job:
     state: absent
     id: '{{ job_id }}'
+
+- name: Schedule an upgrade job
+  dci_job:
+    id: '{{ job_id }}'
+    upgrade: true
 '''
 
 # TODO
@@ -132,6 +139,7 @@ def main():
             status=dict(type='str'),
             configuration=dict(type='dict'),
             metadata=dict(type='dict'),
+            upgrade=dict(type='bool'),
         ),
     )
 
@@ -174,14 +182,19 @@ def main():
     # Endpoint called: /jobs/<job_id> GET via dci_job.get()
     #
     # Get job informations
-    elif module.params['id'] and not module.params['comment'] and not module.params['status'] and not module.params['configuration'] and not module.params['metadata']:
+    elif (module.params['id'] and
+          not module.params['comment'] and
+          not module.params['status'] and
+          not module.params['configuration'] and
+          not module.params['metadata'] and
+          not module.params['upgrade']):
         res = dci_job.get(ctx, module.params['id'])
 
     # Action required: Update an existing job
     # Endpoint called: /jobs/<job_id> PUT via dci_job.update()
     #
     # Update the job with the specified characteristics.
-    elif module.params['id']:
+    elif module.params['id'] and not module.params['upgrade']:
         res = dci_job.get(ctx, module.params['id'])
         if res.status_code not in [400, 401, 404, 409]:
             kwargs = {
@@ -198,6 +211,15 @@ def main():
                 for k, v in module.params['metadata'].items():
                     dci_job.set_meta(ctx, module.params['id'], k, v)
             res = dci_job.update(ctx, **kwargs)
+
+    # Action required: Schedule an upgrade job
+    # Endpoint called: /jobs/upgrade POST via dci_job.upgrade()
+    #
+    # Schedule an upgrade job using the next topic
+    elif module.params['id'] and module.params['upgrade']:
+        res = dci_job.upgrade(ctx, job_id=module.params['id'])
+        if res.status_code not in [400, 401, 404, 409]:
+            res = dci_job.get_full_data(ctx, ctx.last_job_id)
 
     # Action required: Schedule a new job
     # Endpoint called: /jobs/schedule POST via dci_job.schedule()
