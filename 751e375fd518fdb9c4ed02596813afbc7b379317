@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9b358b_5e1adb6f",
+        "filename": "callback/dci.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-05-11T10:13:25Z",
+      "side": 1,
+      "message": "Okey, you will hate me for this, but I did use result._task._ds for the name but since it is a dict, it causes problem on the API side of things, because filename contains non conventional characters. I will create a new trello card to push this further. So I am removing my -1 for this.\n\nNonetheless, I still have one question: How can name be empty?\nIf you don\u0027t specify name in the task description, result._task.get_name() will return result._task.action that is *always* defined[1]\n\n[1] https://github.com/ansible/ansible/blob/devel/lib/ansible/playbook/task.py#L108-L119",
+      "revId": "751e375fd518fdb9c4ed02596813afbc7b379317",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
