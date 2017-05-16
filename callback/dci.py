@@ -171,7 +171,9 @@ class CallbackModule(CallbackBase):
                 self._mime_type = 'text/plain'
 
         if status:
-            self._job_id = dci_job.list(self._dci_context).json()['jobs'][0]['id']
+            if not self._job_id:
+                self._job_id = play._variable_manager._nonpersistent_fact_cache['localhost']['job_informations']['id']
+
             ns = dci_jobstate.create(self._dci_context, status=status,
                                      comment=comment, job_id=self._job_id).json()
             self._jobstate_id = ns['jobstate']['id']
