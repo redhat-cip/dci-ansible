@@ -97,7 +97,7 @@ def main():
         argument_spec=dict(
             state=dict(default='present', choices=['present', 'absent'], type='str'),
             dci_login=dict(required=False, type='str'),
-            dci_password=dict(required=False, type='str'),
+            dci_password=dict(required=False, type='str', no_log=True),
             dci_cs_url=dict(required=False, type='str'),
             undercloud_ip=dict(type='str'),
             undercloud_user=dict(required=False, default='stack', type='str'),
