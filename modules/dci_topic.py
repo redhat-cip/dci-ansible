@@ -118,7 +118,7 @@ def main():
             # Authentication related parameters
             #
             login=dict(required=False, type='str'),
-            password=dict(required=False, type='str'),
+            password=dict(required=False, type='str',no_log=True),
             url=dict(required=False, type='str'),
             # Resource related parameters
             #

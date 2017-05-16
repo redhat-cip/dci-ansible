@@ -122,13 +122,13 @@ def main():
             # Authentication related parameters
             #
             dci_login=dict(required=False, type='str'),
-            dci_password=dict(required=False, type='str'),
+            dci_password=dict(required=False, type='str',no_log=True),
             dci_cs_url=dict(required=False, type='str'),
             # Resource related parameters
             #
             id=dict(type='str'),
             name=dict(type='str'),
-            password=dict(type='str'),
+            password=dict(type='str',no_log=True),
             role=dict(choices=['user', 'admin'], type='str'),
             team_id=dict(type='str'),
         ),
