@@ -69,6 +69,15 @@ options:
   upgrade:
     required: false
     description: Schedule an upgrade job
+  jobdefinition_id:
+    required: false
+    description: request the creation of the job with this jobdefinition
+  components:
+    required: false
+    description: (only with jobdefinition_id) list of ID to associated to the new job
+  team_id:
+    required: false
+    description: (only with jobdefinition_id) team of the new job
 '''
 
 EXAMPLES = '''
@@ -90,6 +99,14 @@ EXAMPLES = '''
   dci_job:
     id: '{{ job_id }}'
     upgrade: true
+
+- name: Manually create a job with no component
+  dci_job:
+    topic: 'OSP8'
+    remoteci: 'FutureVille1'
+    jobdefinition_id: '7a9f71c8-96ee-47d4-929c-23b44e174980'
+    comment: 'job created manually'
+    components: []
 '''
 
 # TODO
@@ -110,6 +127,12 @@ def get_details(module):
     url = next((item for item in url_list if item is not None), 'https://api.distributed-ci.io')
 
     return login, password, url
+
+
+def get_remoteci_id(ctx, remoteci_name):
+    return dci_remoteci.list(
+        ctx,
+        where='name:' + remoteci_name).json()['remotecis'][0]['id']
 
 
 def module_params_empty(module_params):
@@ -140,6 +163,9 @@ def main():
             configuration=dict(type='dict'),
             metadata=dict(type='dict'),
             upgrade=dict(type='bool'),
+            jobdefinition_id=dict(type='str'),
+            components=dict(type='list', default=[]),
+            team_id=dict(type='str'),
         ),
     )
 
@@ -221,15 +247,30 @@ def main():
         if res.status_code not in [400, 401, 404, 409]:
             res = dci_job.get_full_data(ctx, ctx.last_job_id)
 
+    # Manually create the job
+    elif module.params.get('jobdefinition_id'):
+        res = dci_job.create(
+            ctx,
+            recheck=False,
+            remoteci_id=get_remoteci_id(ctx, module.params.get('remoteci')),
+            team_id=module.params.get('team_id'),
+            jobdefinition_id=module.params.get('jobdefinition_id'),
+            components=module.params.get('components'),
+            comment=module.params.get('comment'))
+        if res.status_code == 201:
+            res = dci_job.get_full_data(ctx, ctx.last_job_id)
+
     # Action required: Schedule a new job
     # Endpoint called: /jobs/schedule POST via dci_job.schedule()
     #
     # Schedule a new job against the DCI Control-Server
     else:
         topic_id = dci_topic.list(ctx, where='name:' + module.params['topic']).json()['topics'][0]['id']
-        remoteci_id = dci_remoteci.list(ctx, where='name:' + module.params['remoteci']).json()['remotecis'][0]['id']
 
-        res = dci_job.schedule(ctx, remoteci_id, topic_id=topic_id)
+        res = dci_job.schedule(
+            ctx,
+            remoteci_id=get_remoteci_id(module.params.get('remoteci')),
+            topic_id=topic_id)
         if res.status_code not in [400, 401, 404, 409]:
             res = dci_job.get_full_data(ctx, ctx.last_job_id)
 
