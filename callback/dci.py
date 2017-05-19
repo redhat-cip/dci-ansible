@@ -168,6 +168,7 @@ class CallbackModule(CallbackBase):
         super(CallbackModule, self).v2_playbook_on_play_start(play)
         status = None
         comment = _get_comment(play)
+        fact_cache = play._variable_manager._nonpersistent_fact_cache
         if play.get_vars():
             status = play.get_vars().get('dci_status')
             if 'dci_mime_type' in play.get_vars():
@@ -176,7 +177,12 @@ class CallbackModule(CallbackBase):
                 self._mime_type = 'text/plain'
 
         if status:
-            self._job_id = dci_job.list(self._dci_context).json()['jobs'][0]['id']
+            if not self._job_id:
+                for hostvar in fact_cache:
+                    if 'job_informations' in fact_cache[hostvar]:
+                        self._job_id = fact_cache[hostvar]['job_informations']['id']
+                        break
+
             ns = dci_jobstate.create(self._dci_context, status=status,
                                      comment=comment, job_id=self._job_id).json()
             self._jobstate_id = ns['jobstate']['id']
