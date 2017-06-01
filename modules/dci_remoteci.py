@@ -51,9 +51,6 @@ options:
   data:
     required: false
     description: Data associated with the RemoteCI
-  active:
-    required: false
-    description: Wether the remoteci is active;w
   team_id:
     required: false
     description: ID of the team the remoteci belongs to
@@ -70,24 +67,23 @@ EXAMPLES = '''
   dci_remoteci:
     name: 'MyRemoteCI'
     team_id: XXXX
-    active: False
     data: >
       {"certification_id": "xfewafeqafewqfeqw"}
 
 
 - name: Get remoteci information
-  dci_topic:
+  dci_remoteci:
     id: XXXXX
 
 
 - name: Update remoteci informations
-  dci_topic:
+  dci_remoteci:
     id: XXXX
-    active: True
+    name: New Name
 
 
 - name: Delete a topic
-  dci_topic:
+  dci_remoteci:
     state: absent
     id: XXXXX
 '''
@@ -135,7 +131,6 @@ def main():
             id=dict(type='str'),
             name=dict(type='str'),
             data=dict(type='dict'),
-            active=dict(type='bool'),
             team_id=dict(type='str'),
         ),
     )
@@ -176,7 +171,7 @@ def main():
     # Endpoint called: /remotecis/<remoteci_id> GET via dci_remoteci.get()
     #
     # Get remoteci informations
-    elif module.params['id'] and not module.params['name'] and not module.params['data'] and not module.params['team_id'] and module.params['active'] is None:
+    elif module.params['id'] and not module.params['name'] and not module.params['data'] and not module.params['team_id']:
         res = dci_remoteci.get(ctx, module.params['id'])
 
     # Action required: Update an existing remoteci
@@ -196,8 +191,6 @@ def main():
                 kwargs['data'] = module.params['data']
             if module.params['team_id']:
                 kwargs['team_id'] = module.params['team_id']
-            if module.params['active'] is not None:
-                kwargs['active'] = module.params['active']
             res = dci_remoteci.update(ctx, **kwargs)
 
     # Action required: Create a remoteci with the specified content
@@ -216,8 +209,6 @@ def main():
         }
         if module.params['data']:
             kwargs['data'] = module.params['data']
-        if module.params['active'] is not None:
-            kwargs['active'] = module.params['active']
 
         res = dci_remoteci.create(ctx, **kwargs)
 
