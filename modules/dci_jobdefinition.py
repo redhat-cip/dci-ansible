@@ -48,15 +48,9 @@ options:
   name:
     required: false
     description: Jobdefinition name
-  priority:
-    required: false
-    description: Jobdefinition priority
   topic_id:
     required: false
     description: ID of the topic the jobdefinition will be attached to
-  active:
-    required: false
-    description: Wether or not the jobdefinition is active
   comment:
     required: false
     description: A comment to attach to the job definition
@@ -81,7 +75,7 @@ EXAMPLES = '''
 - name: Update jobdefinition informations
   dci_jobdefinition:
     id: XXXX
-    active: False
+    name: New Name
 
 
 - name: Delete a jobdefinition
@@ -132,9 +126,7 @@ def main():
             #
             id=dict(type='str'),
             name=dict(type='str'),
-            priority=dict(type='int'),
             topic_id=dict(type='str'),
-            active=dict(type='bool'),
             comment=dict(type='str'),
             component_types=dict(type='list'),
         ),
@@ -176,7 +168,7 @@ def main():
     # Endpoint called: /jobdefinitions/<jobdefinition_id> GET via dci_jobdefinition.get()
     #
     # Get jobdefinition informations
-    elif module.params['id'] and not module.params['comment'] and not module.params['component_types'] and module.params['active'] is None:
+    elif module.params['id'] and not module.params['comment'] and not module.params['component_types']:
         res = dci_jobdefinition.get(ctx, module.params['id'])
 
     # Action required: Update an existing jobdefinition
@@ -194,8 +186,6 @@ def main():
                 kwargs['comment'] = module.params['comment']
             if module.params['component_types']:
                 kwargs['component_types'] = module.params['component_types']
-            if module.params['active'] is not None:
-                kwargs['active'] = module.params['active']
             res = dci_jobdefinition.update(ctx, **kwargs)
 
 
@@ -213,14 +203,10 @@ def main():
             'name': module.params['name'],
             'topic_id': module.params['topic_id']
         }
-        if module.params['priority']:
-            kwargs['priority'] = module.params['priority']
         if module.params['comment']:
             kwargs['comment'] = module.params['comment']
         if module.params['component_types']:
             kwargs['component_types'] = module.params['component_types']
-        if module.params['active'] is not None:
-            kwargs['active'] = module.params['active']
 
         res = dci_jobdefinition.create(ctx, **kwargs)
 
