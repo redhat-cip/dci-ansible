@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_e687e8d5",
+        "filename": "modules/dci_jobdefinition.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-06-01T14:18:01Z",
+      "side": 1,
+      "message": "Maybe add quotes",
+      "range": {
+        "startLine": 78,
+        "startChar": 10,
+        "endLine": 78,
+        "endChar": 18
+      },
+      "revId": "460f3021f7a278ae0ba02aa8b0d37681b0cfb2ce",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
