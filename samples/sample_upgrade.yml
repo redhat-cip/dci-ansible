@@ -1,0 +1,47 @@
+---
+# Initial Step:
+#
+# Schedule a new job giving a specific topic and specifying the remote CI.
+# The return of this action contains all the data associated with the job,
+# we hence register those data for later consumptions
+#
+- hosts: localhost
+  tasks:
+    - name: Schedule a new job
+      dci_job:
+        topic: 'OSP10'
+        remoteci: 'dci-env-ovb-1'
+      register: job_informations
+
+# New state
+# Pre-run state
+# Running state
+# Post-run state
+
+# Success state
+#
+# User is free to do whaterver he needs before entering success state.
+# Schedule an upgrade job using the next_topic field defined for the
+# current topic.
+# The return of this action contains all the data associated with the job,
+# we hence register those data for later consumptions
+#
+- hosts: localhost
+  vars:
+    dci_status: 'success'
+    dci_comment: 'Success state and schedule upgrade'
+  tasks:
+    - name: Schedule an upgrade job
+      dci_job:
+        id: "{{ job_informations['id'] }}"
+        upgrade: true
+      register: job_informations
+
+    - name: echo 'Success'
+      shell: echo 'Succes'
+
+# New state
+# Pre-run state
+# Running state
+# Post-run state
+# Success state
