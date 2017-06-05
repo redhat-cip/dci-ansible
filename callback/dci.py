@@ -116,7 +116,8 @@ class CallbackModule(CallbackBase):
 
         output = self.format_output(result._result)
 
-        self.post_message(result, output)
+        if result._task.action != 'setup':
+            self.post_message(result, output)
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         """Event executed after each command when it fails. Get the output
