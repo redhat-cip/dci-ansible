@@ -51,10 +51,9 @@ options:
   password:
     required: false
     description: User password
-  role:
+  role_id:
     required: false
-    choices: ['user', 'admin']
-    description: User role
+    description: ID of the role the user is attached to
   team_id:
     required: false
     description: ID of the team the user belongs to
@@ -65,7 +64,7 @@ EXAMPLES = '''
   dci_user:
     name: 'jdoe@customer.com'
     password: 'APassw0rd!'
-    role: 'user'
+    role_id: XXXXX
     team_id: XXXXX
 
 
@@ -77,7 +76,7 @@ EXAMPLES = '''
 - name: Update user informations
   dci_user:
     id: XXXX
-    role: 'admin'
+    role_id: XXXX
 
 
 - name: Delete a user
@@ -129,7 +128,7 @@ def main():
             id=dict(type='str'),
             name=dict(type='str'),
             password=dict(type='str',no_log=True),
-            role=dict(choices=['user', 'admin'], type='str'),
+            role_id=dict(type='str'),
             team_id=dict(type='str'),
         ),
     )
@@ -170,7 +169,7 @@ def main():
     # Endpoint called: /user/<user_id> GET via dci_user.get()
     #
     # Get user informations
-    elif module.params['id'] and not module.params['name'] and not module.params['password'] and not module.params['role'] and not module.params['team_id']:
+    elif module.params['id'] and not module.params['name'] and not module.params['password'] and not module.params['role_id'] and not module.params['team_id']:
         res = dci_user.get(ctx, module.params['id'])
 
     # Action required: Update an user
@@ -188,8 +187,8 @@ def main():
                 kwargs['name'] = module.params['name']
             if module.params['password']:
                 kwargs['password'] = module.params['password']
-            if module.params['role']:
-                kwargs['role'] = module.params['role']
+            if module.params['role_id']:
+                kwargs['role_id'] = module.params['role_id']
             if module.params['team_id']:
                 kwargs['team_id'] = module.params['team_id']
             res = dci_user.update(ctx, **kwargs)
@@ -205,13 +204,11 @@ def main():
             module.fail_json(msg='password parameter must be specified')
         if not module.params['team_id']:
             module.fail_json(msg='team_id parameter must be specified')
-        if not module.params['role']:
-            role = 'user'
 
         kwargs = {
             'name': module.params['name'],
             'password': module.params['password'],
-            'role': role,
+            'role_id': module.params['role_id'],
             'team_id': module.params['team_id'],
         }
 
