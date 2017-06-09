@@ -51,6 +51,12 @@ options:
   password:
     required: false
     description: User password
+  fullname:
+    required: false
+    description: User fullname
+  email:
+    required: false
+    description: User email
   role_id:
     required: false
     description: ID of the role the user is attached to
@@ -62,7 +68,9 @@ options:
 EXAMPLES = '''
 - name: Create a new user
   dci_user:
-    name: 'jdoe@customer.com'
+    name: jdoe
+    fullname: John Doe
+    email: jdoe@example.tld
     password: 'APassw0rd!'
     role_id: XXXXX
     team_id: XXXXX
@@ -77,6 +85,7 @@ EXAMPLES = '''
   dci_user:
     id: XXXX
     role_id: XXXX
+    email: jdoe@newcompany.org
 
 
 - name: Delete a user
@@ -127,6 +136,8 @@ def main():
             #
             id=dict(type='str'),
             name=dict(type='str'),
+            fullname=dict(type='str'),
+            email=dict(type='str'),
             password=dict(type='str',no_log=True),
             role_id=dict(type='str'),
             team_id=dict(type='str'),
@@ -169,7 +180,10 @@ def main():
     # Endpoint called: /user/<user_id> GET via dci_user.get()
     #
     # Get user informations
-    elif module.params['id'] and not module.params['name'] and not module.params['password'] and not module.params['role_id'] and not module.params['team_id']:
+    elif module.params['id'] and not module.params['name'] and \
+            not module.params['team_id'] and not module.params['role_id'] and \
+            not module.params['password'] and not module.params['email'] and \
+            not module.params['fullname']:
         res = dci_user.get(ctx, module.params['id'])
 
     # Action required: Update an user
@@ -191,6 +205,10 @@ def main():
                 kwargs['role_id'] = module.params['role_id']
             if module.params['team_id']:
                 kwargs['team_id'] = module.params['team_id']
+            if module.params['fullname']:
+                kwargs['fullname'] = module.params['fullname']
+            if module.params['email']:
+                kwargs['email'] = module.params['email']
             res = dci_user.update(ctx, **kwargs)
 
     # Action required: Create a user with the specified content
@@ -204,9 +222,13 @@ def main():
             module.fail_json(msg='password parameter must be specified')
         if not module.params['team_id']:
             module.fail_json(msg='team_id parameter must be specified')
+        if not module.params['email']:
+            module.fail_json(msg='email parameter must be specified')
 
         kwargs = {
             'name': module.params['name'],
+            'fullname': module.params['fullname'] or module.params['name'],
+            'email': module.params['email'],
             'password': module.params['password'],
             'role_id': module.params['role_id'],
             'team_id': module.params['team_id'],
