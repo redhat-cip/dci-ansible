@@ -114,6 +114,11 @@ class CallbackModule(CallbackBase):
 
         super(CallbackModule, self).v2_runner_on_ok(result, **kwargs)
 
+        # Check if the task that just run was the schedule of an upgrade
+        # job. If so, set self._job_id to the new job ID
+        if result._task.action == 'dci_job' and result._result['invocation']['module_args']['upgrade']:
+            self._job_id = result._result['id']
+
         output = self.format_output(result._result)
 
         if result._task.action != 'setup':
