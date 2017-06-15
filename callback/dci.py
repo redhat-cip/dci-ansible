@@ -22,9 +22,26 @@ class CallbackModule(CallbackBase):
     CALLBACK_NAME = 'dci'
     CALLBACK_NEEDS_WHITELIST = True
 
+    def _get_details():
+        """Method that retrieves the appropriate credentials. """
+
+        login = os.getenv('DCI_LOGIN')
+        password = os.getenv('DCI_PASSWORD')
+
+        client_id = os.getenv('DCI_CLIENT_ID')
+        api_secret = os.getenv('DCI_API_SECRET')
+
+        url = os.getenv('DCI_CS_URL', 'https://api.distributed-ci.io')
+
+        return login, password, url, client_id, api_secret
+
     def _build_dci_context(self):
-        return dci_context.build_dci_context(os.getenv('DCI_CS_URL'), os.getenv('DCI_LOGIN'),
-                                             os.getenv('DCI_PASSWORD'), 'ansible')
+        login, password, url, client_id, api_secret = _get_details()
+        if login is not None and password is not None:
+            return dci_context.build_dci_context(url, user, password, 'Ansible')
+        elif client_id is not None and api_secret is not None:
+            return dci_context.build_signature_context(url, client_id,
+                                                       api_secret, 'Ansible')
 
     def format_output(self, result):
         """ Return the proper output for a given task output.
