@@ -48,6 +48,14 @@ export DCI_CS_URL=https://api.distributed-ci.io
 
 `DCI_CS_URL` will default to 'https://api.distributed-ci.io' if not specified.
 
+To use the new remoteci authentication method (to avoid having user-specific credentials for a remoteci), use the following parameters:
+
+```
+export DCI_CLIENT_ID=<remoteci_id>
+export DCI_API_SECRET=<remoteci_api_secret>
+export DCI_CS_URL=https://api.distributed-ci.io
+```
+
 
 ### dci_job
 
