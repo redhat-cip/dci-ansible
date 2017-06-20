@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9aa53dc9_6292b859",
+        "filename": "callback/dci.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-20T19:48:31Z",
+      "side": 1,
+      "message": "Why is this not enough?:\n\nif result._task.action \u003d\u003d \u0027dci_job\u0027:\n    elf._job_id \u003d result._result[\u0027id\u0027]",
+      "revId": "0b8d7fb3b31344493b4bb0a01266bcae036c48b4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
