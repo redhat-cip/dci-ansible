@@ -251,7 +251,6 @@ def main():
     elif module.params['jobdefinition_id']:
         res = dci_job.create(
             ctx,
-            recheck=None,
             remoteci_id=get_remoteci_id(ctx, module.params['remoteci']),
             team_id=module.params['team_id'],
             jobdefinition_id=module.params['jobdefinition_id'],
