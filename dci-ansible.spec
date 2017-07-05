@@ -24,9 +24,11 @@ control server
 %install
 mkdir -p %{buildroot}%{_datadir}/dci
 cp -r modules %{buildroot}%{_datadir}/dci/
+cp -r module_utils %{buildroot}%{_datadir}/dci/
 cp -r callback %{buildroot}%{_datadir}/dci/
 chmod 755 %{buildroot}%{_datadir}/dci
 chmod 755 %{buildroot}%{_datadir}/dci/modules
+chmod 755 %{buildroot}%{_datadir}/dci/module_utils
 chmod 755 %{buildroot}%{_datadir}/dci/callback
 
 
@@ -37,5 +39,8 @@ chmod 755 %{buildroot}%{_datadir}/dci/callback
 
 
 %changelog
+* Wed Jul 05 2017 Yassine Lamgarchale <yassine.lamgarchal@redhat.com> - 0.0.1-2
+- Adding module_utils feature starting from ansible version 2.3
+
 * Thu Jan 19 2017 Yanis Guenane <yguenane@redhat.com> - 0.0.1-1
 - Initial release
