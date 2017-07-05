@@ -12,8 +12,7 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-
-import os
+from ansible.module_utils.common import build_dci_context
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -104,38 +103,6 @@ EXAMPLES = '''
 # TODO
 RETURN = '''
 '''
-
-
-def _param_from_module_or_env(module, name, default=None):
-    values = [module.params[name.lower()], os.getenv(name.upper())]
-    return next((item for item in values if item is not None), default)
-
-
-def _get_details(module):
-    """Method that retrieves the appropriate credentials. """
-
-    login = _param_from_module_or_env(module, 'dci_login')
-    password = _param_from_module_or_env(module, 'dci_password')
-
-    client_id = _param_from_module_or_env(module, 'dci_client_id')
-    api_secret = _param_from_module_or_env(module, 'dci_api_secret')
-
-    url = _param_from_module_or_env(module, 'dci_cs_url',
-                                   'https://api.distributed-ci.io')
-
-    return login, password, url, client_id, api_secret
-
-
-def _build_dci_context(module):
-    login, password, url, client_id, api_secret = _get_details(module)
-
-    if login is not None and password is not None:
-        return dci_context.build_dci_context(url, login, password, 'Ansible')
-    elif client_id is not None and api_secret is not None:
-        return dci_context.build_signature_context(url, client_id, api_secret,
-                                                   'Ansible')
-    else:
-        module.fail_json(msg='Missing or incomplete credentials.')
 
 
 def module_params_empty(module_params):
