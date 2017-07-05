@@ -12,6 +12,7 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
+from ansible.module_utils.common import build_dci_context
 
 import os
 
@@ -114,38 +115,6 @@ RETURN = '''
 '''
 
 
-def _param_from_module_or_env(module, name, default=None):
-    values = [module.params[name.lower()], os.getenv(name.upper())]
-    return next((item for item in values if item is not None), default)
-
-
-def _get_details(module):
-    """Method that retrieves the appropriate credentials. """
-
-    login = _param_from_module_or_env(module, 'dci_login')
-    password = _param_from_module_or_env(module, 'dci_password')
-
-    client_id = _param_from_module_or_env(module, 'dci_client_id')
-    api_secret = _param_from_module_or_env(module, 'dci_api_secret')
-
-    url = _param_from_module_or_env(module, 'dci_cs_url',
-                                   'https://api.distributed-ci.io')
-
-    return login, password, url, client_id, api_secret
-
-
-def _build_dci_context(module):
-    login, password, url, client_id, api_secret = _get_details(module)
-
-    if login is not None and password is not None:
-        return dci_context.build_dci_context(url, login, password, 'Ansible')
-    elif client_id is not None and api_secret is not None:
-        return dci_context.build_signature_context(url, client_id, api_secret,
-                                                   'Ansible')
-    else:
-        module.fail_json(msg='Missing or incomplete credentials.')
-
-
 def get_remoteci_id(ctx, remoteci_name):
     return dci_remoteci.list(
         ctx,
@@ -191,7 +160,7 @@ def main():
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
-    ctx = _build_dci_context(module)
+    ctx = build_dci_context(module)
 
     topic_list = [module.params['topic'], os.getenv('DCI_TOPIC')]
     topic = next((item for item in topic_list if item is not None), None)
