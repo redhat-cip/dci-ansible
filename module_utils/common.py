@@ -20,8 +20,7 @@ import os
 
 
 def param_from_module_or_env(module, name, default=None):
-    values = [module.params[name.lower()], os.getenv(name.upper())]
-    return next((item for item in values if item is not None), default)
+    return module.params[name.lower()] or os.getenv(name.upper())
 
 
 def get_details(module):

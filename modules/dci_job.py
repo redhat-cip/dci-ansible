@@ -152,9 +152,7 @@ def main():
         module.fail_json(msg='The python dciclient module is required')
 
     ctx = build_dci_context(module)
-
-    topic_list = [module.params['topic'], os.getenv('DCI_TOPIC')]
-    topic = next((item for item in topic_list if item is not None), None)
+    topic = module.params['topic'] or os.getenv('DCI_TOPIC')
 
     # Action required: List all jobs
     # Endpoint called: /jobs GET via dci_job.list()
