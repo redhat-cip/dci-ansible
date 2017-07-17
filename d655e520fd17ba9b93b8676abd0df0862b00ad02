@@ -34,6 +34,24 @@
       "revId": "d655e520fd17ba9b93b8676abd0df0862b00ad02",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_4bd0db53",
+        "filename": "modules/dci_topic.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 155,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-07-17T13:07:36Z",
+      "side": 1,
+      "message": "Come on, you know you love those kind of situation where you start pulling the string for an easy task and end-up with N reviews to make just the single review you wanted initially work.\n\nI count on you to make the review on python-dciclient and having a Depends-On on this one ? :D\n\nThanks \u003c3",
+      "parentUuid": "9aa53dc9_0bf3f30b",
+      "revId": "d655e520fd17ba9b93b8676abd0df0862b00ad02",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
