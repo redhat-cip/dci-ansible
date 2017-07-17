@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9aa53dc9_cb418b3b",
+        "filename": "modules/dci_topic.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 155,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-07-17T06:10:23Z",
+      "side": 1,
+      "message": "A topic component_type can also be updated[1], hence logic should also be added here\n\n[1] https://github.com/redhat-cip/dci-control-server/blob/master/dci/common/schemas.py#L479",
+      "revId": "d655e520fd17ba9b93b8676abd0df0862b00ad02",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
