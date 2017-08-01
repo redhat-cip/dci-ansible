@@ -50,6 +50,9 @@ options:
   label:
     required: false
     description: Topic label
+  component_types:
+    required: false
+    description: Topic component_types
 '''
 
 EXAMPLES = '''
@@ -102,6 +105,7 @@ def main():
             id=dict(type='str'),
             name=dict(type='str'),
             label=dict(type='str'),
+            component_types=dict(type='list'),
         ),
     )
 
@@ -131,7 +135,7 @@ def main():
     # Endpoint called: /topic/<topic_id> GET via dci_topic.get()
     #
     # Get topic informations
-    elif module.params['id'] and not module.params['name'] and not module.params['label']:
+    elif module.params['id'] and not module.params['name'] and not module.params['label'] and not module.params['component_types']:
         res = dci_topic.get(ctx, module.params['id'])
 
     # Action required: Update an existing topic
@@ -149,6 +153,8 @@ def main():
                 kwargs['name'] = module.params['name']
             if module.params['label']:
                 kwargs['label'] = module.params['label']
+            if module.params['component_types']:
+                kwargs['component_types'] = module.params['component_types']
             res = dci_topic.update(ctx, **kwargs)
 
     # Action required: Creat a topic with the specified content
@@ -162,6 +168,8 @@ def main():
         kwargs = {'name': module.params['name']}
         if module.params['label']:
             kwargs['label'] = module.params['label']
+        if module.params['component_types']:
+            kwargs['component_types'] = module.params['component_types']
 
         res = dci_topic.create(ctx, **kwargs)
 
