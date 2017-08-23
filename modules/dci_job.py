@@ -112,6 +112,10 @@ EXAMPLES = '''
     jobdefinition_id: '7a9f71c8-96ee-47d4-929c-23b44e174980'
     comment: 'job created manually'
     components: ['4c282108-5086-454b-8d49-4b1d0345acd9', '4c8ec5c8-ec24-4253-abbf-63a4daddba8b']
+
+ - name: Notify for a specific reason
+   dci_job:
+     notify: "Specific comment"
 '''
 
 # TODO
@@ -227,6 +231,10 @@ def main():
         res = dci_job.upgrade(ctx, job_id=module.params['id'])
         if res.status_code not in [400, 401, 404, 409]:
             res = dci_job.get_full_data(ctx, ctx.last_job_id)
+
+    # Send a notification
+    elif module.params['notify']:
+        res = dci_job.notify(ctx, ctx.last_job_id, mesg=module.params['notify'])
 
     # Manually create the job
     elif module.params['jobdefinition_id']:
