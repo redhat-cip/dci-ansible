@@ -51,6 +51,10 @@ options:
   dest:
     required: true
     description: Path where to drop the retrieved component
+  embed:
+    required: false
+    description:
+      - List of field to embed within the retrieved resource
 '''
 
 EXAMPLES = '''
@@ -121,6 +125,7 @@ def main():
             data=dict(type='dict'),
             topic_id=dict(type='str'),
             path=dict(type='str'),
+            embed=dict(type='list'),
         ),
     )
 
@@ -158,7 +163,10 @@ def main():
     #
     # Get component informations
     elif module.params['id'] and module.params['export_control'] is None:
-        res = dci_component.get(ctx, module.params['id'])
+        kwargs = {}
+        if module.params['embed']:
+            kwargs['embed'] = module.params['embed']
+        res = dci_component.get(ctx, module.params['id'], **kwargs)
 
     # Action required: Update an existing component
     # Endpoint called: /components/<component_id> PUT via dci_component.update()

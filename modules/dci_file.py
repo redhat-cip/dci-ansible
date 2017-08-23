@@ -60,6 +60,10 @@ options:
   content:
     required: false
     description: Contentn of the file to upload
+  embed:
+    required: false
+    description:
+      - List of field to embed within the retrieved resource
 '''
 
 EXAMPLES = '''
@@ -125,6 +129,7 @@ def main():
             job_id=dict(type='str'),
             jobstate_id=dict(type='str'),
             mime=dict(default='text/plain', type='str'),
+            embed=dict(type='list'),
         ),
     )
 
@@ -155,7 +160,10 @@ def main():
     #
     # Get file informations
     elif module.params['id']:
-        res = dci_file.get(ctx, module.params['id'])
+        kwargs = {}
+        if module.params['embed']:
+            kwargs['embed'] = module.params['embed']
+        res = dci_file.get(ctx, module.params['id'], **kwargs)
 
     # Action required: Creat a file with the specified content
     # Endpoint called: /files POST via dci_file.create()

@@ -53,6 +53,10 @@ options:
   component_types:
     required: false
     description: Topic component_types
+  embed:
+    required: false
+    description:
+      - List of field to embed within the retrieved resource
 '''
 
 EXAMPLES = '''
@@ -106,6 +110,7 @@ def main():
             name=dict(type='str'),
             label=dict(type='str'),
             component_types=dict(type='list'),
+            embed=dict(type='list'),
         ),
     )
 
@@ -136,7 +141,10 @@ def main():
     #
     # Get topic informations
     elif module.params['id'] and not module.params['name'] and not module.params['label'] and not module.params['component_types']:
-        res = dci_topic.get(ctx, module.params['id'])
+        kwargs = {}
+        if module.params['embed']:
+            kwargs['embed'] = module.params['embed']
+        res = dci_topic.get(ctx, module.params['id'], **kwargs)
 
     # Action required: Update an existing topic
     # Endpoint called: /topics/<topic_id> PUT via dci_topic.update()

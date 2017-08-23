@@ -56,6 +56,10 @@ options:
   notification:
     required: false
     description: Should the team be notified on jobs failure
+  embed:
+    required: false
+    description:
+      - List of field to embed within the retrieved resource
 '''
 
 EXAMPLES = '''
@@ -113,6 +117,7 @@ def main():
             country=dict(type='str'),
             email=dict(type='str'),
             notification=dict(type='bool'),
+            embed=dict(type='list'),
         ),
     )
 
@@ -149,7 +154,12 @@ def main():
     #
     # Get team informations
     elif module.params['id'] and not module.params['name'] and not module.params['country'] and not module.params['email'] and module.params['notification'] is None:
-        res = dci_team.get(ctx, module.params['id'])
+
+        kwargs = {}
+        if module.params['embed']:
+            kwargs['embed'] = module.params['embed']
+
+        res = dci_team.get(ctx, module.params['id'], **kwargs)
 
     # Action required: Update an existing team
     # Endpoint called: /teams/<team_id> PUT via dci_team.update()

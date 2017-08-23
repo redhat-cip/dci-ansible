@@ -62,6 +62,10 @@ options:
   team_id:
     required: false
     description: ID of the team the user belongs to
+  embed:
+    required: false
+    description:
+      - List of field to embed within the retrieved resource
 '''
 
 EXAMPLES = '''
@@ -118,6 +122,7 @@ def main():
             password=dict(type='str',no_log=True),
             role_id=dict(type='str'),
             team_id=dict(type='str'),
+            embed=dict(type='list'),
         ),
     )
 
@@ -157,7 +162,10 @@ def main():
             not module.params['team_id'] and not module.params['role_id'] and \
             not module.params['password'] and not module.params['email'] and \
             not module.params['fullname']:
-        res = dci_user.get(ctx, module.params['id'])
+        kwargs = {}
+        if module.params['embed']:
+            kwargs['embed'] = module.params['embed']
+        res = dci_user.get(ctx, module.params['id'], **kwargs)
 
     # Action required: Update an user
     # Endpoint called: /users/<user_id> PUT via dci_user.update()

@@ -79,6 +79,10 @@ options:
   team_id:
     required: false
     description: (only with jobdefinition_id) team of the new job
+  embed:
+    required: false
+    description:
+      - List of field to embed within the retrieved resource
 '''
 
 EXAMPLES = '''
@@ -145,6 +149,7 @@ def main():
             jobdefinition_id=dict(type='str'),
             components=dict(type='list', default=[]),
             team_id=dict(type='str'),
+            embed=dict(type='list'),
         ),
     )
 
@@ -187,7 +192,10 @@ def main():
           not module.params['configuration'] and
           not module.params['metadata'] and
           not module.params['upgrade']):
-        res = dci_job.get(ctx, module.params['id'])
+        kwargs = {}
+        if module.params['embed']:
+            kwargs['embed'] = module.params['embed']
+        res = dci_job.get(ctx, module.params['id'], **kwargs)
 
     # Action required: Update an existing job
     # Endpoint called: /jobs/<job_id> PUT via dci_job.update()

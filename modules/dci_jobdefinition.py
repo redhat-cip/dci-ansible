@@ -56,6 +56,10 @@ options:
   component_types:
     required: false
     description: Jobdefinition's component_types
+  embed:
+    required: false
+    description:
+      - List of field to embed within the retrieved resource
 '''
 
 EXAMPLES = '''
@@ -106,6 +110,7 @@ def main():
             topic_id=dict(type='str'),
             comment=dict(type='str'),
             component_types=dict(type='list'),
+            embed=dict(type='list'),
         ),
     )
 
@@ -144,7 +149,10 @@ def main():
     #
     # Get jobdefinition informations
     elif module.params['id'] and not module.params['comment'] and not module.params['component_types']:
-        res = dci_jobdefinition.get(ctx, module.params['id'])
+        kwargs = {}
+        if module.params['embed']:
+            kwargs['embed'] = module.params['embed']
+        res = dci_jobdefinition.get(ctx, module.params['id'], **kwargs)
 
     # Action required: Update an existing jobdefinition
     # Endpoint called: /jobdefinitions/<jobdefinition_id> PUT via dci_jobdefinition.update()

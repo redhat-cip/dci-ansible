@@ -53,6 +53,10 @@ options:
   team_id:
     required: false
     description: Team to which the test will be attached
+  embed:
+    required: false
+    description:
+      - List of field to embed within the retrieved resource
 '''
 
 EXAMPLES = '''
@@ -96,6 +100,7 @@ def main():
             name=dict(type='str'),
             data=dict(type='dict'),
             team_id=dict(type='str'),
+            embed=dict(type='list'),
         ),
     )
 
@@ -119,7 +124,10 @@ def main():
     #
     # Get test informations
     elif module.params['id']:
-        res = dci_test.get(ctx, module.params['id'])
+        kwargs = {}
+        if module.params['embed']:
+            kwargs['embed'] = module.params['embed']
+        res = dci_test.get(ctx, module.params['id'], **kwargs)
 
     # Action required: Create a test with the specified content
     # Endpoint called: /tests POST via dci_test.create()

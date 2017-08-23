@@ -53,6 +53,10 @@ options:
   team_id:
     required: false
     description: ID of the team the remoteci belongs to
+  embed:
+    required: false
+    description:
+      - List of field to embed within the retrieved resource
 '''
 
 EXAMPLES = '''
@@ -109,6 +113,7 @@ def main():
             name=dict(type='str'),
             data=dict(type='dict'),
             team_id=dict(type='str'),
+            embed=dict(type='list'),
         ),
     )
 
@@ -145,7 +150,10 @@ def main():
     #
     # Get remoteci informations
     elif module.params['id'] and not module.params['name'] and not module.params['data'] and not module.params['team_id']:
-        res = dci_remoteci.get(ctx, module.params['id'])
+        kwargs = {}
+        if module.params['embed']:
+            kwargs['embed'] = module.params['embed']
+        res = dci_remoteci.get(ctx, module.params['id'], **kwargs)
 
     # Action required: Update an existing remoteci
     # Endpoint called: /remotecis/<remoteci_id> PUT via dci_remoteci.update()
