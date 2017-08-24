@@ -51,7 +51,10 @@ options:
     description: Topic for which the job will be schedule
   remoteci:
     required: false
-    description: RemoteCI for which the job will be schedule
+    description: name of the RemoteCI for which the job will be schedule
+  remoteci_id:
+    required: false
+    description: id of the RemoteCI for which the job will be schedule
   id:
     required: false
     description: ID of the job
@@ -90,6 +93,10 @@ EXAMPLES = '''
   dci_job:
     remoteci: 'MyRCI'
 
+- name: Schedule a new job using the remoteci ID
+  dci_job:
+    remoteci_id: '4a8a08ed-57da-4ee3-b5ad-ec69ea4362d8'
+
 - name: Update job
   dci_job:
     id: '{{ job_id }}'
@@ -123,10 +130,17 @@ RETURN = '''
 '''
 
 
-def get_remoteci_id(ctx, remoteci_name):
-    return dci_remoteci.list(
-        ctx,
-        where='name:' + remoteci_name).json()['remotecis'][0]['id']
+def get_remoteci_id(ctx, params):
+    if 'remoteci_id' in params:
+        return params['remoteci_id']
+    elif 'remoteci' in parals:
+        return dci_remoteci.list(
+            ctx,
+            where='name:' + params['remoteci']).json()['remotecis'][0]['id']
+    else:
+        module.fail_json(msg=(
+            "'remoteci_id' or 'remoteci' parameter "
+            "should be defined"))
 
 
 def main():
@@ -145,6 +159,7 @@ def main():
             id=dict(type='str'),
             topic=dict(required=False, type='str'),
             remoteci=dict(type='str'),
+            remoteci_id=dict(type='id'),
             comment=dict(type='str'),
             status=dict(type='str'),
             configuration=dict(type='dict'),
@@ -232,15 +247,11 @@ def main():
         if res.status_code not in [400, 401, 404, 409]:
             res = dci_job.get_full_data(ctx, ctx.last_job_id)
 
-    # Send a notification
-    elif module.params['notify']:
-        res = dci_job.notify(ctx, ctx.last_job_id, mesg=module.params['notify'])
-
     # Manually create the job
     elif module.params['jobdefinition_id']:
         res = dci_job.create(
             ctx,
-            remoteci_id=get_remoteci_id(ctx, module.params['remoteci']),
+            remoteci_id=get_remoteci_id(ctx, module.params),
             team_id=module.params['team_id'],
             jobdefinition_id=module.params['jobdefinition_id'],
             components=module.params['components'],
@@ -257,7 +268,7 @@ def main():
 
         res = dci_job.schedule(
             ctx,
-            remoteci_id=get_remoteci_id(ctx, module.params['remoteci']),
+            remoteci_id=get_remoteci_id(ctx, module.params),
             topic_id=topic_id)
         if res.status_code not in [400, 401, 404, 409]:
             res = dci_job.get_full_data(ctx, ctx.last_job_id)
