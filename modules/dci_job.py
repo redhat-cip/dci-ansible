@@ -149,6 +149,7 @@ def main():
             status=dict(type='str'),
             configuration=dict(type='dict'),
             metadata=dict(type='dict'),
+            notify=dict(type='dict'),
             upgrade=dict(type='bool'),
             jobdefinition_id=dict(type='str'),
             components=dict(type='list', default=[]),
