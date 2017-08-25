@@ -1,0 +1,8 @@
+Code-Review+2: Cédric Lecomte <ced.lecomte@gmail.com>
+Workflow+1: Cédric Lecomte <ced.lecomte@gmail.com>
+Verified+2: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-by: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-at: Fri, 25 Aug 2017 07:40:51 +0000
+Reviewed-on: https://softwarefactory-project.io/r/9362
+Project: dci-ansible
+Branch: refs/heads/master
