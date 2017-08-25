@@ -221,7 +221,7 @@ def main():
                 kwargs['configuration'] = module.params['configuration']
             if module.params['metadata']:
                 for k, v in module.params['metadata'].items():
-                    dci_job.set_meta(ctx, module.params['id'], k, v)
+                    dci_job.set_meta(ctx, module.params['id'], k, str(v))
             res = dci_job.update(ctx, **kwargs)
 
     # Action required: Schedule an upgrade job
