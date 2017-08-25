@@ -49,9 +49,6 @@ options:
   topic:
     required: false
     description: Topic for which the job will be schedule
-  remoteci:
-    required: false
-    description: RemoteCI for which the job will be schedule
   id:
     required: false
     description: ID of the job
@@ -88,7 +85,7 @@ options:
 EXAMPLES = '''
 - name: Schedule a new job
   dci_job:
-    remoteci: 'MyRCI'
+    topic: 'OSP10'
 
 - name: Update job
   dci_job:
@@ -108,7 +105,6 @@ EXAMPLES = '''
 - name: Manually create a job
   dci_job:
     topic: 'OSP8'
-    remoteci: 'FutureVille1'
     jobdefinition_id: '7a9f71c8-96ee-47d4-929c-23b44e174980'
     comment: 'job created manually'
     components: ['4c282108-5086-454b-8d49-4b1d0345acd9', '4c8ec5c8-ec24-4253-abbf-63a4daddba8b']
@@ -121,12 +117,6 @@ EXAMPLES = '''
 # TODO
 RETURN = '''
 '''
-
-
-def get_remoteci_id(ctx, remoteci_name):
-    return dci_remoteci.list(
-        ctx,
-        where='name:' + remoteci_name).json()['remotecis'][0]['id']
 
 
 def main():
@@ -144,7 +134,6 @@ def main():
             #
             id=dict(type='str'),
             topic=dict(required=False, type='str'),
-            remoteci=dict(type='str'),
             comment=dict(type='str'),
             status=dict(type='str'),
             configuration=dict(type='dict'),
@@ -162,7 +151,6 @@ def main():
         module.fail_json(msg='The python dciclient module is required')
 
     ctx = build_dci_context(module)
-    topic = module.params['topic'] or os.getenv('DCI_TOPIC')
 
     # Action required: List all jobs
     # Endpoint called: /jobs GET via dci_job.list()
@@ -241,7 +229,7 @@ def main():
     elif module.params['jobdefinition_id']:
         res = dci_job.create(
             ctx,
-            remoteci_id=get_remoteci_id(ctx, module.params['remoteci']),
+            remoteci_id=module.params['dci_client_id'],
             team_id=module.params['team_id'],
             jobdefinition_id=module.params['jobdefinition_id'],
             components=module.params['components'],
@@ -258,7 +246,7 @@ def main():
 
         res = dci_job.schedule(
             ctx,
-            remoteci_id=get_remoteci_id(ctx, module.params['remoteci']),
+            remoteci_id=module.params['dci_client_id'],
             topic_id=topic_id)
         if res.status_code not in [400, 401, 404, 409]:
             res = dci_job.get_full_data(ctx, ctx.last_job_id)

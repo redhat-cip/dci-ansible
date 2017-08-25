@@ -23,27 +23,15 @@ def param_from_module_or_env(module, name, default=None):
     return module.params[name.lower()] or os.getenv(name.upper())
 
 
-def get_details(module):
-    """Method that retrieves the appropriate credentials. """
-
-    login = param_from_module_or_env(module, 'dci_login')
-    password = param_from_module_or_env(module, 'dci_password')
-
+def build_dci_context(module):
     client_id = param_from_module_or_env(module, 'dci_client_id')
+
     api_secret = param_from_module_or_env(module, 'dci_api_secret')
 
     url = param_from_module_or_env(module, 'dci_cs_url',
-                                    'https://api.distributed-ci.io')
+                                   'https://api.distributed-ci.io')
 
-    return login, password, url, client_id, api_secret
-
-
-def build_dci_context(module):
-    login, password, url, client_id, api_secret = get_details(module)
-
-    if login is not None and password is not None:
-        return dci_context.build_dci_context(url, login, password, 'Ansible')
-    elif client_id is not None and api_secret is not None:
+    if client_id is not None and api_secret is not None:
         return dci_context.build_signature_context(url, client_id, api_secret,
                                                    'Ansible')
     else:
