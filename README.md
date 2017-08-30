@@ -36,26 +36,13 @@ so a user can freely interact with DCI.
 
 ### dcirc.sh
 
-In order to run your playbook with the DCI ansible modules and callback one needs to source a file to export ones credentials.
-
-The file should look like:
-
-```
-export DCI_LOGIN=jdoe
-export DCI_PASSWORD=p4ssw0rd!
-export DCI_CS_URL=https://api.distributed-ci.io
-```
-
-`DCI_CS_URL` will default to 'https://api.distributed-ci.io' if not specified.
-
-To use the new remoteci authentication method (to avoid having user-specific credentials for a remoteci), use the following parameters:
+In order to run your playbook with the DCI ansible modules and callback one needs to source a file to export credentials.
 
 ```
 export DCI_CLIENT_ID=<remoteci_id>
 export DCI_API_SECRET=<remoteci_api_secret>
 export DCI_CS_URL=https://api.distributed-ci.io
 ```
-
 
 ### dci_job
 
@@ -67,11 +54,10 @@ Its usage looks like:
 - name: Schedule a new job
   dci_job:
     topic: RDO-Ocata
-    remoteci: dci-env-ovb-1
   register: job_informations
 ```
 
-This sample will schedule a new job for the remoteci `dci-env-ovb-1` and with the topic `RDO-Ocata`. The json result returned by the API will be available in the job_informations variable, to be used freely by the user.
+This sample will schedule a new job for the topic `RDO-Ocata`  and for the remoteci define by `DCI_CLIENT_ID` env variable.
 
 
 ### dci_component
