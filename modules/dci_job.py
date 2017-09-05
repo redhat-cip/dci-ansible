@@ -67,15 +67,12 @@ options:
   upgrade:
     required: false
     description: Schedule an upgrade job
-  jobdefinition_id:
-    required: false
-    description: request the creation of the job with this jobdefinition
   components:
     required: false
-    description: (only with jobdefinition_id) list of ID to associated to the new job
+    description: list of ID to associated to the new job
   team_id:
     required: false
-    description: (only with jobdefinition_id) team of the new job
+    description: team of the new job
   embed:
     required: false
     description:
@@ -105,7 +102,6 @@ EXAMPLES = '''
 - name: Manually create a job
   dci_job:
     topic: 'OSP8'
-    jobdefinition_id: '7a9f71c8-96ee-47d4-929c-23b44e174980'
     comment: 'job created manually'
     components: ['4c282108-5086-454b-8d49-4b1d0345acd9', '4c8ec5c8-ec24-4253-abbf-63a4daddba8b']
 
@@ -140,7 +136,6 @@ def main():
             metadata=dict(type='dict'),
             notify=dict(type='dict'),
             upgrade=dict(type='bool'),
-            jobdefinition_id=dict(type='str'),
             components=dict(type='list', default=[]),
             team_id=dict(type='str'),
             embed=dict(type='list'),
@@ -226,12 +221,13 @@ def main():
         res = dci_job.notify(ctx, ctx.last_job_id, mesg=module.params['notify'])
 
     # Manually create the job
-    elif module.params['jobdefinition_id']:
+    elif module.params['components']:
+        topic_id = dci_topic.list(ctx, where='name:' + module.params['topic']).json()['topics'][0]['id']
         res = dci_job.create(
             ctx,
             remoteci_id=ctx.session.auth.client_id,
             team_id=module.params['team_id'],
-            jobdefinition_id=module.params['jobdefinition_id'],
+            topic_id=topic_id,
             components=module.params['components'],
             comment=module.params['comment'])
         if res.status_code == 201:
