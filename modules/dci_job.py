@@ -58,9 +58,6 @@ options:
   status:
     required: false
     description: Status the job should be entitled
-  configuration:
-    required: false
-    description: Configuration attached to the job
   metadata:
     required: false
     description: Metadatas attached to the job
@@ -132,7 +129,6 @@ def main():
             topic=dict(required=False, type='str'),
             comment=dict(type='str'),
             status=dict(type='str'),
-            configuration=dict(type='dict'),
             metadata=dict(type='dict'),
             notify=dict(type='dict'),
             upgrade=dict(type='bool'),
@@ -177,7 +173,6 @@ def main():
     elif (module.params['id'] and
           not module.params['comment'] and
           not module.params['status'] and
-          not module.params['configuration'] and
           not module.params['metadata'] and
           not module.params['upgrade']):
         kwargs = {}
@@ -200,8 +195,6 @@ def main():
                 kwargs['comment'] = module.params['comment']
             if module.params['status']:
                 kwargs['status'] = module.params['status']
-            if module.params['configuration']:
-                kwargs['configuration'] = module.params['configuration']
             if module.params['metadata']:
                 for k, v in module.params['metadata'].items():
                     dci_job.set_meta(ctx, module.params['id'], k, str(v))
