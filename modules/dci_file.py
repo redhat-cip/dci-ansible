@@ -13,6 +13,7 @@
 
 from ansible.module_utils.basic import *
 from ansible.module_utils.common import build_dci_context, module_params_empty
+import os
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -189,15 +190,14 @@ def main():
         else:
             name = module.params['name']
 
+        kwargs = {'name': name, 'mime': module.params['mime']}
         if module.params['path']:
-            try:
-                content = open(module.params['path'], 'r')
-            except IOError:
-                module.fail_json(msg='The path specified cannot be read')
+            file_path = module.params['path']
+            if not os.path.exists(file_path):
+                module.fail_json(msg='%s: No such file' % file_path)
+            kwargs['file_path'] = file_path
         else:
-            content = module.params['content']
-
-        kwargs = {'name': name, 'content': content, 'mime': module.params['mime']}
+            kwargs['content'] = module.params['content']
 
         if module.params['job_id']:
             kwargs['job_id'] = module.params['job_id']
