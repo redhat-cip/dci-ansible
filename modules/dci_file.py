@@ -191,8 +191,8 @@ def main():
 
         if module.params['path']:
             try:
-                content = open(module.params['path'], 'r')
-            except IOError:
+                content = open(module.params['path'], 'r').read()
+            except IOError as e:
                 module.fail_json(msg='The path specified cannot be read')
         else:
             content = module.params['content']
