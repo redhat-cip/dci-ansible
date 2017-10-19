@@ -1,0 +1,12 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Create foo team
+      dci_team:
+        name: foo
+      register: foo_team
+
+    - name: Delete foo team
+      dci_team:
+        id: '{{ foo_team.team.id }}'
+        state: absent
