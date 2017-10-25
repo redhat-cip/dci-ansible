@@ -1,0 +1,8 @@
+Code-Review+2: Yanis Guenane <yguenane@gmail.com>
+Workflow+1: Yanis Guenane <yguenane@gmail.com>
+Verified+2: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-by: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-at: Wed, 25 Oct 2017 16:27:04 +0000
+Reviewed-on: https://softwarefactory-project.io/r/9945
+Project: dci-ansible
+Branch: refs/heads/master
