@@ -1,219 +1,216 @@
-# dci-ansible
+# Ansible modules to interact with Distributed-CI (DCI)
 
-This project aims to provide the necessary Ansible actions and an Ansible callback
-so a user can freely interact with DCI.
+![](https://img.shields.io/badge/ansible-2.4.0-green.svg?style=flat) ![](https://img.shields.io/badge/license-Apache2.0-blue.svg?style=flat) ![](https://img.shields.io/badge/python-2.7,3.5-green.svg?style=flat)
 
-## Installation
+A set of [Ansible](https://www.ansible.com) modules and callbacks to ease the interaction with the [Distributed-CI](https://docs.distributed-ci.io) platform.
 
-**Note**: There is also a package for it.
+[Distributed-CI (DCI)](https://docs.distributed-ci.io) is a platform that allows a company to extend its CI coverage beyond its own walls; allowing them to let third-party partners contribute back their CI results into the platform.
 
-1. Create the necessary folder.
+DCI comes as a webservice that exposes its resources via a REST API. The [dci-ansible](https://github.com/redhat-cip/dci-ansible) project aims to map each of those REST resources to an Ansible module.
+
+## Table of Contents
+
+- [Get Started](#get-started)
+  * [Installation](#installation)
+    + [Packages](#packages)
+    + [Sources](#sources)
+  * [How to use it](#how-to-use-it)
+    + [Authentication](#authentication)
+    + [File Organization](#file-organization)
+- [Contributing](#contributing)
+  + [Running Tests](#running-tests)
+- [License](#license)
+- [Contact](#contact)
+
+## Get Started
+
+### Installation
+
+There are two ways to  install [dci-ansible](https://github.com/redhat-cip/dci-ansible), either via rpm packages or directly via Github source code.
+
+Unless you are looking to contribute to this project, we recommend you use the rpm packages.
+
+#### Packages
+
+Officially supported platforms:
+
+  * CentOS (latest version)
+  * RHEL (latest version)
+  * Fedora (latest version)
+
+If you're looking to install those modules on a different Operating System, please install it from [source]()
+
+First, you need to install the official Distributed-CI package repository
 
 ```
-#> mkdir /usr/share/dci/
+#> yum install https://packages.distributed-ci.io/dci-release.el7.noarch.rpm
 ```
 
-2. Copy the modules and callback folders in the previously created folder.
+Then, install the package
 
 ```
-#> git clone https://github.com/Spredzy/dci-ansible.git
-#> cd dci-ansible
-#> cp -r modules /usr/share/dci
-#> cp -r callback /usr/share/dci
+#> yum install dci-ansible
 ```
 
-3. Create a folder where the ansible related items will be located, copy the ansible.cfg file and proceed as usual with your ansible stuff.
+#### Sources
+
+Define a folder where you would like to checkout the code and clone the repository.
 
 ```
-#> mkdir ~/dci_agent
-#> cp ansible.cfg ~/dci_agent
+#> cd /usr/share/dci && git clone https://github.com/redhat-cip/dci-ansible.git
 ```
 
-**Note:** Some samples are available in the samples directory to get you started with.
+### How to use it
+
+#### Authentication
+
+The modules provided by this project covers all the endpoints Distributed-CI offers.
+
+This means that this project allows one to interact with Distributed-CI for various use-cases:
+
+  * To act as an agent: Scheduling jobs, uploading logs and tests results.
+  * To act as a feeder: Creating Topics, Components and uploading Files.
+  * To complete adminitrative tasks: Creating Teams, Users, RemoteCIs.
+  * And more...
+
+For any of the modules made available to work with the Distributed-CI API, one needs to authenticate itself first.
+
+Each module relies on 3 environment variables to authenticate the author of the query:
+
+  * `DCI_CLIENT_ID`: The ID of the resource that wish to authenticate (RemoteCI, User, Feeder)
+  * `DCI_API_SECRET`: The API Secret of the resource that wish to authenticate
+  * `DCI_CS_URL`: The API address (default to https://api.distributed-ci.io)
 
 
-## Usage
-
-### dcirc.sh
-
-In order to run your playbook with the DCI ansible modules and callback one needs to source a file to export credentials.
+The recommended way is to retrieve the `dcirc.sh` file directly from the https://www.distributed-ci.io or create it yourself in the same folder as your playbook:
 
 ```
-export DCI_CLIENT_ID=<remoteci_id>
-export DCI_API_SECRET=<remoteci_api_secret>
+#> cat > dcirc.sh <<EOF
+export DCI_CLIENT_ID=<resource_id>
+export DCI_API_SECRET=<resource_api_secret>
 export DCI_CS_URL=https://api.distributed-ci.io
+EOF
 ```
 
-### dci_job
-
-`dci_job` is an ansible module to schedule a new job with DCI. It will rely on the exported environment variable to authenticate and retrieve information from the DCI control server.
-
-Its usage looks like:
+And then run the playbook the following way:
 
 ```
-- name: Schedule a new job
-  dci_job:
-    topic: RDO-Ocata
-  register: job_informations
+#> source dcirc.sh && ansible-playbook playbook.yml
 ```
 
-This sample will schedule a new job for the topic `RDO-Ocata`  and for the remoteci define by `DCI_CLIENT_ID` env variable.
-
-
-### dci_component
-
-`dci_component` is an ansible module to download a component from DCI. It will rely on the exported environment variable to authenticate and retrieve information from the DCI control server.
-
-Its usage looks like:
+By now my `dci-test/` folder looks like this:
 
 ```
-- hosts: localhost
-  vars:
-    components: "{{ job_informations['components'] }}"
-  tasks:
-    - name: retrieve components
-      dci_component:
-        dest: '/srv/data/{{ item["id"] }}.tar'
-        component_id: '{{ item["id"] }}'
-      with_items: "{{ components }}"
+#> ls -l dci-test/
+total 837
+-rw-rw-r--. 1 jdoe jdoe 614 Oct 19 14:51 dcirc.sh
+-rw-rw-r--. 1 jdoe jdoe 223 Oct 19 14:51 playbook.yml
 ```
 
-This sample will download the components from the DCI control-server and write them to the `dest` path.
+#### File organization
 
-### dci_file
+Since the modules of dci-ansible are not part of Ansible, one needs to tell Ansible where to look for the extra modules and callbacks this project is providing.
+This is done via the [Ansible configuratin file](http://docs.ansible.com/ansible/latest/intro_configuration.html).
 
-`dci_file` is an ansible module to attach a file to a job. It will rely on the exported environment variable to authenticate and retrieve information from the DCI control server.
-
-Its usage looks like:
+The Distributed-CI team recommends that you place an `ansible.cfg` file in the same folder as your playbook with the following content:
 
 ```
-- hosts: localhost
-  vars:
-    job_id: "{{ job_informations['job_id'] }}"
-  tasks:
-    - name: attach files to job
-      dci_file:
-        path: '{{ item.path }}'
-        name: '{{ item.name }}'
-        job_id: '{{ job_id }}'
-      with_items:
-        - {'name': 'SSHd Config', 'path': '/etc/ssh/sshd_config'}
-        - {'name': 'My OpenStack Conf', 'path': '/etc/openstack/my.conf'}
+[defaults]
+library            = /usr/share/dci/modules/
+module_utils       = /usr/share/dci/module_utils/
+callback_whitelist = dci
+callback_plugins   = /usr/share/dci/callback/
 ```
 
-This sample will attach the two files listed to this specific job.
+**Note**: If you installed the modules from source, please update the pathes accordingly.
 
-### Basic sample
+By now my `dci-test/` folder looks like this:
+
+```
+#> ls -l dci-test/
+total 1014
+-rw-rw-r--. 1 jdoe jdoe 177 Oct 19 14:51 ansible.cfg
+-rw-rw-r--. 1 jdoe jdoe 614 Oct 19 14:51 dcirc.sh
+-rw-rw-r--. 1 jdoe jdoe 223 Oct 19 14:51 playbook.yml
+```
+
+### Samples
+
+The following examples will highlight how to interact with a resource. The remoteci resource will be taken as an example. The same pattern applies to all Distributed-CI resources,
+
+  * Create a RemoteCI
 
 ```
 ---
 - hosts: localhost
   tasks:
-    - name: Schedule a new job
-      dci_job:
-        topic: 'OSP8'
-        remoteci: 'dci-env-ovb-1'
-      register: job_informations
-
-- hosts: localhost
-  vars:
-    dci_status: 'new'
-  tasks:
-    - name: echo 'New'
-      shell: echo 'New'
-
-- hosts: localhost
-  vars:
-    dci_status: 'pre-run'
-    dci_comment: 'Pre-run state commands'
-  tasks:
-    - name: echo 'Pre-run'
-      shell: echo 'pre-run'
-
-- hosts: localhost
-  vars:
-    dci_status: 'running'
-    dci_comment: 'Running state commands'
-  tasks:
-    - name: echo 'Running'
-      shell: echo 'Running'
-
-- hosts: localhost
-  vars:
-    dci_status: 'post-run'
-    dci_comment: 'Post-run state commands'
-  tasks:
-    - name: echo 'Post-run'
-      shell: echo 'Post-run'
-
-- hosts: localhost
-  vars:
-    dci_status: 'success'
-    dci_comment: 'Success state commands'
-  tasks:
-    - name: echo 'Success'
-      shell: echo 'Succes'
+    - name: Create a RemoteCI
+      dci_remoteci:
+        name: MyRemoteCI
 ```
 
-This basic sample aims to highlight the overall workflow of a run.
-
-  * Schedule a new job
-  * Each new play create a new status
-  * Each command output is send to the DCI CS attach with a new jobstate
-
-The above exemple isn't really usefull to use with DCI as it does nothing related
-to components.
-
-### More complicated sample
+  * List all RemoteCI
 
 ```
 ---
 - hosts: localhost
   tasks:
-    - name: Schedule a new job
-      dci_job:
-        topic: 'OSP8'
-        remoteci: 'dci-env-ovb-1'
-      register: job_informations
-
-- hosts: localhost
-  vars:
-    dci_status: 'new'
-    dci_comment: 'Creating OSP 8 local mirrors and synchronizing them'
-    components: "{{ job_informations['components'] }}"
-    job_id: "{{ job_informations['job_id'] }}"
-  tasks:
-    - name: Ensure proper directories are created
-      file:
-        path: '/srv/data/{{ job_id }}'
-        state: directory
-      with_items: "{{ components }}"
-
-    - name: Retrieve component
-      dci_component:
-        dest: '/srv/data/{{ item["id"] }}.tar'
-        component_id: '{{ item["id"] }}'
-      with_items: "{{ components }}"
-
-    - name: Unarchive component
-      unarchive:
-        src: '/srv/data/{{ item["id"] }}.tar'
-        dest: '/srv/data/{{ job_id }}'
-        remote_src: True
-      with_items: "{{ components }}"
-
-- hosts: localhost
-  vars:
-    dci_status: 'pre-run'
-    dci_comment: 'Pre-run state commands'
-  tasks:
-    - name: echo 'Pre-run'
-      shell: echo 'pre-run'
-
-[...]
+    - name: List all RemoteCIs
+      dci_remoteci:
 ```
 
-This sample shows how one can actually retrieve the component and create the needed local repository to benefit
-from the latest snapshots.
+  * Update a RemoteCI
 
-More example are available in `samples/`
+```
+---
+- hosts: localhost
+  tasks:
+    - name: Update a RemoteCIs
+      dci_remoteci:
+        id: <remoteciid>
+        name: NewName
+```
+
+  * Delete a RemoteCI
+
+```
+---
+- hosts: localhost
+  tasks:
+    - name: Delete a RemoteCIs
+      dci_remoteci:
+        id: <remoteciid>
+        state: absent
+```
+
+Real life scenarios examples are available in the [samples/](samples/) directory.
+
+## Contributing
+
+We'd love to get contributions from you!
+
+If you'd like to report a bug or suggest new ideas you can do it [here](https://github.com/redhat-cip/dci-ansible/issues/new).
+
+If you'd like to contribute code back to dci-ansible, our code is hosted on [Software Factory](https://softwarefactory-project.io/sf/welcome.html) and then mirrored on Github.
+[Software Factory](https://softwarefactory-project.io/sf/welcome.html) is Gerrit based, if you don't feel comfortable with the workflow or have any question, feel free to ping someone on [IRC](#contact).
+
+
+### Running tests
+
+Before you can run test you need to get familiarized with the [dci-dev-env](https://github.com/redhat-cip/dci-dev-env) project.
+
+[dci-dev-env](https://github.com/redhat-cip/dci-dev-env) is a Docker based environment that will deploy a Distributed-CI Control Server API, the UI and more.
+Once deployed locally, you'll be able to run the test suite against this deployment.
+
+To run the test, ensure the api is running by running `docker ps` and then simply run `./run_tests.sh` in the [tests/](tests/) folder.
+
+
+## License
+
+Apache License, Version 2.0 (see [LICENSE](LICENSE) file)
+
+## Contact
+
+Email: Distributed-CI Team  <distributed-ci@redhat.com>
+
+IRC: #distributed-ci on Freenode
