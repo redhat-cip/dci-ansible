@@ -218,7 +218,6 @@ def main():
         topic_id = dci_topic.list(ctx, where='name:' + module.params['topic']).json()['topics'][0]['id']
         res = dci_job.create(
             ctx,
-            remoteci_id=ctx.session.auth.client_id,
             team_id=module.params['team_id'],
             topic_id=topic_id,
             components=module.params['components'],
@@ -235,7 +234,6 @@ def main():
 
         res = dci_job.schedule(
             ctx,
-            remoteci_id=ctx.session.auth.client_id,
             topic_id=topic_id)
         if res.status_code not in [400, 401, 404, 409]:
             res = dci_job.get_full_data(ctx, ctx.last_job_id)
