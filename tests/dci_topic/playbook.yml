@@ -1,0 +1,48 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Create the OSPX topic
+      dci_topic:
+        name: OSPX
+        component_types:
+          - osp_puddles
+      register: ospx_topic
+
+    - name: Retrieve all topics
+      dci_topic:
+      register: all_topics
+
+    - name: Ensure ospx topic exists
+      assert:
+        that:
+          - all_topics.topics[0].name == 'OSPX'
+
+    - name: Retrieve ospx topic
+      dci_topic:
+        id: '{{ ospx_topic.topic.id }}'
+      register: ospx_topic
+
+    - name: Ensure ospx topic exists
+      assert:
+        that:
+          - ospx_topic.topic.name == 'OSPX'
+
+    - name: Update ospx topic
+      dci_topic:
+        id: '{{ ospx_topic.topic.id }}'
+        name: OSPX2
+
+    - name: Retrieve ospx topic
+      dci_topic:
+        id: '{{ ospx_topic.topic.id }}'
+      register: ospx_topic
+
+    - name: Ensure ospx topic changed
+      assert:
+        that:
+          - ospx_topic.topic.name == 'OSPX2'
+
+    - name: Delete ospx topic
+      dci_topic:
+        id: '{{ ospx_topic.topic.id }}'
+        state: absent

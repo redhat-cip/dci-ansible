@@ -1,0 +1,52 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Create the OSPX topic
+      dci_topic:
+        name: OSPX
+        component_types:
+          - osp_puddles
+      register: ospx_topic
+
+    - name: Create a DCI Component
+      dci_component:
+        name: OSP10-2017.10.08
+        type: osp_puddles
+        topic_id: '{{ ospx_topic.topic.id }}'
+      register: ospx_component
+
+    - name: Retrieve ospx component
+      dci_component:
+        id: '{{ ospx_component.component.id }}'
+      register: ospx_component
+
+    - name: Ensure ospx component exists
+      assert:
+        that:
+          - ospx_component.component.name == 'OSP10-2017.10.08'
+          - ospx_component.component.export_control == True
+
+    - name: Update ospx component
+      dci_component:
+        id: '{{ ospx_component.component.id }}'
+        export_control: False
+
+    - name: Retrieve ospx component
+      dci_component:
+        id: '{{ ospx_component.component.id }}'
+      register: ospx_component
+
+    - name: Ensure ospx component changed
+      assert:
+        that:
+          - ospx_component.component.export_control == False
+
+    - name: Delete ospx component
+      dci_component:
+        id: '{{ ospx_component.component.id }}'
+        state: absent
+
+    - name: Delete ospx topic
+      dci_topic:
+        id: '{{ ospx_topic.topic.id }}'
+        state: absent
