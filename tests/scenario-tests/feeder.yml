@@ -1,0 +1,37 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Retrieve topics
+      dci_topic:
+      register: all_topics
+
+    - name: Create new component
+      dci_component:
+        name: RH7-RHOS-13.0-2018-01-13
+        type: puddles
+        canonical_project_name: RH7-RHOS-13.0-2018-01-13
+        url: https://www.example.com
+        topic_id: '{{ all_topics.topics[0].id }}'
+      register: component
+
+    - name: Register content of the uploaded file
+      command: "cat {{ lookup('env', 'PWD')  }}/data/content"
+      register: component_file_before_upload
+
+    - name: Upload the component content
+      dci_component:
+        id: '{{ component.component.id }}'
+        path: "{{ lookup('env', 'PWD')  }}/data/content"
+
+    - name: Download component content
+      dci_component:
+        id: '{{ component.component.id }}'
+        dest: "{{ lookup('env', 'PWD')  }}/content.download"
+
+    - name: Register content of the download file
+      command: "cat {{ lookup('env', 'PWD')  }}/content.download"
+      register: component_file_after_download
+
+    - name: Ensure proper file has been downloaded
+      assert:
+        that: component_file_before_upload.stdout == component_file_after_download.stdout

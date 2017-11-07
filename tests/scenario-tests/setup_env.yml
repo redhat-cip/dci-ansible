@@ -1,0 +1,73 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Retrieve PRODUCT_OWNER role
+      dci_role:
+        where: label:PRODUCT_OWNER
+      register: po_role
+
+    - name: Create Product Team
+      dci_team:
+        name: OpenStack
+      register: openstack_team
+
+    - name: Create Product
+      dci_product:
+        name: OpenStack
+        description: OpenStack is a free and open-source software platform for cloud computing,
+        team_id: '{{ openstack_team.team.id }}'
+      register: openstack_product
+
+    - name: Create an OSP13 topic
+      dci_topic:
+        name: OSP13
+        component_types:
+          - puddles
+        product_id: '{{ openstack_product.product.id }}'
+      register: openstack_topic
+
+    - name: Attach OSP13 team to OSP13 topic
+      dci_topic:
+        id: '{{ openstack_topic.topic.id }}'
+        members:
+          - '{{ openstack_team.team.id }}'
+
+    - name: Create Product Owner for OpenStack
+      dci_user:
+        name: openstack-po
+        email: openstack-po@distributed-ci.io
+        password: Apassword
+        role_id: '{{ po_role.roles[0].id }}'
+        team_id: '{{ openstack_team.team.id }}'
+
+    - name: Create a feeder for the OpenStack team
+      dci_feeder:
+        name: OSP13
+        team_id: '{{ openstack_team.team.id }}'
+      register: osp13_feeder
+
+    - name: Create a remoteci for the OpenStack team
+      dci_remoteci:
+        name: OSP13
+        team_id: '{{ openstack_team.team.id }}'
+      register: osp13_remoteci
+
+    - name: Generate the feeder.sh file
+      blockinfile:
+        path: "{{ lookup('env', 'PWD')  }}/feeder.sh"
+        mode: 0755
+        create: yes
+        content: |
+          export DCI_CLIENT_ID=feeder/{{ osp13_feeder.feeder.id }}
+          export DCI_API_SECRET={{ osp13_feeder.feeder.api_secret }}
+          export DCI_CS_URL=http://127.0.0.1:5000
+
+    - name: Generate the remoteci.sh file
+      blockinfile:
+        path: "{{ lookup('env', 'PWD')  }}/remoteci.sh"
+        mode: 0755
+        create: yes
+        content: |
+          export DCI_CLIENT_ID=remoteci/{{ osp13_remoteci.remoteci.id }}
+          export DCI_API_SECRET={{ osp13_remoteci.remoteci.api_secret }}
+          export DCI_CS_URL=http://127.0.0.1:5000
