@@ -53,6 +53,9 @@ options:
   component_types:
     required: false
     description: Topic component_types
+  product_id:
+    required: false
+    description: The product the topic belongs to
   embed:
     required: false
     description:
@@ -69,6 +72,7 @@ EXAMPLES = '''
   dci_topic:
     name: 'Soft42'
     label: 'The latest version of Soft with the 42 feature'
+    product_id: XXX
 
 
 - name: Get topic information
@@ -109,6 +113,7 @@ def main():
             id=dict(type='str'),
             name=dict(type='str'),
             label=dict(type='str'),
+            product_id=dict(type='str'),
             component_types=dict(type='list'),
             embed=dict(type='list'),
         ),
@@ -140,7 +145,7 @@ def main():
     # Endpoint called: /topic/<topic_id> GET via dci_topic.get()
     #
     # Get topic informations
-    elif module.params['id'] and not module.params['name'] and not module.params['label'] and not module.params['component_types']:
+    elif module.params['id'] and not module.params['name'] and not module.params['label'] and not module.params['component_types'] and not module.params['product_id']:
         kwargs = {}
         if module.params['embed']:
             kwargs['embed'] = module.params['embed']
@@ -161,6 +166,8 @@ def main():
                 kwargs['name'] = module.params['name']
             if module.params['label']:
                 kwargs['label'] = module.params['label']
+            if module.params['product_id']:
+                kwargs['product_id'] = module.params['product_id']
             if module.params['component_types']:
                 kwargs['component_types'] = module.params['component_types']
             res = dci_topic.update(ctx, **kwargs)
@@ -176,6 +183,8 @@ def main():
         kwargs = {'name': module.params['name']}
         if module.params['label']:
             kwargs['label'] = module.params['label']
+        if module.params['product_id']:
+            kwargs['product_id'] = module.params['product_id']
         if module.params['component_types']:
             kwargs['component_types'] = module.params['component_types']
 
