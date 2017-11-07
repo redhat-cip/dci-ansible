@@ -1,0 +1,56 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Retrieve PRODUCT_OWNER role
+      dci_role:
+        where: label:PRODUCT_OWNER
+      register: po_role
+
+    - name: Ensure PRODUCT_OWNER role exists
+      assert:
+        that:
+          - po_role.roles[0].label == 'PRODUCT_OWNER'
+
+    - name: Create a role
+      dci_role:
+        name: Manager
+      register: manager_role
+
+    - name: Retrieve all roles
+      dci_role:
+      register: all_roles
+
+    - name: Ensure Manager role exists
+      assert:
+        that:
+          - all_roles.roles[0].name == 'Manager'
+
+    - name: Retrieve Manager role
+      dci_role:
+        id: '{{ manager_role.role.id }}'
+      register: manager_role
+
+    - name: Ensure Manager role exists
+      assert:
+        that:
+          - manager_role.role.name == 'Manager'
+
+    - name: Update Manager role
+      dci_role:
+        id: '{{ manager_role.role.id }}'
+        name: Senior Manager
+
+    - name: Retrieve Manager role
+      dci_role:
+        id: '{{ manager_role.role.id }}'
+      register: manager_role
+
+    - name: Ensure manager_role new value is Senior Manager
+      assert:
+        that:
+          - manager_role.role.name == 'Senior Manager'
+
+    - name: Delete Manager role
+      dci_role:
+        id: '{{ manager_role.role.id }}'
+        state: absent
