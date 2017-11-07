@@ -1,0 +1,5 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Do nothing for now
+      command: echo "To Be Implemented"
