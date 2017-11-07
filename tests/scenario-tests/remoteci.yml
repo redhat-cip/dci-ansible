@@ -1,0 +1,49 @@
+---
+- hosts: localhost
+  tasks:
+    - name: schedule a job
+      dci_job:
+        topic: OSP13
+      register: job_informations
+
+    - name: Set global variables
+      set_fact:
+        job_id: '{{ hostvars.localhost.job_informations.job_id  }}'
+        components: '{{ hostvars.localhost.job_informations.components  }}'
+
+- hosts: localhost
+  vars:
+    dci_status: running
+  tasks:
+    - name: echo runnning
+      command: echo "running"
+
+- hosts: localhost
+  vars:
+    dci_status: post-run
+  tasks:
+    - name: Attach result to job
+      dci_file:
+        job_id: '{{ job_id }}'
+        path: "{{ lookup('env', 'PWD')  }}/data/content"
+        name: content
+
+- hosts: localhost
+  vars:
+    dci_status: success
+  tasks:
+    - name: echo success
+      command: echo "success"
+
+
+- hosts: localhost
+  tasks:
+    - name: Ensure job_id has proper file and jobstates attached to it
+      dci_job:
+        id: '{{ job_id }}'
+        embed: files,jobstates
+      register: job_informations
+
+    - name: Verify that job has 3 jobstates attached to it and 1 file
+      assert:
+        that: job_informations.job.files|length == 4
