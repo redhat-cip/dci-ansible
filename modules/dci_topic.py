@@ -12,7 +12,8 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context, module_params_empty
+from ansible.module_utils.common import *
+from ansible.module_utils.dci_base import *
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -63,6 +64,9 @@ options:
     required: false
     description:
       - List of field to embed within the retrieved resource
+  where:
+    required: false
+    description: Specific criterias for search
 '''
 
 EXAMPLES = '''
@@ -100,6 +104,38 @@ RETURN = '''
 '''
 
 
+class DciTopic(DciBase):
+
+    def __init__(self, params):
+        super(DciTopic, self).__init__(dci_topic)
+        self.id = params.get('id')
+        self.name = params.get('name')
+        self.label = params.get('label')
+        self.product_id = params.get('product_id')
+        self.component_types = params.get('component_types')
+        self.team_ids = params.get('team_ids')
+        self.search_criterias = {
+            'embed': params.get('embed'),
+            'where': params.get('where')
+        }
+        self.deterministic_params = ['name', 'label', 'product_id',
+                                     'component_types']
+
+    def do_create(self, context):
+        if not self.name:
+            raise DciParameterError('name parameter must be speficied')
+
+        return super(DciTopic, self).do_create(context)
+
+    def do_delete(self, context):
+        return self.resource.delete(context, self.id)
+
+    def do_attach_team(self, context):
+        for team in self.team_ids:
+            res = dci_topic.attach_team(context, self.id, team)
+        return res
+
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -120,106 +156,25 @@ def main():
             component_types=dict(type='list'),
             team_ids=dict(type='list'),
             embed=dict(type='list'),
+            where=dict(type='str'),
         ),
+        required_if=[['state', 'absent', ['id']]]
     )
 
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
-    ctx = build_dci_context(module)
+    context = build_dci_context(module)
+    action_name = get_standard_action(module.params)
+    if action_name == 'update':
+        if module.params['team_ids']:
+            action_name = 'attach_team'
 
-    # Action required: List all topics
-    # Endpoint called: /topics GET via dci_topic.list()
-    #
-    # List all topics
-    if module_params_empty(module.params):
-        res = dci_topic.list(ctx)
+    topic = DciTopic(module.params)
+    action_func = getattr(topic, 'do_%s' % action_name)
 
-    # Action required: Delete the topic matching topic id
-    # Endpoint called: /topics/<topic_id> DELETE via dci_topic.delete()
-    #
-    # If the topic exists and it has been succesfully deleted the changed is
-    # set to true, else if the topic does not exist changed is set to False
-    elif module.params['state'] == 'absent':
-        if not module.params['id']:
-            module.fail_json(msg='id parameter is required')
-        res = dci_topic.delete(ctx, module.params['id'])
-
-    # Action required: Retrieve topic informations
-    # Endpoint called: /topic/<topic_id> GET via dci_topic.get()
-    #
-    # Get topic informations
-    elif module.params['id'] and not module.params['name'] and not module.params['label'] and not module.params['component_types'] and not module.params['product_id'] and not module.params['team_ids']:
-        kwargs = {}
-        if module.params['embed']:
-            kwargs['embed'] = module.params['embed']
-        res = dci_topic.get(ctx, module.params['id'], **kwargs)
-
-    # Action required: Attach teams to topic
-    # Endpoint called: /topics/<topic_id>/teams POST via dci_topic.attach_team()
-    #
-    # Update the topic with the specified members.
-    elif module.params['id'] and module.params['team_ids']:
-        for team in module.params['team_ids']:
-            res = dci_topic.attach_team(ctx, module.params['id'], team)
-
-    # Action required: Update an existing topic
-    # Endpoint called: /topics/<topic_id> PUT via dci_topic.update()
-    #
-    # Update the topic with the specified characteristics.
-    elif module.params['id']:
-        res = dci_topic.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['topic']['etag']
-            }
-            if module.params['name']:
-                kwargs['name'] = module.params['name']
-            if module.params['label']:
-                kwargs['label'] = module.params['label']
-            if module.params['product_id']:
-                kwargs['product_id'] = module.params['product_id']
-            if module.params['component_types']:
-                kwargs['component_types'] = module.params['component_types']
-            res = dci_topic.update(ctx, **kwargs)
-
-
-    # Action required: Creat a topic with the specified content
-    # Endpoint called: /topics POST via dci_topic.create()
-    #
-    # Create the new topic.
-    else:
-        if not module.params['name']:
-            module.fail_json(msg='name parameter must be specified')
-
-        kwargs = {'name': module.params['name']}
-        if module.params['label']:
-            kwargs['label'] = module.params['label']
-        if module.params['product_id']:
-            kwargs['product_id'] = module.params['product_id']
-        if module.params['component_types']:
-            kwargs['component_types'] = module.params['component_types']
-
-        res = dci_topic.create(ctx, **kwargs)
-
-    try:
-        result = res.json()
-        if res.status_code == 404:
-            module.fail_json(msg='The resource does not exist')
-        if res.status_code == 409:
-            result = {
-                'topic': dci_topic.list(
-                         ctx,
-                         where='name:' + module.params['name']
-                         ).json()['topics'][0],
-            }
-            result['changed'] = False
-        else:
-            result['changed'] = True
-    except:
-        result = {}
-        result['changed'] = True
+    result = run_action_func(action_func, context, module)
+    result = parse_http_response(result, dci_topic, context, module)
 
     module.exit_json(**result)
 

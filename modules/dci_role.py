@@ -12,7 +12,8 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context, module_params_empty
+from ansible.module_utils.common import *
+from ansible.module_utils.dci_base import *
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -55,7 +56,7 @@ options:
     description: Description of the role
   where:
     required: false
-    description: Specific criterai for search
+    description: Specific criterias for search
 '''
 
 EXAMPLES = '''
@@ -93,6 +94,27 @@ RETURN = '''
 '''
 
 
+class DciRole(DciBase):
+
+    def __init__(self, params):
+        super(DciRole, self).__init__(dci_role)
+        self.id = params.get('id')
+        self.name = params.get('name')
+        self.label = params.get('label')
+        self.description = params.get('description')
+        self.search_criterias = {
+            'embed': params.get('embed'),
+            'where': params.get('where')
+        }
+        self.deterministic_params = ['name', 'label', 'description']
+
+    def do_create(self, context):
+        if not self.name:
+            raise DciParameterError('name parameter must be speficied')
+
+        return super(DciRole, self).do_create(context)
+
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -113,94 +135,20 @@ def main():
             embed=dict(type='list'),
             where=dict(type='str'),
         ),
+        required_if=[['state', 'absent', ['id']]]
     )
 
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
-    ctx = build_dci_context(module)
+    context = build_dci_context(module)
+    action_name = get_standard_action(module.params)
 
-    # Action required: List all roles
-    # Endpoint called: /roles GET via dci_role.list()
-    #
-    # List all roles
-    if module_params_empty(module.params) or module.params['where']:
-        res = dci_role.list(ctx, where=module.params['where'])
+    role = DciRole(module.params)
+    action_func = getattr(role, 'do_%s' % action_name)
 
-    # Action required: Delete the role matching role id
-    # Endpoint called: /roles/<role_id> DELETE via dci_role.delete()
-    #
-    # If the role exists and it has been succesfully deleted the changed is
-    # set to true, else if the role does not exist changed is set to False
-    elif module.params['state'] == 'absent':
-        if not module.params['id']:
-            module.fail_json(msg='id parameter is required')
-        res = dci_role.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['role']['etag']
-            }
-            res = dci_role.delete(ctx, **kwargs)
-
-    # Action required: Retrieve role informations
-    # Endpoint called: /roles/<role_id> GET via dci_role.get()
-    #
-    # Get role informations
-    elif module.params['id'] and not module.params['name'] and not module.params['label'] and not module.params['description']:
-
-        kwargs = {}
-        if module.params['embed']:
-            kwargs['embed'] = module.params['embed']
-
-        res = dci_role.get(ctx, module.params['id'], **kwargs)
-
-    # Action required: Update an existing role
-    # Endpoint called: /roles/<role_id> PUT via dci_role.update()
-    #
-    # Update the role with the specified characteristics.
-    elif module.params['id']:
-        res = dci_role.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['role']['etag']
-            }
-            if module.params['name']:
-                kwargs['name'] = module.params['name']
-            if module.params['label']:
-                kwargs['label'] = module.params['label']
-            if module.params['description']:
-                kwargs['description'] = module.params['description']
-            res = dci_role.update(ctx, **kwargs)
-
-    # Action required: Creat a role with the specified content
-    # Endpoint called: /roles POST via dci_role.create()
-    #
-    # Create the new role.
-    else:
-        if not module.params['name']:
-            module.fail_json(msg='name parameter must be specified')
-
-        kwargs = {'name': module.params['name']}
-        if module.params['label']:
-            kwargs['label'] = module.params['label']
-        if module.params['description']:
-            kwargs['description'] = module.params['description']
-
-        res = dci_role.create(ctx, **kwargs)
-
-    try:
-        result = res.json()
-        if res.status_code == 404:
-            module.fail_json(msg='The resource does not exist')
-        if res.status_code == 409:
-            result['changed'] = False
-        else:
-            result['changed'] = True
-    except:
-        result = {}
-        result['changed'] = True
+    result = run_action_func(action_func, context, module)
+    result = parse_http_response(result, dci_role, context, module)
 
     module.exit_json(**result)
 
