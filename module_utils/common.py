@@ -57,3 +57,64 @@ def module_params_empty(module_params):
             return False
 
     return True
+
+
+def get_action(params):
+    """
+    Return the action that needs to be executed.
+
+    Based on the module parameters specified a given action
+    needs to be executed. The process to determine this action
+    can be quite verbose. In order to facilitate the reading
+    of the modules code, we externalize this decision process.
+
+    """
+
+    non_determistic_params = ['embed', 'mime', 'state', 'where']
+    for param in non_determistic_params:
+        params.pop(param)
+    non_empty_values = [item for item in params if params[item] is not None]
+
+    # delete: If state: absent has been specified this means the user wants to
+    # delete the specified resource
+    #
+    # Example:
+    #   - dci_X:
+    #       id: XXX
+    #       state: absent
+    if params['state'] == 'absent':
+        return 'delete'
+
+    # list: If no deterministic parameter has been passed to the module then
+    # the intended action is list_all
+    #
+    # Example:
+    #   - dci_X:
+    if not non_empty_values:
+        return 'list'
+
+    # get: If id is specified but none of the determnistic variable are passed
+    #
+    # Example:
+    #   - dci_X:
+    #       id: XXX
+    if non_empty_values == ['id']:
+        return 'get'
+
+    # update: If id is specified and some of the determnistic variable are
+    # passed
+    #
+    # Example:
+    #   - dci_X:
+    #       id: XXX
+    #       name: newname
+    if 'id' in non_empty_values:
+        return 'update'
+
+    # create: If id is not specified and some of the determnistic variable are
+    # passed
+    #
+    # Example:
+    #   - dci_X:
+    #       name: newname
+    return 'create'

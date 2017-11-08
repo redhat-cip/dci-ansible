@@ -12,7 +12,7 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context, module_params_empty
+from ansible.module_utils.common import build_dci_context, get_action
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -125,12 +125,11 @@ def main():
         module.fail_json(msg='The python dciclient module is required')
 
     ctx = build_dci_context(module)
+    action = get_action(module.params)
 
     # Action required: List all teams
     # Endpoint called: /teams GET via dci_team.list()
-    #
-    # List all teams
-    if module_params_empty(module.params):
+    if action == 'list':
         res = dci_team.list(ctx)
 
     # Action required: Delete the team matching team id
@@ -138,7 +137,7 @@ def main():
     #
     # If the team exists and it has been succesfully deleted the changed is
     # set to true, else if the team does not exist changed is set to False
-    elif module.params['state'] == 'absent':
+    elif action == 'delete':
         if not module.params['id']:
             module.fail_json(msg='id parameter is required')
         res = dci_team.get(ctx, module.params['id'])
@@ -153,8 +152,7 @@ def main():
     # Endpoint called: /teams/<team_id> GET via dci_team.get()
     #
     # Get team informations
-    elif module.params['id'] and not module.params['name'] and not module.params['country'] and not module.params['email'] and module.params['notification'] is None:
-
+    elif action == 'get':
         kwargs = {}
         if module.params['embed']:
             kwargs['embed'] = module.params['embed']
@@ -165,7 +163,7 @@ def main():
     # Endpoint called: /teams/<team_id> PUT via dci_team.update()
     #
     # Update the team with the specified characteristics.
-    elif module.params['id']:
+    elif action == 'update':
         res = dci_team.get(ctx, module.params['id'])
         if res.status_code not in [400, 401, 404, 409]:
             kwargs = {

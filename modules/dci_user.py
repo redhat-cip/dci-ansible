@@ -12,7 +12,7 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context, module_params_empty
+from ansible.module_utils.common import build_dci_context, get_action
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -130,12 +130,11 @@ def main():
         module.fail_json(msg='The python dciclient module is required')
 
     ctx = build_dci_context(module)
+    action = get_action(module.params)
 
     # Action required: List all users
     # Endpoint called: /users GET via dci_user.list()
-    #
-    # List all users
-    if module_params_empty(module.params):
+    if action == 'list':
         res = dci_user.list(ctx)
 
     # Action required: Delete the user matching user id
@@ -143,7 +142,7 @@ def main():
     #
     # If the user exists and it has been succesfully deleted the changed is
     # set to true, else if the user does not exist changed is set to False
-    elif module.params['state'] == 'absent':
+    elif action == 'delete':
         if not module.params['id']:
             module.fail_json(msg='id parameter is required')
         res = dci_user.get(ctx, module.params['id'])
@@ -158,10 +157,7 @@ def main():
     # Endpoint called: /user/<user_id> GET via dci_user.get()
     #
     # Get user informations
-    elif module.params['id'] and not module.params['name'] and \
-            not module.params['team_id'] and not module.params['role_id'] and \
-            not module.params['password'] and not module.params['email'] and \
-            not module.params['fullname']:
+    elif action == 'get':
         kwargs = {}
         if module.params['embed']:
             kwargs['embed'] = module.params['embed']
@@ -171,7 +167,7 @@ def main():
     # Endpoint called: /users/<user_id> PUT via dci_user.update()
     #
     # Update the user with the specified characteristics.
-    elif module.params['id']:
+    elif action == 'update':
         res = dci_user.get(ctx, module.params['id'])
         if res.status_code not in [400, 401, 404, 409]:
             kwargs = {
