@@ -55,7 +55,7 @@ options:
     description: Description of the role
   where:
     required: false
-    description: Specific criterai for search
+    description: Specific criterias for search
 '''
 
 EXAMPLES = '''

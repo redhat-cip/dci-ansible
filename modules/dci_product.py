@@ -12,7 +12,8 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context, module_params_empty
+from ansible.module_utils.common import build_dci_context, get_action
+from ansible.module_utils.dci_base import *
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -56,6 +57,9 @@ options:
   team_id:
     required: false
     description: ID of the team the product belongs to
+  where:
+    required: false
+    description: Specific criterias for search
 '''
 
 EXAMPLES = '''
@@ -95,6 +99,28 @@ RETURN = '''
 '''
 
 
+class DciProduct(DciBase):
+
+    def __init__(self, params):
+        super(DciProduct, self).__init__(dci_product)
+        self.id = params.get('id')
+        self.name = params.get('name')
+        self.team_id = params.get('team_id')
+        self.label = params.get('label')
+        self.description = params.get('description')
+        self.search_criterias = {
+            'embed': params.get('embed'),
+            'where': params.get('where')
+        }
+        self.deterministic_params = ['name', 'team_id', 'label', 'description']
+
+    def do_create(self, context):
+        if not self.name:
+            raise DciParameterError('name parameter must be speficied')
+
+        return super(DciProduct, self).do_create(context)
+
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -114,85 +140,29 @@ def main():
             label=dict(type='str'),
             description=dict(type='str'),
             embed=dict(type='list'),
+            where=dict(type='str'),
         ),
     )
 
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
-    ctx = build_dci_context(module)
+    context = build_dci_context(module)
+    action_name = get_action(module.params)
 
-    # Action required: List all products
-    # Endpoint called: /products GET via dci_product.list()
-    #
-    # List all products
-    if module_params_empty(module.params):
-        res = dci_product.list(ctx)
+    product = DciProduct(module.params)
+    action_func = getattr(product, 'do_%s' % action_name)
 
-    # Action required: Delete the product matching product id
-    # Endpoint called: /products/<product_id> DELETE via dci_product.delete()
-    #
-    # If the product exists and it has been succesfully deleted the changed is
-    # set to true, else if the product does not exist changed is set to False
-    elif module.params['state'] == 'absent':
-        if not module.params['id']:
-            module.fail_json(msg='id parameter is required')
-        res = dci_product.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['product']['etag']
-            }
-            res = dci_product.delete(ctx, **kwargs)
-
-    # Action required: Retrieve product informations
-    # Endpoint called: /products/<product_id> GET via dci_product.get()
-    #
-    # Get product informations
-    elif module.params['id'] and not module.params['name'] and not module.params['label'] and not module.params['team_id'] and not module.params['description']:
-
-        kwargs = {}
-        if module.params['embed']:
-            kwargs['embed'] = module.params['embed']
-
-        res = dci_product.get(ctx, module.params['id'], **kwargs)
-
-    # Action required: Update an existing product
-    # Endpoint called: /products/<product_id> PUT via dci_product.update()
-    #
-    # Update the product with the specified characteristics.
-    elif module.params['id']:
-        res = dci_product.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['product']['etag']
-            }
-            if module.params['name']:
-                kwargs['name'] = module.params['name']
-            if module.params['description']:
-                kwargs['description'] = module.params['description']
-            if module.params['team_id']:
-                kwargs['team_id'] = module.params['team_id']
-            res = dci_product.update(ctx, **kwargs)
-
-    # Action required: Create a product with the specified content
-    # Endpoint called: /products POST via dci_product.create()
-    #
-    # Create the new product.
-    else:
-        if not module.params['name']:
-            module.fail_json(msg='name parameter must be specified')
-
-        kwargs = {'name': module.params['name']}
-        if module.params['label']:
-            kwargs['label'] = module.params['label']
-        if module.params['description']:
-            kwargs['description'] = module.params['description']
-        if module.params['team_id']:
-            kwargs['team_id'] = module.params['team_id']
-
-        res = dci_product.create(ctx, **kwargs)
+    try:
+        res = action_func(context)
+    except DciResourceNotFoundException as exc:
+        module.fail_json(msg=exc.message)
+    except DciServerErrorException as exc:
+        module.fail_json(msg=exc.message)
+    except DciUnexpectedErrorException as exc:
+        module.fail_json(msg=exc.message)
+    except DciParameterError as exc:
+        module.fail_json(msg=exc.message)
 
     try:
         result = res.json()
