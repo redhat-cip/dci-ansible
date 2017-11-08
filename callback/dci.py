@@ -139,7 +139,7 @@ class CallbackModule(CallbackBase):
 
         output = self.format_output(result._result)
 
-        if result._task.action != 'setup':
+        if result._task.action != 'setup' and self._job_id:
             self.post_message(result, output)
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
