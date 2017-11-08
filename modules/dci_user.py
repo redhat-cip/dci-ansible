@@ -12,7 +12,8 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context, module_params_empty
+from ansible.module_utils.common import *
+from ansible.module_utils.dci_base import *
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -66,6 +67,9 @@ options:
     required: false
     description:
       - List of field to embed within the retrieved resource
+  where:
+    required: false
+    description: Specific criterias for search
 '''
 
 EXAMPLES = '''
@@ -102,6 +106,34 @@ RETURN = '''
 '''
 
 
+class DciUser(DciBase):
+
+    def __init__(self, params):
+        super(DciUser, self).__init__(dci_user)
+        self.id = params.get('id')
+        self.name = params.get('name')
+        self.fullname = params.get('fullname')
+        self.email = params.get('email')
+        self.password = params.get('password')
+        self.role_id = params.get('role_id')
+        self.team_id = params.get('team_id')
+        self.search_criterias = {
+            'embed': params.get('embed'),
+            'where': params.get('where')
+        }
+        self.deterministic_params = ['name', 'fullname', 'email', 'password',
+                                     'role_id', 'team_id']
+
+    def do_create(self, context):
+        for param in ['name', 'password', 'team_id', 'email']:
+            if not getattr(self, param):
+                raise DciParameterError(
+                    '%s parameter must be speficied' % param
+                )
+
+        return super(DciUser, self).do_create(context)
+
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -123,111 +155,32 @@ def main():
             role_id=dict(type='str'),
             team_id=dict(type='str'),
             embed=dict(type='list'),
+            where=dict(type='str'),
         ),
+        required_if=[['state', 'absent', ['id']]]
     )
 
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
-    ctx = build_dci_context(module)
+    context = build_dci_context(module)
+    action_name = get_standard_action(module.params)
 
-    # Action required: List all users
-    # Endpoint called: /users GET via dci_user.list()
-    #
-    # List all users
-    if module_params_empty(module.params):
-        res = dci_user.list(ctx)
-
-    # Action required: Delete the user matching user id
-    # Endpoint called: /users/<user_id> DELETE via dci_user.delete()
-    #
-    # If the user exists and it has been succesfully deleted the changed is
-    # set to true, else if the user does not exist changed is set to False
-    elif module.params['state'] == 'absent':
-        if not module.params['id']:
-            module.fail_json(msg='id parameter is required')
-        res = dci_user.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['user']['etag']
-            }
-            res = dci_user.delete(ctx, **kwargs)
-
-    # Action required: Retrieve user informations
-    # Endpoint called: /user/<user_id> GET via dci_user.get()
-    #
-    # Get user informations
-    elif module.params['id'] and not module.params['name'] and \
-            not module.params['team_id'] and not module.params['role_id'] and \
-            not module.params['password'] and not module.params['email'] and \
-            not module.params['fullname']:
-        kwargs = {}
-        if module.params['embed']:
-            kwargs['embed'] = module.params['embed']
-        res = dci_user.get(ctx, module.params['id'], **kwargs)
-
-    # Action required: Update an user
-    # Endpoint called: /users/<user_id> PUT via dci_user.update()
-    #
-    # Update the user with the specified characteristics.
-    elif module.params['id']:
-        res = dci_user.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['user']['etag']
-            }
-            if module.params['name']:
-                kwargs['name'] = module.params['name']
-            if module.params['password']:
-                kwargs['password'] = module.params['password']
-            if module.params['role_id']:
-                kwargs['role_id'] = module.params['role_id']
-            if module.params['team_id']:
-                kwargs['team_id'] = module.params['team_id']
-            if module.params['fullname']:
-                kwargs['fullname'] = module.params['fullname']
-            if module.params['email']:
-                kwargs['email'] = module.params['email']
-            res = dci_user.update(ctx, **kwargs)
-
-    # Action required: Create a user with the specified content
-    # Endpoint called: /users POST via dci_user.create()
-    #
-    # Create the new user.
-    else:
-        if not module.params['name']:
-            module.fail_json(msg='name parameter must be specified')
-        if not module.params['password']:
-            module.fail_json(msg='password parameter must be specified')
-        if not module.params['team_id']:
-            module.fail_json(msg='team_id parameter must be specified')
-        if not module.params['email']:
-            module.fail_json(msg='email parameter must be specified')
-
-        kwargs = {
-            'name': module.params['name'],
-            'fullname': module.params['fullname'] or module.params['name'],
-            'email': module.params['email'],
-            'password': module.params['password'],
-            'role_id': module.params['role_id'],
-            'team_id': module.params['team_id'],
-        }
-
-        res = dci_user.create(ctx, **kwargs)
+    user = DciUser(module.params)
+    action_func = getattr(user, 'do_%s' % action_name)
 
     try:
-        result = res.json()
-        if res.status_code == 404:
-            module.fail_json(msg='The resource does not exist')
-        if res.status_code == 409:
-            result['changed'] = False
-        else:
-            result['changed'] = True
-    except:
-        result = {}
-        result['changed'] = True
+        res = action_func(context)
+    except DciResourceNotFoundException as exc:
+        module.fail_json(msg=exc.message)
+    except DciServerErrorException as exc:
+        module.fail_json(msg=exc.message)
+    except DciUnexpectedErrorException as exc:
+        module.fail_json(msg=exc.message)
+    except DciParameterError as exc:
+        module.fail_json(msg=exc.message)
+
+    result = parse_http_response(res, dci_user, context, module)
 
     module.exit_json(**result)
 
