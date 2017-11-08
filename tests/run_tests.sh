@@ -33,6 +33,7 @@ ansible-playbook scenario-tests/feeder.yml -vvv
 clean_environment
 
 source ./remoteci.sh
+echo 'callback_whitelist  = dci' >> ansible.cfg
 ansible-playbook scenario-tests/remoteci.yml -vvv
 clean_environment
 

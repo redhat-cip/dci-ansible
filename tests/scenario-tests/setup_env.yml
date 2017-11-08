@@ -36,6 +36,7 @@
       dci_user:
         name: openstack-po
         email: openstack-po@distributed-ci.io
+        fullname: OpenStack PO
         password: Apassword
         role_id: '{{ po_role.roles[0].id }}'
         team_id: '{{ openstack_team.team.id }}'
