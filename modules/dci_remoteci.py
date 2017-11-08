@@ -12,7 +12,8 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context, module_params_empty
+from ansible.module_utils.common import build_dci_context, get_standard_action
+from ansible.module_utils.dci_base import *
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -57,6 +58,9 @@ options:
     required: false
     description:
       - List of field to embed within the retrieved resource
+  where:
+    required: false
+    description: Specific criterias for search
 '''
 
 EXAMPLES = '''
@@ -96,6 +100,30 @@ RETURN = '''
 '''
 
 
+class DciRemoteci(DciBase):
+
+    def __init__(self, params):
+        super(DciRemoteci, self).__init__(dci_remoteci)
+        self.id = params.get('id')
+        self.name = params.get('name')
+        self.data = params.get('data')
+        self.team_id = params.get('team_id')
+        self.search_criterias = {
+            'embed': params.get('embed'),
+            'where': params.get('where')
+        }
+        self.deterministic_params = ['name', 'team_id', 'data']
+
+    def do_create(self, context):
+        for param in ['name', 'team_id']:
+            if not getattr(self, param):
+                raise DciParameterError(
+                    '%s parameter must be speficied' % param
+                )
+
+        return super(DciRemoteci, self).do_create(context)
+
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -114,84 +142,30 @@ def main():
             data=dict(type='dict'),
             team_id=dict(type='str'),
             embed=dict(type='list'),
+            where=dict(type='str'),
         ),
+        required_if=[['state', 'absent', ['id']]]
     )
 
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
-    ctx = build_dci_context(module)
+    context = build_dci_context(module)
+    action_name = get_standard_action(module.params)
 
-    # Action required: List all remotecis
-    # Endpoint called: /remotecis GET via dci_remoteci.list()
-    #
-    # List all remotecis
-    if module_params_empty(module.params):
-        res = dci_remoteci.list(ctx)
+    remoteci = DciRemoteci(module.params)
+    action_func = getattr(remoteci, 'do_%s' % action_name)
 
-    # Action required: Delete the remoteci matching remoteci id
-    # Endpoint called: /remotecis/<remoteci_id> DELETE via dci_remoteci.delete()
-    #
-    # If the remoteci exists and it has been succesfully deleted the changed is
-    # set to true, else if the remoteci does not exist changed is set to False
-    elif module.params['state'] == 'absent':
-        if not module.params['id']:
-            module.fail_json(msg='id parameter is required')
-        res = dci_remoteci.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['remoteci']['etag']
-            }
-            res = dci_remoteci.delete(ctx, **kwargs)
-
-    # Action required: Retrieve remoteci informations
-    # Endpoint called: /remotecis/<remoteci_id> GET via dci_remoteci.get()
-    #
-    # Get remoteci informations
-    elif module.params['id'] and not module.params['name'] and not module.params['data'] and not module.params['team_id']:
-        kwargs = {}
-        if module.params['embed']:
-            kwargs['embed'] = module.params['embed']
-        res = dci_remoteci.get(ctx, module.params['id'], **kwargs)
-
-    # Action required: Update an existing remoteci
-    # Endpoint called: /remotecis/<remoteci_id> PUT via dci_remoteci.update()
-    #
-    # Update the remoteci with the specified characteristics.
-    elif module.params['id']:
-        res = dci_remoteci.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['remoteci']['etag']
-            }
-            if module.params['name']:
-                kwargs['name'] = module.params['name']
-            if module.params['data']:
-                kwargs['data'] = module.params['data']
-            if module.params['team_id']:
-                kwargs['team_id'] = module.params['team_id']
-            res = dci_remoteci.update(ctx, **kwargs)
-
-    # Action required: Create a remoteci with the specified content
-    # Endpoint called: /remotecis POST via dci_remoteci.create()
-    #
-    # Create the new remoteci.
-    else:
-        if not module.params['name']:
-            module.fail_json(msg='name parameter must be specified')
-        if not module.params['team_id']:
-            module.fail_json(msg='team_id parameter must be specified')
-
-        kwargs = {
-            'name': module.params['name'],
-            'team_id': module.params['team_id']
-        }
-        if module.params['data']:
-            kwargs['data'] = module.params['data']
-
-        res = dci_remoteci.create(ctx, **kwargs)
+    try:
+        res = action_func(context)
+    except DciResourceNotFoundException as exc:
+        module.fail_json(msg=exc.message)
+    except DciServerErrorException as exc:
+        module.fail_json(msg=exc.message)
+    except DciUnexpectedErrorException as exc:
+        module.fail_json(msg=exc.message)
+    except DciParameterError as exc:
+        module.fail_json(msg=exc.message)
 
     try:
         result = res.json()

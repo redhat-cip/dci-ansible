@@ -12,14 +12,14 @@ function clean_environment() {
 
 # --- Starting unit-tests
 
-modules='dci_user dci_team dci_topic dci_component dci_feeder dci_product dci_role'
+# modules='dci_user dci_team dci_topic dci_component dci_feeder dci_product dci_role'
 
-source ./admin.sh
-for module in $modules; do
-    ansible-playbook unit-tests/$module/playbook.yml -vvv
-    dcictl purge
-done
-clean_environment
+# source ./admin.sh
+# for module in $modules; do
+#     ansible-playbook unit-tests/$module/playbook.yml -vvv
+#     dcictl purge
+# done
+# clean_environment
 
 
 # --- Starting scenario-tests
