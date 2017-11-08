@@ -12,7 +12,8 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context, module_params_empty
+from ansible.module_utils.common import *
+from ansible.module_utils.dci_base import *
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -50,16 +51,16 @@ options:
   country:
     required: false
     description: Team country
-  email:
+  parent_id:
     required: false
-    description: Email to notify on jobs failure
-  notification:
-    required: false
-    description: Should the team be notified on jobs failure
+    description: ID of the parent team
   embed:
     required: false
     description:
       - List of field to embed within the retrieved resource
+  where:
+    required: false
+    description: Specific criterias for search
 '''
 
 EXAMPLES = '''
@@ -99,6 +100,27 @@ RETURN = '''
 '''
 
 
+class DciTeam(DciBase):
+
+    def __init__(self, params):
+        super(DciTeam, self).__init__(dci_team)
+        self.id = params.get('id')
+        self.name = params.get('name')
+        self.country = params.get('country')
+        self.parent_id = params.get('parent_id')
+        self.search_criterias = {
+            'embed': params.get('embed'),
+            'where': params.get('where')
+        }
+        self.deterministic_params = ['name', 'country', 'parent_id']
+
+    def do_create(self, context):
+        if not self.name:
+            raise DciParameterError('name parameter must be speficied')
+
+        return super(DciTeam, self).do_create(context)
+
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -115,102 +137,34 @@ def main():
             id=dict(type='str'),
             name=dict(type='str'),
             country=dict(type='str'),
-            email=dict(type='str'),
-            notification=dict(type='bool'),
+            parent_id=dict(type='str'),
             embed=dict(type='list'),
+            where=dict(type='str'),
         ),
+        required_if=[['state', 'absent', ['id']]]
     )
 
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
-    ctx = build_dci_context(module)
+    context = build_dci_context(module)
+    action_name = get_standard_action(module.params)
 
-    # Action required: List all teams
-    # Endpoint called: /teams GET via dci_team.list()
-    #
-    # List all teams
-    if module_params_empty(module.params):
-        res = dci_team.list(ctx)
-
-    # Action required: Delete the team matching team id
-    # Endpoint called: /teams/<team_id> DELETE via dci_team.delete()
-    #
-    # If the team exists and it has been succesfully deleted the changed is
-    # set to true, else if the team does not exist changed is set to False
-    elif module.params['state'] == 'absent':
-        if not module.params['id']:
-            module.fail_json(msg='id parameter is required')
-        res = dci_team.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['team']['etag']
-            }
-            res = dci_team.delete(ctx, **kwargs)
-
-    # Action required: Retrieve team informations
-    # Endpoint called: /teams/<team_id> GET via dci_team.get()
-    #
-    # Get team informations
-    elif module.params['id'] and not module.params['name'] and not module.params['country'] and not module.params['email'] and module.params['notification'] is None:
-
-        kwargs = {}
-        if module.params['embed']:
-            kwargs['embed'] = module.params['embed']
-
-        res = dci_team.get(ctx, module.params['id'], **kwargs)
-
-    # Action required: Update an existing team
-    # Endpoint called: /teams/<team_id> PUT via dci_team.update()
-    #
-    # Update the team with the specified characteristics.
-    elif module.params['id']:
-        res = dci_team.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['team']['etag']
-            }
-            if module.params['name']:
-                kwargs['name'] = module.params['name']
-            if module.params['country']:
-                kwargs['country'] = module.params['country']
-            if module.params['email']:
-                kwargs['email'] = module.params['email']
-            if module.params['notification'] is not None:
-                kwargs['notification'] = module.params['notification']
-            res = dci_team.update(ctx, **kwargs)
-
-    # Action required: Creat a team with the specified content
-    # Endpoint called: /teams POST via dci_team.create()
-    #
-    # Create the new team.
-    else:
-        if not module.params['name']:
-            module.fail_json(msg='name parameter must be specified')
-
-        kwargs = {'name': module.params['name']}
-        if module.params['country']:
-            kwargs['country'] = module.params['country']
-        if module.params['email']:
-            kwargs['email'] = module.params['email']
-        if module.params['notification'] is not None:
-            kwargs['notification'] = module.params['notification']
-
-        res = dci_team.create(ctx, **kwargs)
+    team = DciTeam(module.params)
+    action_func = getattr(team, 'do_%s' % action_name)
 
     try:
-        result = res.json()
-        if res.status_code == 404:
-            module.fail_json(msg='The resource does not exist')
-        if res.status_code == 409:
-            result['changed'] = False
-        else:
-            result['changed'] = True
-    except:
-        result = {}
-        result['changed'] = True
+        res = action_func(context)
+    except DciResourceNotFoundException as exc:
+        module.fail_json(msg=exc.message)
+    except DciServerErrorException as exc:
+        module.fail_json(msg=exc.message)
+    except DciUnexpectedErrorException as exc:
+        module.fail_json(msg=exc.message)
+    except DciParameterError as exc:
+        module.fail_json(msg=exc.message)
+
+    result = parse_http_response(res, dci_team, context, module)
 
     module.exit_json(**result)
 
