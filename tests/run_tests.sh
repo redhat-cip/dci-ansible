@@ -2,6 +2,8 @@
 
 set -eux
 
+sudo yum -y install strace
+
 function clean_environment() {
     unset DCI_LOGIN
     unset DCI_PASSWORD
@@ -33,7 +35,7 @@ ansible-playbook scenario-tests/feeder.yml -vvv
 clean_environment
 
 source ./remoteci.sh
-ansible-playbook scenario-tests/remoteci.yml -vvv
+strace ansible-playbook scenario-tests/remoteci.yml -vvv
 clean_environment
 
 rm -f feeder.sh remoteci.sh content.download
