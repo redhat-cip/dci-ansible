@@ -12,7 +12,7 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context
+from ansible.module_utils.common import build_dci_context, get_action
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -102,37 +102,24 @@ def main():
             team_id=dict(type='str'),
             embed=dict(type='list'),
         ),
+        required_if=[['state', 'absent', ['id']]]
     )
 
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
     ctx = build_dci_context(module)
+    action = get_action(module.params)
 
-    # Action required: Delete the test matching test id
-    # Endpoint called: /tests/<test_id> DELETE via dci_test.delete()
-    #
-    # If the test exists and it has been succesfully deleted the changed is
-    # set to true, else if the test does not exist changed is set to False
-    if module.params['state'] == 'absent':
-        if not module.params['id']:
-            module.fail_json(msg='id parameter is required')
+    if action == 'delete':
         res = dci_test.delete(ctx, module.params['id'])
 
-    # Action required: Retrieve test informations
-    # Endpoint called: /tests/<test_id> GET via dci_test.get()
-    #
-    # Get test informations
-    elif module.params['id']:
+    elif action == 'get':
         kwargs = {}
         if module.params['embed']:
             kwargs['embed'] = module.params['embed']
         res = dci_test.get(ctx, module.params['id'], **kwargs)
 
-    # Action required: Create a test with the specified content
-    # Endpoint called: /tests POST via dci_test.create()
-    #
-    # Create the new test.
     else:
         if not module.params['name']:
             module.fail_json(msg='name parameter must be specified')

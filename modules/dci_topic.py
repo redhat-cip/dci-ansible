@@ -12,7 +12,7 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context, module_params_empty
+from ansible.module_utils.common import build_dci_context, get_action
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -112,45 +112,28 @@ def main():
             component_types=dict(type='list'),
             embed=dict(type='list'),
         ),
+        required_if=[['state', 'absent', ['id']]]
     )
 
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
     ctx = build_dci_context(module)
+    action = get_action(module.params)
 
-    # Action required: List all topics
-    # Endpoint called: /topics GET via dci_topic.list()
-    #
-    # List all topics
-    if module_params_empty(module.params):
+    if action == 'list':
         res = dci_topic.list(ctx)
 
-    # Action required: Delete the topic matching topic id
-    # Endpoint called: /topics/<topic_id> DELETE via dci_topic.delete()
-    #
-    # If the topic exists and it has been succesfully deleted the changed is
-    # set to true, else if the topic does not exist changed is set to False
-    elif module.params['state'] == 'absent':
-        if not module.params['id']:
-            module.fail_json(msg='id parameter is required')
+    elif action == 'delete':
         res = dci_topic.delete(ctx, module.params['id'])
 
-    # Action required: Retrieve topic informations
-    # Endpoint called: /topic/<topic_id> GET via dci_topic.get()
-    #
-    # Get topic informations
-    elif module.params['id'] and not module.params['name'] and not module.params['label'] and not module.params['component_types']:
+    elif action == 'get':
         kwargs = {}
         if module.params['embed']:
             kwargs['embed'] = module.params['embed']
         res = dci_topic.get(ctx, module.params['id'], **kwargs)
 
-    # Action required: Update an existing topic
-    # Endpoint called: /topics/<topic_id> PUT via dci_topic.update()
-    #
-    # Update the topic with the specified characteristics.
-    elif module.params['id']:
+    elif action == 'update':
         res = dci_topic.get(ctx, module.params['id'])
         if res.status_code not in [400, 401, 404, 409]:
             kwargs = {
@@ -165,10 +148,6 @@ def main():
                 kwargs['component_types'] = module.params['component_types']
             res = dci_topic.update(ctx, **kwargs)
 
-    # Action required: Creat a topic with the specified content
-    # Endpoint called: /topics POST via dci_topic.create()
-    #
-    # Create the new topic.
     else:
         if not module.params['name']:
             module.fail_json(msg='name parameter must be specified')

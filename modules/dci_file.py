@@ -12,7 +12,7 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context, module_params_empty
+from ansible.module_utils.common import build_dci_context, get_action
 import os
 
 try:
@@ -132,48 +132,27 @@ def main():
             mime=dict(default='text/plain', type='str'),
             embed=dict(type='list'),
         ),
+        required_if=[['state', 'absent', ['id']]]
     )
 
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
     ctx = build_dci_context(module)
+    action = get_action(module.params)
 
-    # Action required: List all files
-    # Endpoint called: /files GET via dci_file.list()
-    #
-    # List all files
-    if module_params_empty(module.params):
+    if action == 'list':
         res = dci_file.list(ctx)
 
-    # Action required: Delete the file matchin file id
-    # Endpoint called: /files/<file_id> DELETE via dci_file.delete()
-    #
-    # If the file exist and it has been succesfully deleted the changed is
-    # set to true, else if the file does not exist changed is set to False
-    elif module.params['state'] == 'absent':
-        if not module.params['id']:
-            module.fail_json(msg='id parameter is required')
+    elif action == 'delete':
         res = dci_file.delete(ctx, module.params['id'])
 
-    # Action required: Retrieve file informations
-    # Endpoint called: /files/<file_id> GET via dci_job.file()
-    #
-    # Get file informations
-    elif module.params['id']:
+    elif action == 'get':
         kwargs = {}
         if module.params['embed']:
             kwargs['embed'] = module.params['embed']
         res = dci_file.get(ctx, module.params['id'], **kwargs)
 
-    # Action required: Creat a file with the specified content
-    # Endpoint called: /files POST via dci_file.create()
-    #
-    # Create the file and attach it where it belongs (either jobstate or job)
-    # with the specified content/content of path provided.
-    #
-    # NOTE: /files endpoint does not support PUT method, hence no update can
-    #       be accomplished.
     else:
         if not module.params['job_id'] and not module.params['jobstate_id']:
             module.fail_json(msg='Either job_id or jobstate_id must be specified')
