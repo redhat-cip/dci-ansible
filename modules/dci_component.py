@@ -12,7 +12,7 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context
+from ansible.module_utils.common import build_dci_context, get_action
 
 import os
 
@@ -77,7 +77,8 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
-def download_file(module, ctx):
+
+def do_download(ctx, module):
     if os.path.isdir(module.params['dest']):
         dest_file = os.path.join(
             module.params['dest'],
@@ -101,6 +102,59 @@ def download_file(module, ctx):
             module.params['id'],
             component_file_id,
             dest_file)
+
+
+def do_delete(ctx, module):
+    return dci_component.delete(ctx, module.params['id'])
+
+
+def do_upload(ctx, module):
+    return dci_component.file_upload(
+        ctx, module.params['id'], module.params['path']
+    )
+
+
+def do_list(ctx, module):
+    kwargs = {}
+    if module.params['embed']:
+        kwargs['embed'] = module.params['embed']
+    return dci_component.get(ctx, module.params['id'], **kwargs)
+
+
+def do_update(ctx, module):
+    res = dci_component.get(ctx, module.params['id'])
+    if res.status_code not in [400, 401, 404, 409]:
+        updated_kwargs = {
+            'id': module.params['id'],
+            'etag': res.json()['component']['etag']
+        }
+        if module.params['export_control'] is not None:
+            updated_kwargs['export_control'] = module.params['export_control']
+
+        return dci_component.update(ctx, **updated_kwargs)
+
+
+def do_create(ctx, module):
+    if not module.params['name']:
+        module.fail_json(msg='name parameter must be speficied')
+    if not module.params['type']:
+        module.fail_json(msg='type parameter must be speficied')
+
+    kwargs = {
+        'name': module.params['name'],
+        'type': module.params['type'],
+    }
+
+    if module.params['canonical_project_name']:
+        kwargs['canonical_project_name'] = module.params['canonical_project_name']
+    if module.params['url']:
+        kwargs['url'] = module.params['url']
+    if module.params['data']:
+        kwargs['data'] = module.params['data']
+    if module.params['topic_id']:
+        kwargs['topic_id'] = module.params['topic_id']
+    return dci_component.create(ctx, **kwargs)
+
 
 def main():
     module = AnsibleModule(
@@ -127,87 +181,16 @@ def main():
             path=dict(type='str'),
             embed=dict(type='list'),
         ),
+        required_if=[['state', 'absent', ['id']]]
     )
 
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
     ctx = build_dci_context(module)
-
-    # Action required: Delete the component matching the component id
-    # Endpoint called: /components/<component_id> DELETE via dci_component.delete()
-    #
-    # If the component exist and it has been succesfully deleted the changed is
-    # set to true, else if the file does not exist changed is set to False
-    if module.params['state'] == 'absent':
-        if not module.params['id']:
-            module.fail_json(msg='id parameter is required')
-        res = dci_component.delete(ctx, module.params['id'])
-
-    # Action required: Attach a file to a component
-    # Endpoint called: /components/<component_id>/files/ POST via dci_component.file_upload()
-    #
-    # Attach file to a component
-    elif module.params['path']:
-        res = dci_component.file_upload(ctx, module.params['id'], module.params['path'])
-
-    # Action required: Download a component
-    # Endpoint called: /components/<component_id>/files/<file_id>/content GET via dci_component.file_download()
-    #
-    # Download the component
-    elif module.params['dest']:
-        res = download_file(module, ctx)
-
-    # Action required: Get component informations
-    # Endpoint called: /components/<component_id> GET via dci_component.get()
-    #
-    # Get component informations
-    elif module.params['id'] and module.params['export_control'] is None:
-        kwargs = {}
-        if module.params['embed']:
-            kwargs['embed'] = module.params['embed']
-        res = dci_component.get(ctx, module.params['id'], **kwargs)
-
-    # Action required: Update an existing component
-    # Endpoint called: /components/<component_id> PUT via dci_component.update()
-    #
-    # Update the component with the specified parameters.
-    elif module.params['id']:
-        res = dci_component.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            updated_kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['component']['etag']
-            }
-            if module.params['export_control'] is not None:
-                updated_kwargs['export_control'] = module.params['export_control']
-
-            res = dci_component.update(ctx, **updated_kwargs)
-
-    # Action required: Create a new component
-    # Endpoint called: /component POST via dci_component.create()
-    #
-    # Create a new component
-    else:
-        if not module.params['name']:
-            module.fail_json(msg='name parameter must be speficied')
-        if not module.params['type']:
-            module.fail_json(msg='type parameter must be speficied')
-
-        kwargs = {
-            'name': module.params['name'],
-            'type': module.params['type'],
-        }
-
-        if module.params['canonical_project_name']:
-            kwargs['canonical_project_name'] = module.params['canonical_project_name']
-        if module.params['url']:
-            kwargs['url'] = module.params['url']
-        if module.params['data']:
-            kwargs['data'] = module.params['data']
-        if module.params['topic_id']:
-            kwargs['topic_id'] = module.params['topic_id']
-        res = dci_component.create(ctx, **kwargs)
+    action_name = get_action(module.params)
+    action_func = locals()['do_%s' % action_name]
+    res = action_func()
 
     try:
         result = res.json()

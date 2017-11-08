@@ -12,7 +12,7 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context, module_params_empty
+from ansible.module_utils.common import build_dci_context, get_action
 
 import os
 
@@ -136,28 +136,19 @@ def main():
             team_id=dict(type='str'),
             embed=dict(type='list'),
         ),
+        required_if=[['state', 'absent', ['id']]]
     )
 
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
     ctx = build_dci_context(module)
+    action = get_action(module.params)
 
-    # Action required: List all jobs
-    # Endpoint called: /jobs GET via dci_job.list()
-    #
-    # List all jobs
-    if module_params_empty(module.params):
+    if action == 'list':
         res = dci_job.list(ctx)
 
-    # Action required: Delete the job matching the job id
-    # Endpoint called: /jobs/<job_id> DELETE via dci_job.delete()
-    #
-    # If the job exist and it has been succesfully deleted the changed is
-    # set to true, else if the file does not exist changed is set to False
-    elif module.params['state'] == 'absent':
-        if not module.params['id']:
-            module.fail_json(msg='id parameter is required')
+    elif action == 'delete':
         res = dci_job.get(ctx, module.params['id'])
         if res.status_code not in [400, 401, 404, 409]:
             kwargs = {
@@ -166,15 +157,7 @@ def main():
             }
             res = dci_job.delete(ctx, **kwargs)
 
-    # Action required: Retrieve job informations
-    # Endpoint called: /jobs/<job_id> GET via dci_job.get()
-    #
-    # Get job informations
-    elif (module.params['id'] and
-          not module.params['comment'] and
-          not module.params['status'] and
-          not module.params['metadata'] and
-          not module.params['upgrade']):
+    elif action == 'get':
         kwargs = {}
         if module.params['embed']:
             kwargs['embed'] = module.params['embed']
