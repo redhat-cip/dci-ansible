@@ -50,10 +50,43 @@ def build_dci_context(module):
         module.fail_json(msg='Missing or incomplete credentials.')
 
 
-def module_params_empty(module_params):
+def get_action(params):
+    """
+    Return the action that needs to be executed.
 
-    for item in module_params:
-        if item not in ['state', 'mime'] and module_params[item] is not None:
-            return False
+    Based on the module parameters specified a given action
+    needs to be executed. The process to determine this action
+    can be quite verbose. In order to facilitate the reading
+    of the modules code, we externalize this decision process.
 
-    return True
+    """
+
+    non_determistic_params = ['embed', 'mime', 'state', 'where']
+    deterministic_params = {k: v for k, v in params.items() if k not in non_determistic_params}
+    non_empty_values = [item for item in deterministic_params if deterministic_params[item] is not None]
+
+    if 'state' in params and params['state'] == 'absent':
+        return 'delete'
+
+    elif not non_empty_values:
+        return 'list'
+
+    elif non_empty_values == ['id']:
+        return 'get'
+
+    elif 'id' in non_empty_values:
+        return 'update'
+
+    elif 'path' in non_empty_values:
+        return 'upload'
+
+    elif 'dest' in non_empty_values:
+        return 'download'
+
+    elif 'notify' in non_empty_values:
+        return 'notify'
+
+    elif 'upgrade' in non_empty_values:
+        return 'upgrade'
+
+    return 'create'

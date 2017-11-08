@@ -12,7 +12,8 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context
+from ansible.module_utils.common import build_dci_context, get_action
+from ansible.module_utils.dci_base import *
 
 import os
 
@@ -55,6 +56,9 @@ options:
     required: false
     description:
       - List of field to embed within the retrieved resource
+  where:
+    required: false
+    description: Specific criterias for search
 '''
 
 EXAMPLES = '''
@@ -77,30 +81,62 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
-def download_file(module, ctx):
-    if os.path.isdir(module.params['dest']):
-        dest_file = os.path.join(
-            module.params['dest'],
-            module.params['id'] + '.tar')
-    else:
-        dest_file = module.params['dest']
 
-    if os.path.isfile(dest_file):
-        module.exit_json(changed=False)
-    else:
-        try:
+class DciComponent(DciBase):
+
+    def __init__(self, params):
+        super(DciComponent, self).__init__(dci_component)
+        self.id = params.get('id')
+        self.name = params.get('name')
+        self.dest = params.get('dest')
+        self.path = params.get('path')
+        self.export_control = params.get('export_control')
+        self.type = params.get('type')
+        self.canonical_project_name = params.get('canonical_project_name')
+        self.url = params.get('url')
+        self.data = params.get('data')
+        self.topic_id = params.get('topic_id')
+        self.search_criterias = {
+            'embed': params.get('embed'),
+            'where': params.get('where')
+        }
+        self.deterministic_params = ['name', 'dest', 'path', 'export_control',
+                                     'type', 'canonical_project_name', 'url',
+                                     'data', 'topic_id']
+
+    def do_download(self, context):
+        if os.path.isdir(self.dest):
+            dest_file = os.path.join(self.dest, self.id + '.tar')
+        else:
+            dest_file = self.dest
+
+        if os.path.isfile(dest_file):
+            #TODO(DO NOT MERGE YET)
+            module.exit_json(changed=False)
+        else:
             component_files = dci_component.file_list(
-                ctx,
-                module.params['id']).json()['component_files']
+                context,
+                self.id).json()['component_files']
             component_file_id = component_files[0]['id']
-        except (KeyError, IndexError):
-            module.fail_json(
-                msg='Failed to get the component_files from the server.')
-        return dci_component.file_download(
-            ctx,
-            module.params['id'],
-            component_file_id,
-            dest_file)
+            return dci_component.file_download(
+                context, self.id, component_file_id, dest_file
+            )
+
+    def do_delete(self, context):
+        return dci_component.delete(context, self.id)
+
+    def do_upload(self, context):
+        return dci_component.file_upload(context, self.id, self.path)
+
+    def do_create(self, context):
+        for param in ['name', 'type']:
+            if not getattr(self, param):
+                raise DciParameterError(
+                    '%s parameter must be speficied' % param
+                )
+
+        return super(DciComponent, self).do_create(context)
+
 
 def main():
     module = AnsibleModule(
@@ -126,88 +162,35 @@ def main():
             topic_id=dict(type='str'),
             path=dict(type='str'),
             embed=dict(type='list'),
+            where=dict(type='str'),
         ),
+        required_if=[['state', 'absent', ['id']]],
+        mutually_exclusive=[['dest', 'path']]
     )
 
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
-    ctx = build_dci_context(module)
+    context = build_dci_context(module)
+    action_name = get_action(module.params)
 
-    # Action required: Delete the component matching the component id
-    # Endpoint called: /components/<component_id> DELETE via dci_component.delete()
-    #
-    # If the component exist and it has been succesfully deleted the changed is
-    # set to true, else if the file does not exist changed is set to False
-    if module.params['state'] == 'absent':
-        if not module.params['id']:
-            module.fail_json(msg='id parameter is required')
-        res = dci_component.delete(ctx, module.params['id'])
+    component = DciComponent(module.params)
+    action_func = getattr(component, 'do_%s' % action_name)
 
-    # Action required: Attach a file to a component
-    # Endpoint called: /components/<component_id>/files/ POST via dci_component.file_upload()
-    #
-    # Attach file to a component
-    elif module.params['path']:
-        res = dci_component.file_upload(ctx, module.params['id'], module.params['path'])
-
-    # Action required: Download a component
-    # Endpoint called: /components/<component_id>/files/<file_id>/content GET via dci_component.file_download()
-    #
-    # Download the component
-    elif module.params['dest']:
-        res = download_file(module, ctx)
-
-    # Action required: Get component informations
-    # Endpoint called: /components/<component_id> GET via dci_component.get()
-    #
-    # Get component informations
-    elif module.params['id'] and module.params['export_control'] is None:
-        kwargs = {}
-        if module.params['embed']:
-            kwargs['embed'] = module.params['embed']
-        res = dci_component.get(ctx, module.params['id'], **kwargs)
-
-    # Action required: Update an existing component
-    # Endpoint called: /components/<component_id> PUT via dci_component.update()
-    #
-    # Update the component with the specified parameters.
-    elif module.params['id']:
-        res = dci_component.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            updated_kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['component']['etag']
-            }
-            if module.params['export_control'] is not None:
-                updated_kwargs['export_control'] = module.params['export_control']
-
-            res = dci_component.update(ctx, **updated_kwargs)
-
-    # Action required: Create a new component
-    # Endpoint called: /component POST via dci_component.create()
-    #
-    # Create a new component
-    else:
-        if not module.params['name']:
-            module.fail_json(msg='name parameter must be speficied')
-        if not module.params['type']:
-            module.fail_json(msg='type parameter must be speficied')
-
-        kwargs = {
-            'name': module.params['name'],
-            'type': module.params['type'],
-        }
-
-        if module.params['canonical_project_name']:
-            kwargs['canonical_project_name'] = module.params['canonical_project_name']
-        if module.params['url']:
-            kwargs['url'] = module.params['url']
-        if module.params['data']:
-            kwargs['data'] = module.params['data']
-        if module.params['topic_id']:
-            kwargs['topic_id'] = module.params['topic_id']
-        res = dci_component.create(ctx, **kwargs)
+    try:
+        res = action_func(context)
+    except DciResourceNotFoundException as exc:
+        module.fail_json(msg=exc.message)
+    except DciServerErrorException as exc:
+        module.fail_json(msg=exc.message)
+    except DciUnexpectedErrorException as exc:
+        module.fail_json(msg=exc.message)
+    except DciParameterError as exc:
+        module.fail_json(msg=exc.message)
+    except (KeyError, IndexError):
+        module.fail_json(
+            msg='Failed to get the component_files from the server.'
+        )
 
     try:
         result = res.json()
@@ -216,7 +199,7 @@ def main():
         if res.status_code == 409:
             result = {
                 'component': dci_topic.list_components(
-                             ctx,
+                             context,
                              module.params['topic_id'],
                              where='name:' + module.params['name']
                              ).json()['components'][0],
