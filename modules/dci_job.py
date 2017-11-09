@@ -108,6 +108,7 @@ EXAMPLES = '''
 
  - name: Notify for a specific reason
    dci_job:
+     id: '{{ job_id }}'
      notify: "Specific comment"
 '''
 
@@ -212,7 +213,7 @@ def main():
             comment=dict(type='str'),
             status=dict(type='str'),
             metadata=dict(type='dict'),
-            notify=dict(type='dict'),
+            notify=dict(type='str'),
             upgrade=dict(type='bool'),
             components=dict(type='list'),
             team_id=dict(type='str'),
@@ -238,8 +239,13 @@ def main():
         if not module.params['components']:
             action_name = 'schedule'
 
+    # Send a notification
+    elif action_name == 'notify':
+        action_name = 'notify'
+
     job = DciJob(module.params)
     action_func = getattr(job, 'do_%s' % action_name)
+
 
     http_response = run_action_func(action_func, context, module)
     result = parse_http_response(http_response, dci_job, context, module)
