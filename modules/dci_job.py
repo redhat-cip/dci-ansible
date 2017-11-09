@@ -104,6 +104,7 @@ EXAMPLES = '''
 
  - name: Notify for a specific reason
    dci_job:
+     id: '{{ job_id }}'
      notify: "Specific comment"
 '''
 
@@ -130,7 +131,7 @@ def main():
             comment=dict(type='str'),
             status=dict(type='str'),
             metadata=dict(type='dict'),
-            notify=dict(type='dict'),
+            notify=dict(type='str'),
             upgrade=dict(type='bool'),
             components=dict(type='list', default=[]),
             team_id=dict(type='str'),
@@ -210,8 +211,8 @@ def main():
             res = dci_job.get_full_data(ctx, ctx.last_job_id)
 
     # Send a notification
-    elif module.params['notify']:
-        res = dci_job.notify(ctx, ctx.last_job_id, mesg=module.params['notify'])
+    elif module.params['id'] and module.params['notify']:
+        res = dci_job.notify(ctx, module.params['id'], mesg=module.params['notify'])
 
     # Manually create the job
     elif module.params['components']:
