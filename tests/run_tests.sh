@@ -2,7 +2,6 @@
 
 set -eux
 
-exit 0
 
 function clean_environment() {
     unset DCI_LOGIN
@@ -15,15 +14,15 @@ function clean_environment() {
 
 # --- Starting unit-tests
 
-source ./admin.sh
-modules='dci_user dci_team dci_topic dci_component dci_feeder dci_product dci_role'
+# source ./admin.sh
+# modules='dci_user dci_team dci_topic dci_component dci_feeder dci_product dci_role'
 
-for module in $modules; do
-    ansible-playbook unit-tests/$module/playbook.yml -vvv
-    dcictl purge
-done
+# for module in $modules; do
+#     ansible-playbook unit-tests/$module/playbook.yml -vvv
+#     dcictl purge
+# done
 
-clean_environment
+# clean_environment
 
 
 # --- Starting scenario-tests
@@ -35,6 +34,8 @@ clean_environment
 source ./feeder.sh
 ansible-playbook scenario-tests/feeder.yml -vvv
 clean_environment
+
+exit 0
 
 source ./remoteci.sh
 ansible-playbook scenario-tests/remoteci.yml -vvv

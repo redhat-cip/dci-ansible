@@ -32,6 +32,9 @@
       command: "cat {{ lookup('env', 'PWD')  }}/content.download"
       register: component_file_after_download
 
+    - name: Remove content.download
+      command: "mv {{ lookup('env', 'PWD')  }}/content.download /tmp/lala"
+
     - name: Ensure proper file has been downloaded
       assert:
         that: component_file_before_upload.stdout == component_file_after_download.stdout
