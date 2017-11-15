@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5ad0253b_5b231b06",
+        "filename": "tests/scenario-tests/setup_env.yml",
+        "patchSetId": 9
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-11-15T08:36:07Z",
+      "side": 1,
+      "message": "I like this thank you!",
+      "range": {
+        "startLine": 55,
+        "startChar": 0,
+        "endLine": 71,
+        "endChar": 72
+      },
+      "revId": "003c46750ec0f76f7b9b7d6d8932b42c014f6105",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
