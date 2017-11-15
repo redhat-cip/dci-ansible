@@ -2,7 +2,6 @@
 
 set -eux
 
-exit 0
 
 function clean_environment() {
     unset DCI_LOGIN
