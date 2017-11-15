@@ -29,7 +29,7 @@
     - name: Attach OSP13 team to OSP13 topic
       dci_topic:
         id: '{{ openstack_topic.topic.id }}'
-        teams:
+        team_ids:
           - '{{ openstack_team.team.id }}'
 
     - name: Create Product Owner for OpenStack

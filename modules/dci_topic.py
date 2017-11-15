@@ -56,7 +56,7 @@ options:
   product_id:
     required: false
     description: The product the topic belongs to
-  teams:
+  team_ids:
     required: false
     description: List of Teams attach to this topic
   embed:
@@ -118,7 +118,7 @@ def main():
             label=dict(type='str'),
             product_id=dict(type='str'),
             component_types=dict(type='list'),
-            teams=dict(type='list'),
+            team_ids=dict(type='list'),
             embed=dict(type='list'),
         ),
     )
@@ -149,7 +149,7 @@ def main():
     # Endpoint called: /topic/<topic_id> GET via dci_topic.get()
     #
     # Get topic informations
-    elif module.params['id'] and not module.params['name'] and not module.params['label'] and not module.params['component_types'] and not module.params['product_id'] and not module.params['teams']:
+    elif module.params['id'] and not module.params['name'] and not module.params['label'] and not module.params['component_types'] and not module.params['product_id'] and not module.params['team_ids']:
         kwargs = {}
         if module.params['embed']:
             kwargs['embed'] = module.params['embed']
@@ -159,9 +159,9 @@ def main():
     # Endpoint called: /topics/<topic_id>/teams POST via dci_topic.attach_team()
     #
     # Update the topic with the specified members.
-    elif module.params['id'] and module.params['teams']:
-        for member in module.params['teams']:
-            res = dci_topic.attach_team(ctx, module.params['id'], member)
+    elif module.params['id'] and module.params['team_ids']:
+        for team in module.params['team_ids']:
+            res = dci_topic.attach_team(ctx, module.params['id'], team)
 
     # Action required: Update an existing topic
     # Endpoint called: /topics/<topic_id> PUT via dci_topic.update()
