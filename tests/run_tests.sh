@@ -2,7 +2,7 @@
 
 set -eux
 
-exit 0
+sudo cat /etc/dci-api/settings.yml
 
 function clean_environment() {
     unset DCI_LOGIN
