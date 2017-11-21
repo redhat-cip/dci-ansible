@@ -95,7 +95,7 @@ def get_standard_action(params):
 
     non_determistic_params = ['embed', 'mime', 'state', 'where']
     deterministic_params = {k: v for k, v in params.items() if k not in non_determistic_params}
-    non_empty_values = [item for item in deterministic_params if deterministic_params[item] is not None]
+    non_empty_values = [item for item in deterministic_params if deterministic_params[item]]
 
     if 'state' in params and params['state'] == 'absent':
         return 'delete'
@@ -159,7 +159,10 @@ def parse_http_response(response, resource, context, module):
         }
         result['changed'] = False
     else:
-        result = response.json()
+        if not response._content:
+            result = {}
+        else:
+            result = response.json()
         result['changed'] = True
 
     return result
