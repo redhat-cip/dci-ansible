@@ -12,7 +12,8 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context
+from ansible.module_utils.common import *
+from ansible.module_utils.dci_base import *
 
 try:
     from dciclient.v1.api import context as dci_context
@@ -57,6 +58,9 @@ options:
     required: false
     description:
       - List of field to embed within the retrieved resource
+  where:
+    required: false
+    description: Specific criterias for search
 '''
 
 EXAMPLES = '''
@@ -83,6 +87,33 @@ RETURN = '''
 '''
 
 
+class DciTest(DciBase):
+
+    def __init__(self, params):
+        super(DciTest, self).__init__(dci_test)
+        self.id = params.get('id')
+        self.name = params.get('name')
+        self.team_id = params.get('team_id')
+        self.data = params.get('data')
+        self.search_criterias = {
+            'embed': params.get('embed'),
+            'where': params.get('where')
+        }
+        self.deterministic_params = ['name', 'team_id', 'data']
+
+    def do_delete(self, context):
+        return self.resource.delete(context, self.id)
+
+    def do_create(self, context):
+        for param in ['name', 'team_id']:
+            if not getattr(self, param):
+                raise DciParameterError(
+                    '%s parameter must be speficied' % param
+                )
+
+        return super(DciTest, self).do_create(context)
+
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -101,64 +132,22 @@ def main():
             data=dict(type='dict'),
             team_id=dict(type='str'),
             embed=dict(type='list'),
+            where=dict(type='str'),
         ),
+        required_if=[['state', 'absent', ['id']]]
     )
 
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
-    ctx = build_dci_context(module)
+    context = build_dci_context(module)
+    action_name = get_standard_action(module.params)
 
-    # Action required: Delete the test matching test id
-    # Endpoint called: /tests/<test_id> DELETE via dci_test.delete()
-    #
-    # If the test exists and it has been succesfully deleted the changed is
-    # set to true, else if the test does not exist changed is set to False
-    if module.params['state'] == 'absent':
-        if not module.params['id']:
-            module.fail_json(msg='id parameter is required')
-        res = dci_test.delete(ctx, module.params['id'])
+    test = DciTest(module.params)
+    action_func = getattr(test, 'do_%s' % action_name)
 
-    # Action required: Retrieve test informations
-    # Endpoint called: /tests/<test_id> GET via dci_test.get()
-    #
-    # Get test informations
-    elif module.params['id']:
-        kwargs = {}
-        if module.params['embed']:
-            kwargs['embed'] = module.params['embed']
-        res = dci_test.get(ctx, module.params['id'], **kwargs)
-
-    # Action required: Create a test with the specified content
-    # Endpoint called: /tests POST via dci_test.create()
-    #
-    # Create the new test.
-    else:
-        if not module.params['name']:
-            module.fail_json(msg='name parameter must be specified')
-        if not module.params['team_id']:
-            module.fail_json(msg='team_id parameter must be specified')
-
-        kwargs = {
-            'name': module.params['name'],
-            'team_id': module.params['team_id'],
-        }
-        if module.params['data']:
-            kwargs['data'] = module.params['data']
-
-        res = dci_test.create(ctx, **kwargs)
-
-    try:
-        result = res.json()
-        if res.status_code == 404:
-            module.fail_json(msg='The resource does not exist')
-        if res.status_code == 409:
-            result['changed'] = False
-        else:
-            result['changed'] = True
-    except:
-        result = {}
-        result['changed'] = True
+    http_response = run_action_func(action_func, context, module)
+    result = parse_http_response(http_response, dci_test, context, module)
 
     module.exit_json(**result)
 
