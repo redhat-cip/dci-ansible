@@ -4,11 +4,131 @@ __metaclass__ = type
 
 from ansible.plugins.callback import CallbackBase
 
-
+import base64
 import os
 from dciclient.v1.api import context as dci_context
 from dciclient.v1.api import jobstate as dci_jobstate
 from dciclient.v1.api import file as dci_file
+
+
+class Formatter(object):
+
+    def __init__(self):
+        pass
+
+    def format(self, result):
+
+        module_name = result._task.action
+
+        if hasattr(self, 'format_%s' % module_name):
+            formatter = getattr(self, 'format_%s' % module_name)
+        else:
+            formatter = getattr(self, 'format_generic')
+
+        return '%s\n' % formatter(result)
+
+    def format_command(self, result):
+        output = ''
+        if result._result['stderr']:
+            output += 'Stderr:\n%s\nStdout:\n' % result._result['stderr']
+        output += result._result['stdout']
+        return output
+
+    def format_add_host(self, result):
+        output = "Adding host '%s'" % result._result['add_host']['host_name']
+        if 'host_vars' in result._result['add_host'] and result._result['add_host']['host_vars']:
+            output += ' (%s)' % str(result._result['add_host']['host_vars'])
+        if 'groups' in result._result['add_host'] and result._result['add_host']['groups']:
+            output += ' into groups (%s)' % ''.join(result._result['add_host']['groups'])
+        output += ' in current inventory'
+        return output
+
+    def format_authorized_key(self, result):
+        return 'Adding authorized_key for user: %s (changed: %s)\nKey: %s' % (result._result['user'], result._result['changed'], result._result['key'])
+
+    def format_copy(self, result):
+        return 'Copying to file: %s (changed: %s)' % (result._result['dest'],
+                                                      result._result['changed'])
+
+    def format_fail(self, result):
+        return result._result['msg']
+
+    def format_file(self, result):
+        try:
+            return '\n'.join(['%s: %s (changed: %s)' % (f['path'], f['state'], f['changed']) for f in result._result['results']])
+        except Exception:
+            return '%s: %s (changed: %s)' % (result._result['path'], result._result['state'], result._result['changed'])
+
+    def format_find(self, result):
+        output = 'Examined: %s\nMatched: %s\n\n' % (result._result['examined'], result._result['matched'])
+        output += '\n'.join([item['path'] for item in result._result['files']])
+        return output
+
+    def format_firewalld(self, result):
+        if result._result['module_stderr']:
+            return 'Stderr:\n%s' % result._result['module_stderr']
+        return result._result['msg']
+
+    def format_generic(self, result):
+        return 'All items completed (changed: %s)' % result._result['changed']
+
+    def format_ini_file(self, result):
+        try:
+            return '\n'.join(['%s - (changed: %s)\nMessage: %s (%s.%s=%s)\n' % (ini['path'], ini['changed'], ini['msg'], ini['invocation']['module_args']['section'], ini['invocation']['module_args']['option'], ini['invocation']['module_args']['value']) for ini in result._result['results']])
+        except Exception:
+            return '%s - (changed: %s)\nMessage: %s (%s.%s=%s)' % (result._result['path'], result._result['changed'], result._result['msg'], result._result['invocation']['module_args']['section'], result._result['invocation']['module_args']['option'], result._result['invocation']['module_args']['value'])
+
+    def format_lineinfile(self, result):
+        output = '%s - (changed: %s)' % (result._result['invocation']['module_args']['dest'], result._result['changed'])
+        if result._result['msg']:
+            output += '\nMessage: %s' % result._result['msg']
+        output += '\nLine: %s' % result._result['invocation']['module_args']['line']
+        return output
+
+    def format_package(self, result):
+        try:
+            return '\n'.join([p['results'][0] for p in result._result['results']])
+        except Exception:
+            return ''.join(result._result['results'])
+
+    def format_set_fact(self, result):
+        return 'Settings the following facts:\n\n%s' % '\n'.join(['%s: %s' % (key, value) for key, value in result._result['ansible_facts'].iteritems()])
+
+    def format_service(self, result):
+        return 'Service Name: %s, Service State: %s (changed: %s)' % (result._result['name'],
+                                                                      result._result['state'],
+                                                                      result._result['changed'])
+
+    def format_slurp(self, result):
+        return 'Slurping content of %s\n\n%s' % (result._result['source'], base64.b64decode(result._result['content']))
+
+    def format_stat(self, result):
+        return '%s: Stat %s' % (result._result['invocation']['module_args']['path'], str(result._result['stat']))
+
+    def format_systemd(self, result):
+        return 'Service Name: %s, Service State: %s (changed: %s)' % (result._result['name'],
+                                                                      result._result['state'],
+                                                                      result._result['changed'])
+
+    def format_template(self, result):
+        return 'Copying template to file: %s (changed: %s)' % (result._result['dest'],
+                                                               result._result['changed'])
+
+    def format_unarchive(self, result):
+        output = ''
+        for archive in result._result['results']:
+            output += 'Source: %s, Destination: %s\n' % (archive['src'], archive['dest'])
+            if 'files' in archive:
+                output += '\n'.join(archive['files'])
+        return output
+
+    def format_user(self, result):
+        return 'User: %s (changed: %s)\nSSH Public Key: %s' % (result._result['comment'],
+                                                               result._result['changed'],
+                                                               result._result['ssh_public_key'])
+
+    def format_yum_repository(self, result):
+        return '\n'.join(['File: %s (changed: %s)\n\n%s' % (repo['diff']['after_header'], repo['changed'], repo['diff']['after']) for repo in result._result['results']])
 
 
 class CallbackModule(CallbackBase):
@@ -41,61 +161,6 @@ class CallbackModule(CallbackBase):
         elif client_id is not None and api_secret is not None:
             return dci_context.build_signature_context(url, client_id,
                                                        api_secret, 'Ansible')
-
-    def format_output(self, result):
-        """ Return the proper output for a given task output.
-
-            There is no standard about which variable should hold the task
-            output. It is generally available in 'stdout' but this is not
-            true for all the tasks. This function returns the most meaningful
-            value.
-        """
-
-        if 'stderr' in result and result['stderr']:
-            if result['stdout']:
-                output = 'Error Output:\n\n%s\n\nStandard Output:\n\n%s' % (
-                    result['stderr'], result['stdout']
-                )
-            else:
-                output = result['stderr']
-
-        else:
-            if 'invocation' not in result:
-                module_name = 'file'
-            elif 'extract_result' in result:
-                module_name = 'unarchive'
-            elif 'module_name' not in result['invocation']:
-                module_name = 'package'
-            else:
-                module_name = result['invocation']['module_name']
-
-            if module_name == 'os_server':
-                output = '%s - %s' % (result['server']['status'],
-                                      result['server']['id'])
-            elif module_name == 'hostname':
-                output = 'Hostname: %s' % result['name']
-            elif module_name == 'user':
-                output = 'Name: %s - uid: %s - gid: %s' % (result['name'],
-                                                           result['uid'],
-                                                           result['group'])
-            elif module_name == 'lineinfile':
-                output = '%s - %s' % (
-                    result['invocation']['module_args']['line'], result['msg']
-                )
-            elif module_name == 'get_url':
-                output = '%s - %s' % (result['dest'], result['msg'])
-            elif module_name == 'unarchive':
-                output = '%s unarchived in %s' % (
-                    result['src'], result['dest']
-                )
-            elif 'stdout_lines' in result:
-                output = '\n'.join(result['stdout_lines'])
-            elif 'msg' in result:
-                output = result['msg']
-            else:
-                output = 'All items completed'
-
-        return '%s\n' % output
 
     def post_message(self, result, output):
         kwargs = {
@@ -144,7 +209,10 @@ class CallbackModule(CallbackBase):
                                      job_id=self._job_id).json()
             self._jobstate_id = ns['jobstate']['id']
 
-        output = self.format_output(result._result)
+        try:
+            output = Formatter().format(result)
+        except Exception:
+            output = 'All items completed. (An error while parsing the output occured, please reach to distributed-ci@redhat.com)'
 
         if result._task.action != 'setup' and self._job_id:
             self.post_message(result, output)
@@ -156,7 +224,10 @@ class CallbackModule(CallbackBase):
 
         super(CallbackModule, self).v2_runner_on_failed(result, ignore_errors)
 
-        output = self.format_output(result._result)
+        try:
+            output = Formatter().format(result)
+        except Exception:
+            output = 'All items completed. (An error while parsing the output occured, please reach to distributed-ci@redhat.com)'
 
         if ignore_errors:
             self.post_message(result, output)
