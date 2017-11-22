@@ -6,12 +6,41 @@ from datetime import datetime
 
 from ansible.plugins.callback import CallbackBase
 
-
 import os
 from dciclient.v1.api import context as dci_context
 from dciclient.v1.api import jobstate as dci_jobstate
 from dciclient.v1.api import job as dci_job
 from dciclient.v1.api import file as dci_file
+
+
+class Formatter(object):
+    """ """
+
+    def __init__(self):
+        pass
+
+    def format(self, result):
+
+        if '_ansible_module_name' in result._task_fields['args']:
+            module_name = result._task_fields['args']['_ansible_module_name']
+        elif 'results' in result._result:
+            module_name = 'package'
+        else:
+            module_name = 'generic'
+
+        if hasattr(self, 'format_%s' % module_name):
+            formatter = getattr(self, 'format_%s' % module_name)
+        else:
+            formatter = getattr(self, 'format_generic')
+
+        return '%s\n' % formatter(result)
+
+    def format_package(self, result):
+        return ''.join(result._result['results'])
+
+    def format_generic(self, result):
+        return 'All items completed (changed: %s, failed: %s)' \
+                % (result._result['changed'], result._result['failed'])
 
 
 class CallbackModule(CallbackBase):
@@ -137,7 +166,9 @@ class CallbackModule(CallbackBase):
         if result._task.action == 'dci_job' and result._result['invocation']['module_args']['upgrade']:
             self._job_id = result._result['id']
 
-        output = self.format_output(result._result)
+        # output = self.format_output(result._result)
+        formatter = Formatter()
+        output = formatter.format(result)
 
         if result._task.action != 'setup':
             self.post_message(result, output)
