@@ -231,7 +231,10 @@ def main():
     #
     # Schedule a new job against the DCI Control-Server
     else:
-        topic_id = dci_topic.list(ctx, where='name:' + module.params['topic']).json()['topics'][0]['id']
+        topics = dci_topic.list(ctx, where='name:' + module.params['topic']).json()['topics']
+        if len(topics) != 1:
+            module.fail_json(msg='Topic not found: %s' % module.params['topic'])
+        topic_id = topics[0]
 
         res = dci_job.schedule(
             ctx,

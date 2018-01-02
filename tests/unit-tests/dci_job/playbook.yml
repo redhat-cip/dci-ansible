@@ -1,0 +1,8 @@
+---
+- hosts: localhost
+  tasks:
+    - name: schedule a job with an invalid topic
+      dci_job:
+        topic: unknown
+      register: job_informations
+      failed_when: "job_informations.msg != 'Topic not found: unknown'"

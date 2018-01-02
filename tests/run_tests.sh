@@ -12,7 +12,7 @@ function clean_environment() {
 
 # --- Starting unit-tests
 
-modules='dci_user dci_team dci_topic dci_component dci_feeder dci_product dci_role'
+modules='dci_user dci_team dci_topic dci_component dci_feeder dci_product dci_role dci_job'
 
 source ./admin.sh
 for module in $modules; do
