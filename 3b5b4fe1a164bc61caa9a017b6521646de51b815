@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da1255d7_8f803948",
+        "filename": "modules/dci_job.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 158,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-01-04T16:34:31Z",
+      "side": 1,
+      "message": "This resolve https://softwarefactory-project.io/r/#/c/10727/ indeed. Can you import the unit-test I did?",
+      "revId": "3b5b4fe1a164bc61caa9a017b6521646de51b815",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
