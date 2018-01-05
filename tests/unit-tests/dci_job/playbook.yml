@@ -1,0 +1,13 @@
+---
+- hosts: localhost
+  tasks:
+    - name: schedule a job with an invalid topic
+      dci_job:
+        topic: unknown
+      register: job_informations
+      ignore_errors: true
+
+    - name: Ensure job fails with unknown topic
+      assert:
+        that:
+          - "job_informations.msg == 'Topic: unknown resource not found'"
