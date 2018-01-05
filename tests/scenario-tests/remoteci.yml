@@ -8,8 +8,8 @@
 
     - name: Set global variables
       set_fact:
-        job_id: '{{ hostvars.localhost.job_informations.job_id  }}'
-        components: '{{ hostvars.localhost.job_informations.components  }}'
+        job_id: '{{ hostvars.localhost.job_informations.job.id  }}'
+        components: '{{ hostvars.localhost.job_informations.job.components  }}'
 
 - hosts: localhost
   vars:
