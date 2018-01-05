@@ -204,7 +204,7 @@ class CallbackModule(CallbackBase):
             if not self._job_id:
                 for hostvar in fact_cache:
                     if 'job_informations' in fact_cache[hostvar]:
-                        self._job_id = fact_cache[hostvar]['job_informations']['id']
+                        self._job_id = fact_cache[hostvar]['job_informations']['job']['id']
                         break
 
             ns = dci_jobstate.create(self._dci_context, status=status,
