@@ -12,7 +12,8 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context, module_params_empty
+from ansible.module_utils.common import *
+from ansible.module_utils.dci_base import *
 
 import os
 
@@ -74,6 +75,9 @@ options:
     required: false
     description:
       - List of field to embed within the retrieved resource
+  where:
+    required: false
+    description: Specific criterias for search
 '''
 
 EXAMPLES = '''
@@ -112,6 +116,88 @@ RETURN = '''
 '''
 
 
+class DciJob(DciBase):
+
+    def __init__(self, params):
+        super(DciJob, self).__init__(dci_job)
+        self.id = params.get('id')
+        self.topic = params.get('topic')
+        self.comment = params.get('comment')
+        self.status = params.get('status')
+        self.metadata = params.get('metadata')
+        self.notify = params.get('notify')
+        self.upgrade = params.get('upgrade')
+        self.components = params.get('components', [])
+        self.team_id = params.get('team_id')
+        self.search_criterias = {
+            'embed': params.get('embed'),
+            'where': params.get('where')
+        }
+        self.deterministic_params = ['topic', 'comment', 'status',
+                                     'metadata', 'team_id']
+
+    def do_notify(self, context):
+        return dci_job.notify(context, context.last_job_id, mesg=self.notify)
+
+    def do_upgrade(self, context):
+        res = dci_job.upgrade(context, job_id=self.id)
+
+        if res.status_code == 201:
+            return dci_job.get(context, context.last_job_id,
+                               embed='topic,remoteci,components,rconfiguration')
+        else:
+            self.raise_error(res)
+
+    def do_schedule(self, context):
+        topic_res = dci_topic.list(context, where='name:' + self.topic)
+
+        if topic_res.status_code == 200:
+            topics = topic_res.json()['topics']
+            if not len(topics):
+                raise DciResourceNotFoundException(
+                    'Topic: %s resource not found' % self.topic
+                )
+
+            topic_id = topics[0]['id']
+            res = dci_job.schedule(
+                context, remoteci_id=context.session.auth.client_id,
+                topic_id=topic_id
+            )
+            if res.status_code == 201:
+                return dci_job.get(context, context.last_job_id,
+                                   embed='topic,remoteci,components,rconfiguration')
+            else:
+                self.raise_error(res)
+
+        else:
+            self.raise_error(res)
+
+    def do_create(self, context):
+        topic_res = dci_topic.list(context, where='name:' + self.topic)
+
+        if topic_res.status_code == 200:
+            topics = topic_res.json()['topics']
+            if not len(topics):
+                raise DciResourceNotFoundException(
+                    'Topic: %s resource not found' % self.topic
+                )
+
+            topic_id = topics[0]['id']
+
+            res = dci_job.create(
+                context, remoteci_id=context.session.auth.client_id,
+                team_id=self.team_id, topic_id=topic_id,
+                components=self.components, comment=self.comment
+            )
+            if res.status_code == 201:
+                return dci_job.get_full_data(context, context.last_job_id)
+            else:
+                self.raise_error(res)
+
+        else:
+            self.raise_error(res)
+
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -132,130 +218,48 @@ def main():
             metadata=dict(type='dict'),
             notify=dict(type='dict'),
             upgrade=dict(type='bool'),
-            components=dict(type='list', default=[]),
+            components=dict(type='list'),
             team_id=dict(type='str'),
             embed=dict(type='list'),
+            where=dict(type='str'),
         ),
+        required_if=[['state', 'absent', ['id']]]
     )
 
     if not dciclient_found:
         module.fail_json(msg='The python dciclient module is required')
 
-    ctx = build_dci_context(module)
+    context = build_dci_context(module)
+    action_name = get_standard_action(module.params)
 
-    # Action required: List all jobs
-    # Endpoint called: /jobs GET via dci_job.list()
+    if action_name == 'update':
+        if module.params['notify']:
+            action_name = 'notify'
+        elif module.params['upgrade']:
+            action_name = 'upgrade'
+
+    elif action_name == 'create':
+        if not module.params['components']:
+            action_name = 'schedule'
+
+    job = DciJob(module.params)
+    action_func = getattr(job, 'do_%s' % action_name)
+
+    http_response = run_action_func(action_func, context, module)
+    result = parse_http_response(http_response, dci_job, context, module)
+
+    # TODO (spredzy): The struct is nested into dict['job'] when it
+    #                 should be at the dict level like the other modules.
+    #                 This will requires agent rewritte and hence needs
+    #                 to be communicated first
     #
-    # List all jobs
-    if module_params_empty(module.params):
-        res = dci_job.list(ctx)
-
-    # Action required: Delete the job matching the job id
-    # Endpoint called: /jobs/<job_id> DELETE via dci_job.delete()
+    # Before: dict['job']['job_id']
+    # After: dict['job_id']
     #
-    # If the job exist and it has been succesfully deleted the changed is
-    # set to true, else if the file does not exist changed is set to False
-    elif module.params['state'] == 'absent':
-        if not module.params['id']:
-            module.fail_json(msg='id parameter is required')
-        res = dci_job.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['job']['etag']
-            }
-            res = dci_job.delete(ctx, **kwargs)
-
-    # Action required: Retrieve job informations
-    # Endpoint called: /jobs/<job_id> GET via dci_job.get()
-    #
-    # Get job informations
-    elif (module.params['id'] and
-          not module.params['comment'] and
-          not module.params['status'] and
-          not module.params['metadata'] and
-          not module.params['upgrade']):
-        kwargs = {}
-        if module.params['embed']:
-            kwargs['embed'] = module.params['embed']
-        res = dci_job.get(ctx, module.params['id'], **kwargs)
-
-    # Action required: Update an existing job
-    # Endpoint called: /jobs/<job_id> PUT via dci_job.update()
-    #
-    # Update the job with the specified characteristics.
-    elif module.params['id'] and not module.params['upgrade']:
-        res = dci_job.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['job']['etag']
-            }
-            if module.params['comment']:
-                kwargs['comment'] = module.params['comment']
-            if module.params['status']:
-                kwargs['status'] = module.params['status']
-            if module.params['metadata']:
-                for k, v in module.params['metadata'].items():
-                    dci_job.set_meta(ctx, module.params['id'], k, str(v))
-            res = dci_job.update(ctx, **kwargs)
-
-    # Action required: Schedule an upgrade job
-    # Endpoint called: /jobs/upgrade POST via dci_job.upgrade()
-    #
-    # Schedule an upgrade job using the next topic
-    elif module.params['id'] and module.params['upgrade']:
-        res = dci_job.upgrade(ctx, job_id=module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            res = dci_job.get_full_data(ctx, ctx.last_job_id)
-
-    # Send a notification
-    elif module.params['notify']:
-        res = dci_job.notify(ctx, ctx.last_job_id, mesg=module.params['notify'])
-
-    # Manually create the job
-    elif module.params['components']:
-        topic_id = dci_topic.list(ctx, where='name:' + module.params['topic']).json()['topics'][0]['id']
-        res = dci_job.create(
-            ctx,
-            remoteci_id=ctx.session.auth.client_id,
-            team_id=module.params['team_id'],
-            topic_id=topic_id,
-            components=module.params['components'],
-            comment=module.params['comment'])
-        if res.status_code == 201:
-            res = dci_job.get_full_data(ctx, ctx.last_job_id)
-
-    # Action required: Schedule a new job
-    # Endpoint called: /jobs/schedule POST via dci_job.schedule()
-    #
-    # Schedule a new job against the DCI Control-Server
-    else:
-        topic_id = dci_topic.list(ctx, where='name:' + module.params['topic']).json()['topics'][0]['id']
-
-        res = dci_job.schedule(
-            ctx,
-            remoteci_id=ctx.session.auth.client_id,
-            topic_id=topic_id)
-        if res.status_code not in [400, 401, 404, 409]:
-            res = dci_job.get_full_data(ctx, ctx.last_job_id)
-
-    try:
-        result = res.json()
-        if res.status_code == 404:
-            module.fail_json(msg='The resource does not exist')
-        if res.status_code in [400, 401, 409]:
-            result['changed'] = False
-        else:
-            result['changed'] = True
-    except AttributeError:
-        # Enter here if new job has been schedule, return of get_full_data is already json.
-        result = res
-        result['changed'] = True
-        result['job_id'] = ctx.last_job_id
-    except:
-        result = {}
-        result['changed'] = True
+    if action_name in ['schedule', 'create']:
+        result['job_id'] = context.last_job_id
+        for k, v in result['job'].items():
+            result[k] = v
 
     module.exit_json(**result)
 

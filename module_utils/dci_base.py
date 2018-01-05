@@ -43,6 +43,20 @@ class DciBase(object):
         self.resource_name = resource.__name__.split('.')[-1]
         self.deterministic_params = []
 
+    def raise_error(self, res):
+        """Parse the http response and raise the appropriate error."""
+
+        if res.status_code in [401, 404]:
+            raise DciResourceNotFoundException(
+                '%s: %s resource not found' % (self.resource_name, self.id)
+            )
+
+        elif res.status_code == 500:
+            raise DciServerErrorException
+
+        else:
+            raise DciUnexpectedErrorException(res.status_code)
+
     def do_delete(self, context):
         """Remove a resource."""
 
