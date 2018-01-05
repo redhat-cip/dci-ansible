@@ -248,19 +248,6 @@ def main():
     http_response = run_action_func(action_func, context, module)
     result = parse_http_response(http_response, dci_job, context, module)
 
-    # TODO (spredzy): The struct is nested into dict['job'] when it
-    #                 should be at the dict level like the other modules.
-    #                 This will requires agent rewritte and hence needs
-    #                 to be communicated first
-    #
-    # Before: dict['job']['job_id']
-    # After: dict['job_id']
-    #
-    if action_name in ['schedule', 'create']:
-        result['job_id'] = context.last_job_id
-        for k, v in result['job'].items():
-            result[k] = v
-
     module.exit_json(**result)
 
 
