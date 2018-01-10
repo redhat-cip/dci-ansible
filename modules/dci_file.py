@@ -169,7 +169,7 @@ def main():
             job_id=dict(type='str'),
             jobstate_id=dict(type='str'),
             mime=dict(default='text/plain', type='str'),
-            embed=dict(type='list'),
+            embed=dict(type='str'),
             where=dict(type='str'),
         ),
         required_if=[['state', 'absent', ['id']]],

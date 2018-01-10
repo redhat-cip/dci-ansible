@@ -141,7 +141,7 @@ def main():
             name=dict(type='str'),
             data=dict(type='dict'),
             team_id=dict(type='str'),
-            embed=dict(type='list'),
+            embed=dict(type='str'),
             where=dict(type='str'),
         ),
         required_if=[['state', 'absent', ['id']]]

@@ -132,7 +132,7 @@ def main():
             name=dict(type='str'),
             label=dict(type='str'),
             description=dict(type='str'),
-            embed=dict(type='list'),
+            embed=dict(type='str'),
             where=dict(type='str'),
         ),
         required_if=[['state', 'absent', ['id']]]

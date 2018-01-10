@@ -125,7 +125,7 @@ def main():
             data=dict(type='dict'),
             topic_id=dict(type='str'),
             path=dict(type='str'),
-            embed=dict(type='list'),
+            embed=dict(type='str'),
         ),
     )
 

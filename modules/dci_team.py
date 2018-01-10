@@ -138,7 +138,7 @@ def main():
             name=dict(type='str'),
             country=dict(type='str'),
             parent_id=dict(type='str'),
-            embed=dict(type='list'),
+            embed=dict(type='str'),
             where=dict(type='str'),
         ),
         required_if=[['state', 'absent', ['id']]]

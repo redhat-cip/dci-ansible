@@ -154,7 +154,7 @@ def main():
             password=dict(type='str',no_log=True),
             role_id=dict(type='str'),
             team_id=dict(type='str'),
-            embed=dict(type='list'),
+            embed=dict(type='str'),
             where=dict(type='str'),
         ),
         required_if=[['state', 'absent', ['id']]]

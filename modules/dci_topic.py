@@ -155,7 +155,7 @@ def main():
             product_id=dict(type='str'),
             component_types=dict(type='list'),
             team_ids=dict(type='list'),
-            embed=dict(type='list'),
+            embed=dict(type='str'),
             where=dict(type='str'),
         ),
         required_if=[['state', 'absent', ['id']]]

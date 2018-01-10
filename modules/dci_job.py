@@ -220,7 +220,7 @@ def main():
             upgrade=dict(type='bool'),
             components=dict(type='list'),
             team_id=dict(type='str'),
-            embed=dict(type='list'),
+            embed=dict(type='str'),
             where=dict(type='str'),
         ),
         required_if=[['state', 'absent', ['id']]]
