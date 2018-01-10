@@ -151,7 +151,6 @@ def parse_http_response(response, resource, context, module):
         result['changed'] = True
 
     elif response.status_code == 409:
-        result = response.json()
         result = {
             '%s' % resource_name: resource.list(
                 context, where='name:' + module.params['name']
