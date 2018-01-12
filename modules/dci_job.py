@@ -151,24 +151,23 @@ class DciJob(DciBase):
     def do_schedule(self, context):
         topic_res = dci_topic.list(context, where='name:' + self.topic)
 
-        if topic_res.status_code == 200:
-            topics = topic_res.json()['topics']
-            if not len(topics):
-                raise DciResourceNotFoundException(
-                    'Topic: %s resource not found' % self.topic
-                )
+        if topic_res.status_code != 200:
+            self.raise_error(topic_res)
 
-            topic_id = topics[0]['id']
-            res = dci_job.schedule(
-                context, remoteci_id=context.session.auth.client_id,
-                topic_id=topic_id
+        topics = topic_res.json()['topics']
+        if not len(topics):
+            raise DciResourceNotFoundException(
+                'Topic: %s resource not found' % self.topic
             )
-            if res.status_code == 201:
-                return dci_job.get(context, context.last_job_id,
-                                   embed='topic,remoteci,components,rconfiguration')
-            else:
-                self.raise_error(res)
 
+        topic_id = topics[0]['id']
+        res = dci_job.schedule(
+            context, remoteci_id=context.session.auth.client_id,
+            topic_id=topic_id
+        )
+        if res.status_code == 201:
+            return dci_job.get(context, context.last_job_id,
+                               embed='topic,remoteci,components,rconfiguration')
         else:
             self.raise_error(res)
 
