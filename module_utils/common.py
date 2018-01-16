@@ -146,16 +146,21 @@ def parse_http_response(response, resource, context, module):
             result = {
                 '%s' % resource_name: resource.get(
                     context, module.params['id']
-                ).json()[resource_name],
+                ).json()[resource_name]
             }
         result['changed'] = True
 
     elif response.status_code == 409:
-        result = {
-            '%s' % resource_name: resource.list(
-                context, where='name:' + module.params['name']
-             ).json()['%ss' % resource_name][0],
-        }
+        if module.params['name'] is not None:
+            result = {
+                '%s' % resource_name: resource.list(
+                    context, where='name:' + module.params['name']
+                 ).json()['%ss' % resource_name][0]
+            }
+        else:
+            result = {'%s' % resource_name: resource.get(
+                context, module.params['id']).json()[resource_name]
+            }
         result['changed'] = False
     else:
         result = response.json()
