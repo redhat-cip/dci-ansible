@@ -159,10 +159,7 @@ class DciJob(DciBase):
                 )
 
             topic_id = topics[0]['id']
-            res = dci_job.schedule(
-                context, remoteci_id=context.session.auth.client_id,
-                topic_id=topic_id
-            )
+            res = dci_job.schedule(context, topic_id=topic_id)
             if res.status_code == 201:
                 return dci_job.get(context, context.last_job_id,
                                    embed='topic,remoteci,components,rconfiguration')
@@ -185,8 +182,7 @@ class DciJob(DciBase):
             topic_id = topics[0]['id']
 
             res = dci_job.create(
-                context, remoteci_id=context.session.auth.client_id,
-                team_id=self.team_id, topic_id=topic_id,
+                context, team_id=self.team_id, topic_id=topic_id,
                 components=self.components, comment=self.comment
             )
             if res.status_code == 201:
