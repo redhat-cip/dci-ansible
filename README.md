@@ -1,5 +1,7 @@
 # Ansible modules to interact with Distributed-CI (DCI)
 
+DUMMY CHANGE
+
 ![](https://img.shields.io/badge/ansible-2.4.0-green.svg?style=flat) ![](https://img.shields.io/badge/license-Apache2.0-blue.svg?style=flat) ![](https://img.shields.io/badge/python-2.7,3.5-green.svg?style=flat)
 
 A set of [Ansible](https://www.ansible.com) modules and callbacks to ease the interaction with the [Distributed-CI](https://docs.distributed-ci.io) platform.
