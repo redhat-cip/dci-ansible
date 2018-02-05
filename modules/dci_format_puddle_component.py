@@ -15,6 +15,7 @@ from ansible.module_utils.basic import *
 from six.moves.urllib.parse import urlparse
 
 import StringIO
+import yaml
 from datetime import datetime
 
 try:
@@ -76,17 +77,33 @@ def get_name(type, name_label, repo_name, version, repo_date):
     return name
 
 
-def get_data(type, name, repo_name, version, base_url):
+def get_data(type, name, repo_name, version, base_url, section_name,
+             raw_base_url):
     """Return data. """
 
     data = {
        'path': urlparse(base_url).path,
        'version': version,
+       'dlrn_commit_hash': None,
+       'dlrn_distro_hash': None,
     }
+
     if 'puddle_osp' in type:
         data['repo_name'] = repo_name
+        osp_version = section_name.split('-')[-1]
+        commit_information_file_path = '%s/import_data/commit.yaml' % \
+            '/'.join(raw_base_url.split('/')[0:-3])
     elif type == 'snapshot_rdo':
         data['repo_name'] = name
+        commit_information_file_path = '%s/commit.yaml' % raw_base_url
+
+    if ('puddle_osp' in type and float(osp_version) >= 10.0) or \
+       type == 'snapshot_rdo':
+        commit_information = yaml.load(requests.get(
+            commit_information_file_path).text
+        )
+        data['dlrn_commit_hash'] = commit_information['commits'][0]['commit_hash']
+        data['dlrn_distro_hash'] = commit_information['commits'][0]['distro_hash']
 
     return data
 
@@ -119,7 +136,10 @@ def get_repo_information(url, type, name):
         'canonical_project_name': get_canonical_project_name(type, name, repo_name),
         'name': get_name(type, name, repo_name, version, repo_date),
         'url': base_url,
-        'data': get_data(type, name, repo_name, version, base_url),
+        'data': get_data(
+            type, name, repo_name, version, base_url, section_name,
+            raw_base_url
+        ),
     }
 
     return component_informations
