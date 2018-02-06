@@ -106,9 +106,6 @@ EXAMPLES = '''
     comment: 'job created manually'
     components: ['4c282108-5086-454b-8d49-4b1d0345acd9', '4c8ec5c8-ec24-4253-abbf-63a4daddba8b']
 
- - name: Notify for a specific reason
-   dci_job:
-     notify: "Specific comment"
 '''
 
 # TODO
@@ -125,7 +122,6 @@ class DciJob(DciBase):
         self.comment = params.get('comment')
         self.status = params.get('status')
         self.metadata = params.get('metadata')
-        self.notify = params.get('notify')
         self.upgrade = params.get('upgrade')
         self.components = params.get('components', [])
         self.team_id = params.get('team_id')
@@ -135,9 +131,6 @@ class DciJob(DciBase):
         }
         self.deterministic_params = ['topic', 'comment', 'status',
                                      'metadata', 'team_id']
-
-    def do_notify(self, context):
-        return dci_job.notify(context, context.last_job_id, mesg=self.notify)
 
     def do_upgrade(self, context):
         res = dci_job.upgrade(context, job_id=self.id)
@@ -212,7 +205,6 @@ def main():
             comment=dict(type='str'),
             status=dict(type='str'),
             metadata=dict(type='dict'),
-            notify=dict(type='dict'),
             upgrade=dict(type='bool'),
             components=dict(type='list'),
             team_id=dict(type='str'),
@@ -229,9 +221,7 @@ def main():
     action_name = get_standard_action(module.params)
 
     if action_name == 'update':
-        if module.params['notify']:
-            action_name = 'notify'
-        elif module.params['upgrade']:
+        if module.params['upgrade']:
             action_name = 'upgrade'
 
     elif action_name == 'create':
