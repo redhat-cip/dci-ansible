@@ -87,6 +87,7 @@ def get_data(type, name, repo_name, version, base_url, section_name,
        'dlrn': {
          'commit_hash': None,
          'distro_hash': None,
+         'commit_branch': None,
        }
     }
 
@@ -106,6 +107,7 @@ def get_data(type, name, repo_name, version, base_url, section_name,
         )
         data['dlrn']['commit_hash'] = commit_information['commits'][0]['commit_hash']
         data['dlrn']['distro_hash'] = commit_information['commits'][0]['distro_hash']
+        data['dlrn']['commit_branch'] = commit_information['commits'][0]['commit_branch']
 
     return data
 
