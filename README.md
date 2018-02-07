@@ -202,7 +202,7 @@ Before you can run test you need to get familiarized with the [dci-dev-env](http
 [dci-dev-env](https://github.com/redhat-cip/dci-dev-env) is a Docker based environment that will deploy a Distributed-CI Control Server API, the UI and more.
 Once deployed locally, you'll be able to run the test suite against this deployment.
 
-To run the test, ensure the api is running by running `docker ps` and then simply run `./run_tests.sh` in the [tests/](tests/) folder.
+To run the test, ensure the api is running by running `docker ps` and then simply run `./run_tests.sh` in the [tests/](tests/) folder
 
 
 ## License
