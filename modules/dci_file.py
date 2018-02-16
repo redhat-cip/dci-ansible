@@ -17,7 +17,6 @@ from ansible.module_utils.dci_base import *
 import os
 
 try:
-    from dciclient.v1.api import context as dci_context
     from dciclient.v1.api import file as dci_file
 except ImportError:
     dciclient_found = False
@@ -109,6 +108,7 @@ EXAMPLES = '''
 # TODO
 RETURN = '''
 '''
+
 
 class DciFile(DciBase):
 

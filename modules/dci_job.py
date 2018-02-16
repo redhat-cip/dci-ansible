@@ -15,12 +15,8 @@ from ansible.module_utils.basic import *
 from ansible.module_utils.common import *
 from ansible.module_utils.dci_base import *
 
-import os
-
 try:
-    from dciclient.v1.api import context as dci_context
     from dciclient.v1.api import job as dci_job
-    from dciclient.v1.api import remoteci as dci_remoteci
     from dciclient.v1.api import topic as dci_topic
 except ImportError:
     dciclient_found = False

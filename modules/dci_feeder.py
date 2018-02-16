@@ -16,7 +16,6 @@ from ansible.module_utils.common import *
 from ansible.module_utils.dci_base import *
 
 try:
-    from dciclient.v1.api import context as dci_context
     from dciclient.v1.api import feeder as dci_feeder
 except ImportError:
     dciclient_found = False

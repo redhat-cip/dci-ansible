@@ -155,7 +155,7 @@ def parse_http_response(response, resource, context, module):
             result = {
                 '%s' % resource_name: resource.list(
                     context, where='name:' + module.params['name']
-                 ).json()['%ss' % resource_name][0]
+                ).json()['%ss' % resource_name][0]
             }
         else:
             result = {'%s' % resource_name: resource.get(

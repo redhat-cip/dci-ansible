@@ -16,7 +16,6 @@ from ansible.module_utils.common import *
 from ansible.module_utils.dci_base import *
 
 try:
-    from dciclient.v1.api import context as dci_context
     from dciclient.v1.api import user as dci_user
 except ImportError:
     dciclient_found = False
@@ -151,7 +150,7 @@ def main():
             name=dict(type='str'),
             fullname=dict(type='str'),
             email=dict(type='str'),
-            password=dict(type='str',no_log=True),
+            password=dict(type='str', no_log=True),
             role_id=dict(type='str'),
             team_id=dict(type='str'),
             embed=dict(type='str'),

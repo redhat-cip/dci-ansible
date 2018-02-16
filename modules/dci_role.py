@@ -16,7 +16,6 @@ from ansible.module_utils.common import *
 from ansible.module_utils.dci_base import *
 
 try:
-    from dciclient.v1.api import context as dci_context
     from dciclient.v1.api import role as dci_role
 except ImportError:
     dciclient_found = False
@@ -118,7 +117,8 @@ class DciRole(DciBase):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            state=dict(default='present', choices=['present', 'absent'], type='str'),
+            state=dict(default='present', choices=['present', 'absent'],
+                       type='str'),
             # Authentication related parameters
             #
             dci_login=dict(required=False, type='str'),

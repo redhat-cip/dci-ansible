@@ -82,13 +82,13 @@ def get_data(type, name, repo_name, version, base_url, section_name,
     """Return data. """
 
     data = {
-       'path': urlparse(base_url).path,
-       'version': version,
-       'dlrn': {
-         'commit_hash': None,
-         'distro_hash': None,
-         'commit_branch': None,
-       }
+        'path': urlparse(base_url).path,
+        'version': version,
+        'dlrn': {
+            'commit_hash': None,
+            'distro_hash': None,
+            'commit_branch': None,
+        }
     }
 
     if 'puddle_osp' in type:
@@ -133,7 +133,7 @@ def get_repo_information(url, type, name):
     repo_name = config.get(section_name, 'name')
 
     repo_file_date = repo_file_obj.headers['Last-Modified']
-    dt = datetime.strptime(repo_file_date,  '%a, %d %b %Y %H:%M:%S GMT')
+    dt = datetime.strptime(repo_file_date, '%a, %d %b %Y %H:%M:%S GMT')
     repo_date = '%s-%s-%s' % (dt.year, dt.month, dt.day)
 
     component_informations = {

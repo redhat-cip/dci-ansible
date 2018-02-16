@@ -17,7 +17,6 @@ from ansible.module_utils.common import build_dci_context
 import os
 
 try:
-    from dciclient.v1.api import context as dci_context
     from dciclient.v1.api import component as dci_component
     from dciclient.v1.api import topic as dci_topic
 except ImportError:
@@ -77,6 +76,7 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
+
 def download_file(module, ctx):
     if os.path.isdir(module.params['dest']):
         dest_file = os.path.join(
@@ -101,6 +101,7 @@ def download_file(module, ctx):
             module.params['id'],
             component_file_id,
             dest_file)
+
 
 def main():
     module = AnsibleModule(
@@ -216,10 +217,9 @@ def main():
         if res.status_code == 409:
             result = {
                 'component': dci_topic.list_components(
-                             ctx,
-                             module.params['topic_id'],
-                             where='name:' + module.params['name']
-                             ).json()['components'][0],
+                    ctx, module.params['topic_id'],
+                    where='name:' + module.params['name']
+                ).json()['components'][0],
             }
         if res.status_code in [400, 401, 409]:
             result['changed'] = False

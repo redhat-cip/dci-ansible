@@ -2,15 +2,12 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from datetime import datetime
-
 from ansible.plugins.callback import CallbackBase
 
 
 import os
 from dciclient.v1.api import context as dci_context
 from dciclient.v1.api import jobstate as dci_jobstate
-from dciclient.v1.api import job as dci_job
 from dciclient.v1.api import file as dci_file
 
 
@@ -39,7 +36,8 @@ class CallbackModule(CallbackBase):
     def _build_dci_context(self):
         login, password, url, client_id, api_secret = self._get_details()
         if login is not None and password is not None:
-            return dci_context.build_dci_context(url, login, password, 'Ansible')
+            return dci_context.build_dci_context(url, login, password,
+                                                 'Ansible')
         elif client_id is not None and api_secret is not None:
             return dci_context.build_signature_context(url, client_id,
                                                        api_secret, 'Ansible')
@@ -62,9 +60,6 @@ class CallbackModule(CallbackBase):
                 output = result['stderr']
 
         else:
-            # The following if/elif/else block is due to lack of consistency in the object
-            # returned by ansible. Ideally the result['invocation']['module_name'] should
-            # work for all modules.
             if 'invocation' not in result:
                 module_name = 'file'
             elif 'extract_result' in result:
@@ -75,17 +70,24 @@ class CallbackModule(CallbackBase):
                 module_name = result['invocation']['module_name']
 
             if module_name == 'os_server':
-                output = '%s - %s' % (result['server']['status'], result['server']['id'])
+                output = '%s - %s' % (result['server']['status'],
+                                      result['server']['id'])
             elif module_name == 'hostname':
                 output = 'Hostname: %s' % result['name']
             elif module_name == 'user':
-                output = 'Name: %s - uid: %s - gid: %s' % (result['name'], result['uid'], result['group'])
+                output = 'Name: %s - uid: %s - gid: %s' % (result['name'],
+                                                           result['uid'],
+                                                           result['group'])
             elif module_name == 'lineinfile':
-                output = '%s - %s' % (result['invocation']['module_args']['line'], result['msg'])
+                output = '%s - %s' % (
+                    result['invocation']['module_args']['line'], result['msg']
+                )
             elif module_name == 'get_url':
                 output = '%s - %s' % (result['dest'], result['msg'])
             elif module_name == 'unarchive':
-                output = '%s unarchived in %s' % (result['src'], result['dest'])
+                output = '%s unarchived in %s' % (
+                    result['src'], result['dest']
+                )
             elif 'stdout_lines' in result:
                 output = '\n'.join(result['stdout_lines'])
             elif 'msg' in result:
@@ -134,7 +136,8 @@ class CallbackModule(CallbackBase):
 
         # Check if the task that just run was the schedule of an upgrade
         # job. If so, set self._job_id to the new job ID
-        if result._task.action == 'dci_job' and result._result['invocation']['module_args']['upgrade']:
+        if result._task.action == 'dci_job' and \
+           result._result['invocation']['module_args']['upgrade']:
             self._job_id = result._result['id']
 
         output = self.format_output(result._result)
@@ -204,9 +207,11 @@ class CallbackModule(CallbackBase):
             if not self._job_id:
                 for hostvar in fact_cache:
                     if 'job_informations' in fact_cache[hostvar]:
-                        self._job_id = fact_cache[hostvar]['job_informations']['id']
+                        self._job_id = \
+                            fact_cache[hostvar]['job_informations']['id']
                         break
 
             ns = dci_jobstate.create(self._dci_context, status=status,
-                                     comment=comment, job_id=self._job_id).json()
+                                     comment=comment,
+                                     job_id=self._job_id).json()
             self._jobstate_id = ns['jobstate']['id']
