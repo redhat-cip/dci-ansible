@@ -184,29 +184,24 @@ class DciJob(DciBase):
 
 
 def main():
+
+    resource_argument_spec = dict(
+        state=dict(default='present', choices=['present', 'absent'], type='str'),
+        id=dict(type='str'),
+        topic=dict(required=False, type='str'),
+        comment=dict(type='str'),
+        status=dict(type='str'),
+        metadata=dict(type='dict'),
+        upgrade=dict(type='bool'),
+        components=dict(type='list'),
+        team_id=dict(type='str'),
+        embed=dict(type='str'),
+        where=dict(type='str'),
+    )
+    resource_argument_spec.update(authentication_argument_spec())
+
     module = AnsibleModule(
-        argument_spec=dict(
-            state=dict(default='present', choices=['present', 'absent'], type='str'),
-            # Authentication related parameters
-            #
-            dci_login=dict(required=False, type='str'),
-            dci_password=dict(required=False, type='str', no_log=True),
-            dci_cs_url=dict(required=False, type='str'),
-            dci_client_id=dict(required=False, type='str'),
-            dci_api_secret=dict(required=False, type='str', no_log=True),
-            # Resource related parameters
-            #
-            id=dict(type='str'),
-            topic=dict(required=False, type='str'),
-            comment=dict(type='str'),
-            status=dict(type='str'),
-            metadata=dict(type='dict'),
-            upgrade=dict(type='bool'),
-            components=dict(type='list'),
-            team_id=dict(type='str'),
-            embed=dict(type='str'),
-            where=dict(type='str'),
-        ),
+        argument_spec=resource_argument_spec,
         required_if=[['state', 'absent', ['id']]]
     )
 

@@ -12,7 +12,7 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import build_dci_context
+from ansible.module_utils.common import *
 
 import os
 
@@ -104,30 +104,26 @@ def download_file(module, ctx):
 
 
 def main():
+
+    resource_argument_spec = dict(
+        state=dict(default='present', choices=['present', 'absent'], type='str'),
+        id=dict(type='str'),
+        dest=dict(type='str'),
+        export_control=dict(type='bool'),
+        name=dict(type='str'),
+        type=dict(type='str'),
+        canonical_project_name=dict(type='str'),
+        url=dict(type='str'),
+        data=dict(type='dict'),
+        topic_id=dict(type='str'),
+        path=dict(type='str'),
+        embed=dict(type='str'),
+    )
+    resource_argument_spec.update(authentication_argument_spec())
+
     module = AnsibleModule(
-        argument_spec=dict(
-            state=dict(default='present', choices=['present', 'absent'], type='str'),
-            # Authentication related parameters
-            #
-            dci_login=dict(required=False, type='str'),
-            dci_password=dict(required=False, type='str', no_log=True),
-            dci_cs_url=dict(required=False, type='str'),
-            dci_client_id=dict(required=False, type='str'),
-            dci_api_secret=dict(required=False, type='str', no_log=True),
-            # Resource related parameters
-            #
-            id=dict(type='str'),
-            dest=dict(type='str'),
-            export_control=dict(type='bool'),
-            name=dict(type='str'),
-            type=dict(type='str'),
-            canonical_project_name=dict(type='str'),
-            url=dict(type='str'),
-            data=dict(type='dict'),
-            topic_id=dict(type='str'),
-            path=dict(type='str'),
-            embed=dict(type='str'),
-        ),
+        argument_spec=resource_argument_spec,
+        required_if=[['state', 'absent', ['id']]]
     )
 
     if not dciclient_found:
