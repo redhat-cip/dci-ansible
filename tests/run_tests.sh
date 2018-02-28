@@ -42,7 +42,7 @@ function run_functional_tests() {
     rm -f feeder.sh remoteci.sh content.download
 }
 
-if [[ -n "$1" ]]; then
+if [[ ! -z ${1+x} ]]; then
     if [[ "$1" == "unit" ]]; then
         run_unit_tests
     elif [[ "$1" == "functional" ]]; then
