@@ -103,11 +103,10 @@ class CallbackModule(CallbackBase):
             'content': output and output.encode('UTF-8'),
             'mime': self._mime_type}
 
-        if self._mime_type == 'application/junit':
-            kwargs['job_id'] = self._job_id
-        else:
+        # Why?
+        kwargs['job_id'] = self._job_id
+        if not self._mime_type == 'application/junit':
             kwargs['jobstate_id'] = self._jobstate_id
-
         dci_file.create(
             self._dci_context,
             **kwargs)
