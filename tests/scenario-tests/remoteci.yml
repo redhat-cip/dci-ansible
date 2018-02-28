@@ -3,7 +3,7 @@
   tasks:
     - name: schedule a job
       dci_job:
-        topic: OSP13
+        topic: OSP10
       register: job_informations
 
     - name: Set global variables
@@ -44,6 +44,28 @@
         embed: files,jobstates
       register: job_informations
 
-    - name: Verify that job has 3 jobstates attached to it and 1 file
+    - name: Verify that job has 4 files attached
       assert:
         that: job_informations.job.files|length == 4
+
+- hosts: localhost
+  tasks:
+    - name: Request an upgrade job
+      dci_job:
+        id: '{{ job_id }}'
+        upgrade: True
+      register: job_informations
+    - debug:
+        var: job_informations
+    - name: Ensure job_id has proper file and jobstates attached to it
+      dci_job:
+        id: '{{ hostvars.localhost.job_informations.job.id  }}'
+        embed: files,jobstates
+      register: job_informations
+
+    - debug:
+        msg: job_informations
+
+    - name: Verify that job has 2 jobstates attached to it and 1 file
+      assert:
+        that: job_informations.job.files|length == 2
