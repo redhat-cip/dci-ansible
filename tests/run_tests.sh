@@ -2,13 +2,6 @@
 
 set -eux
 
-function clean_environment() {
-    unset DCI_LOGIN
-    unset DCI_PASSWORD
-    unset DCI_API_SECRET
-    unset DCI_CLIENT_ID
-}
-
 
 # --- Starting unit-tests
 
@@ -27,17 +20,21 @@ function run_unit_tests() {
 # --- Starting scenario-tests
 
 function run_functional_tests() {
-    source ./admin.sh
-    ansible-playbook scenario-tests/setup_env.yml -vvv
-    clean_environment
 
-    source ./feeder.sh
-    ansible-playbook scenario-tests/feeder.yml -vvv
-    clean_environment
+    (
+        source ./admin.sh
+        ansible-playbook scenario-tests/setup_env.yml -vvv
+    )
 
-    source ./remoteci.sh
-    ansible-playbook scenario-tests/remoteci.yml -vvv
-    clean_environment
+    (
+        source ./feeder.sh
+        ansible-playbook scenario-tests/feeder.yml -vvv
+    )
+
+    (
+        source ./remoteci.sh
+        ansible-playbook scenario-tests/remoteci.yml -vvv
+    )
 
     rm -f feeder.sh remoteci.sh content.download
 }

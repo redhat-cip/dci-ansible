@@ -61,6 +61,7 @@
         content: |
           export DCI_CLIENT_ID=feeder/{{ osp13_feeder.feeder.id }}
           export DCI_API_SECRET={{ osp13_feeder.feeder.api_secret }}
+          export DCI_CS_URL='http://127.0.0.1:5000'
 
     - name: Generate the remoteci.sh file
       blockinfile:
@@ -70,3 +71,4 @@
         content: |
           export DCI_CLIENT_ID=remoteci/{{ osp13_remoteci.remoteci.id }}
           export DCI_API_SECRET={{ osp13_remoteci.remoteci.api_secret }}
+          export DCI_CS_URL='http://127.0.0.1:5000'
