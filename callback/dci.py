@@ -203,10 +203,19 @@ class CallbackModule(CallbackBase):
         if (result._task.action == 'dci_job' and (
                 result._result['invocation']['module_args']['upgrade'] or
                 result._result['invocation']['module_args']['update'])):
-            self._job_id = result._result['job']['id']
 
+            self._job_id = result._result['job']['id']
             ns = dci_jobstate.create(self._dci_context, status='pre-run',
                                      comment='starting the update/upgrade',
+                                     job_id=self._job_id).json()
+            self._jobstate_id = ns['jobstate']['id']
+        elif (result._task.action == 'dci_job' and
+              result._result['invocation']['module_args']['topic'] and
+              not result._result['invocation']['module_args']['id']):
+
+            self._job_id = result._result['job']['id']
+            ns = dci_jobstate.create(self._dci_context, status='new',
+                                     comment='start up',
                                      job_id=self._job_id).json()
             self._jobstate_id = ns['jobstate']['id']
 
@@ -232,6 +241,9 @@ class CallbackModule(CallbackBase):
         """Event executed after each command when it fails. Get the output
         of the command and create a failure jobstate and a file associated.
         """
+
+        if not self._job_id:
+            return
 
         super(CallbackModule, self).v2_runner_on_failed(result, ignore_errors)
 
@@ -262,6 +274,9 @@ class CallbackModule(CallbackBase):
         the current jobstate id.
         """
 
+        if not self._job_id:
+            return
+
         def _get_comment(play):
             """ Return the comment for the new jobstate
 
@@ -285,23 +300,8 @@ class CallbackModule(CallbackBase):
 
         super(CallbackModule, self).v2_playbook_on_play_start(play)
         comment = _get_comment(play)
-        fact_cache = play._variable_manager._nonpersistent_fact_cache
-        if play.get_vars():
-            self._current_status = play.get_vars().get('dci_status')
-            if 'dci_mime_type' in play.get_vars():
-                self._mime_type = play.get_vars()['dci_mime_type']
-            else:
-                self._mime_type = 'text/plain'
-
-        if self._current_status:
-            if not self._job_id:
-                for hostvar in fact_cache:
-                    if 'job_informations' in fact_cache[hostvar]:
-                        self._job_id = \
-                            fact_cache[hostvar]['job_informations']['id']
-                        break
-
-            ns = dci_jobstate.create(self._dci_context, status=self._current_status,
-                                     comment=comment,
-                                     job_id=self._job_id).json()
-            self._jobstate_id = ns['jobstate']['id']
+        ns = dci_jobstate.create(self._dci_context,
+                                 self._current_status,
+                                 comment=comment,
+                                 job_id=self._job_id).json()
+        self._jobstate_id = ns['jobstate']['id']
