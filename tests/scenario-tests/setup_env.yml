@@ -24,11 +24,26 @@
         component_types:
           - puddles
         product_id: '{{ openstack_product.product.id }}'
-      register: openstack_topic
+      register: openstack_topic_osp13
 
-    - name: Attach OSP13 team to OSP13 topic
+    - name: Attach OpenStack team to OSP13 topic
       dci_topic:
-        id: '{{ openstack_topic.topic.id }}'
+        id: '{{ openstack_topic_osp13.topic.id }}'
+        team_ids:
+          - '{{ openstack_team.team.id }}'
+
+    - name: Create an OSP12 topic
+      dci_topic:
+        name: OSP12
+        next_topic: '{{ openstack_topic_osp13.topic.id }}'
+        component_types:
+          - puddles
+        product_id: '{{ openstack_product.product.id }}'
+      register: openstack_topic_osp12
+
+    - name: Attach OpenStack team to OSP12 topic
+      dci_topic:
+        id: '{{ openstack_topic_osp12.topic.id }}'
         team_ids:
           - '{{ openstack_team.team.id }}'
 
@@ -43,9 +58,9 @@
 
     - name: Create a feeder for the OpenStack team
       dci_feeder:
-        name: OSP13
+        name: OSP
         team_id: '{{ openstack_team.team.id }}'
-      register: osp13_feeder
+      register: osp_feeder
 
     - name: Create a remoteci for the OpenStack team
       dci_remoteci:
@@ -59,8 +74,8 @@
         mode: 0755
         create: yes
         content: |
-          export DCI_CLIENT_ID=feeder/{{ osp13_feeder.feeder.id }}
-          export DCI_API_SECRET={{ osp13_feeder.feeder.api_secret }}
+          export DCI_CLIENT_ID=feeder/{{ osp_feeder.feeder.id }}
+          export DCI_API_SECRET={{ osp_feeder.feeder.api_secret }}
 
     - name: Generate the remoteci.sh file
       blockinfile:
