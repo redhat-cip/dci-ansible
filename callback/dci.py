@@ -143,6 +143,15 @@ class CallbackModule(CallbackBase):
                                      comment='starting the upgrade',
                                      job_id=self._job_id).json()
             self._jobstate_id = ns['jobstate']['id']
+        elif result._task.action == 'dci_job' and \
+             result._result['invocation']['module_args']['topic'] and \
+             not result._result['invocation']['module_args']['id']:
+            self._job_id = result._result['job']['id']
+
+            ns = dci_jobstate.create(self._dci_context, status='new',
+                                     comment='start up',
+                                     job_id=self._job_id).json()
+            self._jobstate_id = ns['jobstate']['id']
 
 
         output = self.format_output(result._result)
@@ -154,6 +163,9 @@ class CallbackModule(CallbackBase):
         """Event executed after each command when it fails. Get the output
         of the command and create a failure jobstate and a file associated.
         """
+
+        if not self._job_id:
+            return
 
         super(CallbackModule, self).v2_runner_on_failed(result, ignore_errors)
 
@@ -175,6 +187,9 @@ class CallbackModule(CallbackBase):
         """Event executed before each play. Create a new jobstate and save
         the current jobstate id.
         """
+
+        if not self._job_id:
+            return
 
         def _get_comment(play):
             """ Return the comment for the new jobstate
@@ -209,13 +224,6 @@ class CallbackModule(CallbackBase):
                 self._mime_type = 'text/plain'
 
         if status:
-            if not self._job_id:
-                for hostvar in fact_cache:
-                    if 'job_informations' in fact_cache[hostvar]:
-                        self._job_id = \
-                            fact_cache[hostvar]['job_informations']['id']
-                        break
-
             ns = dci_jobstate.create(self._dci_context, status=status,
                                      comment=comment,
                                      job_id=self._job_id).json()

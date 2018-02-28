@@ -44,9 +44,9 @@
         embed: files,jobstates
       register: job_informations
 
-    - name: Verify that job has 4 files attached
+    - name: Verify that job has 6 files attached
       assert:
-        that: job_informations.job.files|length == 4
+        that: job_informations.job.files|length == 6
 
 - hosts: localhost
   tasks:
@@ -66,6 +66,6 @@
     - debug:
         msg: job_informations
 
-    - name: Verify that job has 2 jobstates attached to it
+    - name: Verify that job has 2 files attached to it
       assert:
         that: job_informations.job.files|length == 2
