@@ -56,6 +56,9 @@ options:
   product_id:
     required: false
     description: The product the topic belongs to
+  next_topic:
+    required: false
+    description: The next topic to upgrade to.
   team_ids:
     required: false
     description: List of Teams attach to this topic
@@ -111,6 +114,7 @@ class DciTopic(DciBase):
         self.name = params.get('name')
         self.label = params.get('label')
         self.product_id = params.get('product_id')
+        self.next_topic = params.get('next_topic')
         self.component_types = params.get('component_types')
         self.team_ids = params.get('team_ids')
         self.search_criterias = {
@@ -118,7 +122,7 @@ class DciTopic(DciBase):
             'where': params.get('where')
         }
         self.deterministic_params = ['name', 'label', 'product_id',
-                                     'component_types']
+                                     'component_types', 'next_topic']
 
     def do_create(self, context):
         if not self.name:
@@ -143,6 +147,7 @@ def main():
         name=dict(type='str'),
         label=dict(type='str'),
         product_id=dict(type='str'),
+        next_topic=dict(type='str'),
         component_types=dict(type='list'),
         team_ids=dict(type='list'),
         embed=dict(type='str'),

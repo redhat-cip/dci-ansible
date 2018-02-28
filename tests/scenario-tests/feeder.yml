@@ -7,12 +7,13 @@
 
     - name: Create new component
       dci_component:
-        name: RH7-RHOS-13.0-2018-01-13
+        name: "RH7-RHOS-{{ item.name }}-2018-01-13"
         type: puddles
-        canonical_project_name: RH7-RHOS-13.0-2018-01-13
+        canonical_project_name: "RH7-RHOS-{{ item.name }}.0-2018-01-13"
         url: https://www.example.com
-        topic_id: '{{ all_topics.topics[0].id }}'
-      register: component
+        topic_id: '{{ item.id }}'
+      register: components
+      with_items: '{{ all_topics.topics }}'
 
     - name: Register content of the uploaded file
       command: "cat {{ lookup('env', 'PWD')  }}/data/content"
@@ -20,13 +21,15 @@
 
     - name: Upload the component content
       dci_component:
-        id: '{{ component.component.id }}'
+        id: '{{ item.component.id }}'
         path: "{{ lookup('env', 'PWD')  }}/data/content"
+      with_items: "{{ components.results }}"
 
     - name: Download component content
       dci_component:
-        id: '{{ component.component.id }}'
+        id: '{{ item.component.id }}'
         dest: "{{ lookup('env', 'PWD')  }}/content.download"
+      with_items: "{{ components.results }}"
 
     - name: Register content of the download file
       command: "cat {{ lookup('env', 'PWD')  }}/content.download"
