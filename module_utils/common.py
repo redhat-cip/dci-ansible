@@ -17,36 +17,21 @@
 from dciclient.v1.api import context as dci_context
 from ansible.module_utils.dci_base import *
 
-import os
-
-
-def param_from_module_or_env(module, name, default=None):
-    return module.params[name.lower()] or os.getenv(name.upper())
-
-
-def get_details(module):
-    """Method that retrieves the appropriate credentials. """
-
-    login = param_from_module_or_env(module, 'dci_login')
-    password = param_from_module_or_env(module, 'dci_password')
-
-    client_id = param_from_module_or_env(module, 'dci_client_id')
-    api_secret = param_from_module_or_env(module, 'dci_api_secret')
-
-    url = param_from_module_or_env(module, 'dci_cs_url',
-                                   'https://api.distributed-ci.io')
-
-    return login, password, url, client_id, api_secret
-
 
 def build_dci_context(module):
-    login, password, url, client_id, api_secret = get_details(module)
 
-    if login is not None and password is not None:
-        return dci_context.build_dci_context(url, login, password, 'Ansible')
-    elif client_id is not None and api_secret is not None:
-        return dci_context.build_signature_context(url, client_id, api_secret,
-                                                   'Ansible')
+    if module.params['dci_login'] is not None \
+       and module.params['dci_password'] is not None:
+        return dci_context.build_dci_context(
+            module.params['dci_cs_url'], module.params['dci_login'],
+            module.params['dci_password'], 'Ansible'
+        )
+    elif module.params['dci_client_id'] is not None \
+            and module.params['dci_api_secret'] is not None:
+        return dci_context.build_signature_context(
+            module.params['dci_cs_url'], module.params['dci_client_id'],
+            module.params['dci_api_secret'], 'Ansible'
+        )
     else:
         module.fail_json(msg='Missing or incomplete credentials.')
 
@@ -93,7 +78,9 @@ def get_standard_action(params):
 
     """
 
-    non_determistic_params = ['embed', 'mime', 'state', 'where']
+    non_determistic_params = ['dci_login', 'dci_password', 'dci_cs_url',
+                              'dci_client_id', 'dci_api_secret', 'embed',
+                              'mime', 'state', 'where']
     deterministic_params = {k: v for k, v in params.items() if k not in non_determistic_params}
     non_empty_values = [item for item in deterministic_params if deterministic_params[item] is not None]
 

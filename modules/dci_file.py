@@ -155,11 +155,17 @@ def main():
             state=dict(default='present', choices=['present', 'absent'], type='str'),
             # Authentication related parameters
             #
-            dci_login=dict(required=False, type='str'),
-            dci_password=dict(required=False, type='str', no_log=True),
-            dci_cs_url=dict(required=False, type='str'),
-            dci_client_id=dict(required=False, type='str'),
-            dci_api_secret=dict(required=False, type='str', no_log=True),
+            dci_login=dict(required=False, type='str',
+                           fallback=(env_fallback, ['DCI_LOGIN'])),
+            dci_password=dict(required=False, type='str', no_log=True,
+                              fallback=(env_fallback, ['DCI_PASSWORD'])),
+            dci_cs_url=dict(required=False, type='str',
+                            fallback=(env_fallback, ['DCI_CS_URL']),
+                            default='https://api.distributed-ci.io'),
+            dci_client_id=dict(required=False, type='str',
+                               fallback=(env_fallback, ['DCI_CLIENT_ID'])),
+            dci_api_secret=dict(required=False, type='str', no_log=True,
+                                fallback=(env_fallback, ['DCI_API_SECRET'])),
             # Resource related parameters
             #
             id=dict(type='str'),
