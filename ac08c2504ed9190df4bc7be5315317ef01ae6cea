@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa32b979_2b1d8966",
+        "filename": "callback/dci.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-03-01T15:58:14Z",
+      "side": 1,
+      "message": "Drop the \"why?\"",
+      "revId": "ac08c2504ed9190df4bc7be5315317ef01ae6cea",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
