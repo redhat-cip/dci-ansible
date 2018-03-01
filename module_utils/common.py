@@ -37,18 +37,19 @@ def authentication_argument_spec():
 
 
 def build_dci_context(module):
-
-    if module.params['dci_login'] is not None \
-       and module.params['dci_password'] is not None:
+    if module.params['dci_login'] and module.params['dci_password']:
         return dci_context.build_dci_context(
-            module.params['dci_cs_url'], module.params['dci_login'],
-            module.params['dci_password'], 'Ansible'
+            module.params['dci_cs_url'],
+            module.params['dci_login'],
+            module.params['dci_password'],
+            'Ansible'
         )
-    elif module.params['dci_client_id'] is not None \
-            and module.params['dci_api_secret'] is not None:
+    elif module.params['dci_client_id'] and module.params['dci_api_secret']:
         return dci_context.build_signature_context(
-            module.params['dci_cs_url'], module.params['dci_client_id'],
-            module.params['dci_api_secret'], 'Ansible'
+            module.params['dci_cs_url'],
+            module.params['dci_client_id'],
+            module.params['dci_api_secret'],
+            'Ansible'
         )
     else:
         module.fail_json(msg='Missing or incomplete credentials.')
