@@ -16,7 +16,7 @@
     dci_status: running
   tasks:
     - name: echo runnning
-      command: echo "running"
+      command: echo "chérie, ca va couper"
 
 - hosts: localhost
   vars:
@@ -39,7 +39,7 @@
 - hosts: localhost
   tasks:
     - name: Ensure job_id has proper file and jobstates attached to it
-      dci_job:
+      dci_job_oops:
         id: '{{ job_id }}'
         embed: files,jobstates
       register: job_informations

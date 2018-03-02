@@ -1,6 +1,9 @@
 ---
 - hosts: localhost
   tasks:
+    - name: Oops
+      command: exit 1
+
     - name: Create the OSPX topic
       dci_topic:
         name: OSPX
