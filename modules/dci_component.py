@@ -221,7 +221,7 @@ def main():
             result['changed'] = False
         else:
             result['changed'] = True
-    except:
+    except Exception:
         result = {}
         result['changed'] = True
 
