@@ -47,3 +47,20 @@
     - name: Verify that job has 3 jobstates attached to it and 1 file
       assert:
         that: job_informations.job.files|length == 4
+
+
+- hosts: localhost
+  tasks:
+    - name: Request an update job
+      dci_job:
+        id: '{{ job_id }}'
+        update: True
+      register: job_informations
+    - name: Show up some message
+      debug:
+        msg: some message
+    - name: Verify that update previous job id is correctly set
+      assert:
+        that:
+          - job_informations.job.update_previous_job_id == '{{ job_id }}'
+          - job_informations.job.id is defined
