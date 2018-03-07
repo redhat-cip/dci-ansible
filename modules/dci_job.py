@@ -58,6 +58,9 @@ options:
   metadata:
     required: false
     description: Metadatas attached to the job
+  update:
+    required: false
+    description: Schedule an update job
   upgrade:
     required: false
     description: Schedule an upgrade job
@@ -96,6 +99,11 @@ EXAMPLES = '''
     id: '{{ job_id }}'
     upgrade: true
 
+- name: Schedule an update job
+  dci_job:
+    id: '{{ job_id }}'
+    update: true
+
 - name: Manually create a job
   dci_job:
     topic: 'OSP8'
@@ -118,6 +126,7 @@ class DciJob(DciBase):
         self.comment = params.get('comment')
         self.status = params.get('status')
         self.metadata = params.get('metadata')
+        self.update = params.get('update')
         self.upgrade = params.get('upgrade')
         self.components = params.get('components', [])
         self.team_id = params.get('team_id')
@@ -127,6 +136,15 @@ class DciJob(DciBase):
         }
         self.deterministic_params = ['topic', 'comment', 'status',
                                      'metadata', 'team_id']
+
+    def do_update(self, context):
+        res = dci_job.job_update(context, job_id=self.id)
+
+        if res.status_code == 201:
+            return dci_job.get(context, context.last_job_id,
+                               embed='topic,remoteci,components,rconfiguration')
+        else:
+            self.raise_error(res)
 
     def do_upgrade(self, context):
         res = dci_job.upgrade(context, job_id=self.id)
@@ -193,6 +211,7 @@ def main():
         status=dict(type='str'),
         metadata=dict(type='dict'),
         upgrade=dict(type='bool'),
+        update=dict(type='bool'),
         components=dict(type='list'),
         team_id=dict(type='str'),
         embed=dict(type='str'),
@@ -212,6 +231,9 @@ def main():
     action_name = get_standard_action(module.params)
 
     if action_name == 'update':
+        # for readability
+        if module.params['update']:
+            action_name = 'update'
         if module.params['upgrade']:
             action_name = 'upgrade'
 
