@@ -1,0 +1,123 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da37b569_eac6bb15",
+        "filename": "modules/dci_job.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-03-08T17:09:13Z",
+      "side": 1,
+      "message": "s/job_update/update",
+      "revId": "29cca60485b3b6b7d1011a4b324a1edda44f0a4f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da37b569_0acc3f34",
+        "filename": "modules/dci_job.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-03-08T17:09:13Z",
+      "side": 1,
+      "message": "s/job_update/update",
+      "revId": "29cca60485b3b6b7d1011a4b324a1edda44f0a4f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da37b569_aad0b3ca",
+        "filename": "modules/dci_job.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 214,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-03-08T17:09:13Z",
+      "side": 1,
+      "message": "s/job_update/update",
+      "revId": "29cca60485b3b6b7d1011a4b324a1edda44f0a4f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da37b569_cad5f7b9",
+        "filename": "modules/dci_job.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 234,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-03-08T17:09:13Z",
+      "side": 1,
+      "message": "remove the comment",
+      "revId": "29cca60485b3b6b7d1011a4b324a1edda44f0a4f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da37b569_6adb8bee",
+        "filename": "modules/dci_job.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-03-08T17:09:13Z",
+      "side": 1,
+      "message": "s/job_update/update",
+      "revId": "29cca60485b3b6b7d1011a4b324a1edda44f0a4f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da37b569_8ad84ff1",
+        "filename": "tests/scenario-tests/remoteci.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-03-08T17:09:13Z",
+      "side": 1,
+      "message": "The upgrade",
+      "revId": "29cca60485b3b6b7d1011a4b324a1edda44f0a4f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da37b569_2ae583a7",
+        "filename": "tests/scenario-tests/remoteci.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-03-08T17:09:13Z",
+      "side": 1,
+      "message": "s/job_update/update",
+      "revId": "29cca60485b3b6b7d1011a4b324a1edda44f0a4f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
