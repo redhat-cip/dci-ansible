@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da37b569_0a319fa2",
+        "filename": "modules/dci_job.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 236,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-03-08T06:32:40Z",
+      "side": 1,
+      "message": "The action name should have a different name. update is reserved for updating a job resource. Let\u0027s say you want to update the status and/or a comment, you\u0027ll be relying on update. So this would need to be renamed something like job_update.\n\nAlso the comment can be removed  :)",
+      "revId": "04c80981e9ed6d8cee23b5ec4c2df29badbc0cc0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
