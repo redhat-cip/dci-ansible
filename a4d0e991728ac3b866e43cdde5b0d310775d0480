@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da37b569_35f168ce",
+        "filename": "tests/scenario-tests/remoteci.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-03-09T15:09:01Z",
+      "side": 1,
+      "message": "I would use instead: job_informations.job.id is defined",
+      "revId": "a4d0e991728ac3b866e43cdde5b0d310775d0480",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
