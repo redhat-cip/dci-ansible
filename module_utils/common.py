@@ -158,10 +158,19 @@ def parse_http_response(response, resource, context, module):
 
     elif response.status_code == 409:
         if module.params['name'] is not None:
-            result = {
-                '%s' % resource_name: resource.list(
+            try:
+                r = resource.list(
                     context, where='name:' + module.params['name']
-                ).json()['%ss' % resource_name][0]
+                )
+                resource = r.json()['%ss' % resource_name][0]
+            except IndexError:
+                raise DciResourceNotFoundException(
+                    (
+                        '%s %s is in conflict with a non existing object. '
+                        'You may have to purge a resource with the same name.'
+                    ) % (resource_name, module.params['name']))
+            result = {
+                '%s' % resource_name: resource
             }
         else:
             result = {'%s' % resource_name: resource.get(
