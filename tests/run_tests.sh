@@ -9,6 +9,13 @@ function clean_environment() {
     unset DCI_CLIENT_ID
 }
 
+function clean_db() {
+    echo "
+      truncate products cascade;
+      delete from teams where name <> 'admin';" | \
+	      PGPASSWORD=dci psql -h localhost -U dci -d dci
+}
+
 
 # --- Starting unit-tests
 
@@ -19,6 +26,7 @@ function run_unit_tests() {
     for module in $modules; do
         ansible-playbook unit-tests/$module/playbook.yml -vvv
         dcictl purge
+        clean_db
     done
     clean_environment
 }
