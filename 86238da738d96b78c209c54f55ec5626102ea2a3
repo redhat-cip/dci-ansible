@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3cc151_093c5192",
+        "filename": "callback/dci.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-03-19T17:23:50Z",
+      "side": 1,
+      "message": "From what I read l149 and 154 can be done outside the if/else block, unless I am mistaken.\n\nAlso, to simplify the code the if/else block could have only a dict {\u0027status\u0027: ..., \u0027comment\u0027, ...} and then outside the block run dci_jobstate.create(context, **dict)",
+      "revId": "86238da738d96b78c209c54f55ec5626102ea2a3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
