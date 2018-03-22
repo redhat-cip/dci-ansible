@@ -50,6 +50,9 @@ options:
   dest:
     required: true
     description: Path where to drop the retrieved component
+  active:
+    required: false
+    description: Wether of not the resource should be active
   embed:
     required: false
     description:
@@ -117,6 +120,7 @@ def main():
         data=dict(type='dict'),
         topic_id=dict(type='str'),
         path=dict(type='str'),
+        active=dict(default=True, type='bool'),
         embed=dict(type='str'),
     )
     resource_argument_spec.update(authentication_argument_spec())
@@ -176,6 +180,7 @@ def main():
                 'id': module.params['id'],
                 'etag': res.json()['component']['etag']
             }
+            updated_kwargs['state'] = 'active' if module.params['active'] else 'inactive'
             if module.params['export_control'] is not None:
                 updated_kwargs['export_control'] = module.params['export_control']
 
@@ -204,6 +209,7 @@ def main():
             kwargs['data'] = module.params['data']
         if module.params['topic_id']:
             kwargs['topic_id'] = module.params['topic_id']
+        kwargs['state'] = 'active' if module.params['active'] else 'inactive'
         res = dci_component.create(ctx, **kwargs)
 
     try:

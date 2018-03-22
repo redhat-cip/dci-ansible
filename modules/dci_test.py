@@ -53,6 +53,9 @@ options:
   team_id:
     required: false
     description: Team to which the test will be attached
+  active:
+    required: false
+    description: Wether of not the resource should be active
   embed:
     required: false
     description:
@@ -94,11 +97,12 @@ class DciTest(DciBase):
         self.name = params.get('name')
         self.team_id = params.get('team_id')
         self.data = params.get('data')
+        self.active = params.get('active')
         self.search_criterias = {
             'embed': params.get('embed'),
             'where': params.get('where')
         }
-        self.deterministic_params = ['name', 'team_id', 'data']
+        self.deterministic_params = ['name', 'team_id', 'data', 'active']
 
     def do_delete(self, context):
         return self.resource.delete(context, self.id)
@@ -121,6 +125,7 @@ def main():
         name=dict(type='str'),
         data=dict(type='dict'),
         team_id=dict(type='str'),
+        active=dict(default=True, type='bool'),
         embed=dict(type='str'),
         where=dict(type='str'),
     )
