@@ -56,6 +56,9 @@ options:
   team_id:
     required: false
     description: ID of the team the product belongs to
+  active:
+    required: false
+    description: Wether of not the resource should be active
   where:
     required: false
     description: Specific criterias for search
@@ -107,11 +110,13 @@ class DciProduct(DciBase):
         self.team_id = params.get('team_id')
         self.label = params.get('label')
         self.description = params.get('description')
+        self.active = params.get('active')
         self.search_criterias = {
             'embed': params.get('embed'),
             'where': params.get('where')
         }
-        self.deterministic_params = ['name', 'team_id', 'label', 'description']
+        self.deterministic_params = ['name', 'team_id', 'label', 'description',
+                                     'active']
 
     def do_create(self, context):
         if not self.name:
@@ -129,6 +134,7 @@ def main():
         team_id=dict(type='str'),
         label=dict(type='str'),
         description=dict(type='str'),
+        active=dict(default=True, type='bool'),
         embed=dict(type='str'),
         where=dict(type='str'),
     )

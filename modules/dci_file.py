@@ -61,6 +61,9 @@ options:
   content:
     required: false
     description: Contentn of the file to upload
+  active:
+    required: false
+    description: Wether of not the resource should be active
   embed:
     required: false
     description:
@@ -122,12 +125,13 @@ class DciFile(DciBase):
         self.job_id = params.get('job_id')
         self.jobstate_id = params.get('jobstate_id')
         self.mime = params.get('mime')
+        self.active = params.get('active')
         self.search_criterias = {
             'embed': params.get('embed'),
             'where': params.get('where')
         }
         self.deterministic_params = ['name', 'mime', 'file_path', 'content',
-                                     'job_id', 'jobstate_id']
+                                     'job_id', 'jobstate_id', 'active']
 
     def do_create(self, context):
         if not self.job_id and not self.jobstate_id:
@@ -160,6 +164,7 @@ def main():
         job_id=dict(type='str'),
         jobstate_id=dict(type='str'),
         mime=dict(default='text/plain', type='str'),
+        active=dict(default=True, type='bool'),
         embed=dict(type='str'),
         where=dict(type='str'),
     )

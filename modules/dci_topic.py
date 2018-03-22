@@ -62,6 +62,9 @@ options:
   team_ids:
     required: false
     description: List of Teams attach to this topic
+  active:
+    required: false
+    description: Wether of not the resource should be active
   embed:
     required: false
     description:
@@ -117,11 +120,12 @@ class DciTopic(DciBase):
         self.next_topic = params.get('next_topic')
         self.component_types = params.get('component_types')
         self.team_ids = params.get('team_ids')
+        self.active = params.get('active')
         self.search_criterias = {
             'embed': params.get('embed'),
             'where': params.get('where')
         }
-        self.deterministic_params = ['name', 'label', 'product_id',
+        self.deterministic_params = ['name', 'label', 'product_id', 'active',
                                      'component_types', 'next_topic']
 
     def do_create(self, context):
@@ -150,6 +154,7 @@ def main():
         next_topic=dict(type='str'),
         component_types=dict(type='list'),
         team_ids=dict(type='list'),
+        active=dict(default=True, type='bool'),
         embed=dict(type='str'),
         where=dict(type='str'),
     )

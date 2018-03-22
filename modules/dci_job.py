@@ -70,6 +70,9 @@ options:
   team_id:
     required: false
     description: team of the new job
+  active:
+    required: false
+    description: Wether of not the resource should be active
   embed:
     required: false
     description:
@@ -130,12 +133,13 @@ class DciJob(DciBase):
         self.upgrade = params.get('upgrade')
         self.components = params.get('components', [])
         self.team_id = params.get('team_id')
+        self.active = params.get('active')
         self.search_criterias = {
             'embed': params.get('embed'),
             'where': params.get('where')
         }
         self.deterministic_params = ['topic', 'comment', 'status',
-                                     'metadata', 'team_id']
+                                     'metadata', 'team_id', 'active']
 
     def do_job_update(self, context):
         res = dci_job.job_update(context, job_id=self.id)
@@ -214,6 +218,7 @@ def main():
         update=dict(type='bool'),
         components=dict(type='list'),
         team_id=dict(type='str'),
+        active=dict(default=True, type='bool'),
         embed=dict(type='str'),
         where=dict(type='str'),
     )

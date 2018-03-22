@@ -53,6 +53,9 @@ options:
   team_id:
     required: false
     description: ID of the team the remoteci belongs to
+  active:
+    required: false
+    description: Wether of not the resource should be active
   embed:
     required: false
     description:
@@ -107,11 +110,12 @@ class DciRemoteci(DciBase):
         self.name = params.get('name')
         self.data = params.get('data')
         self.team_id = params.get('team_id')
+        self.active = params.get('active')
         self.search_criterias = {
             'embed': params.get('embed'),
             'where': params.get('where')
         }
-        self.deterministic_params = ['name', 'team_id', 'data']
+        self.deterministic_params = ['name', 'team_id', 'data', 'active']
 
     def do_create(self, context):
         for param in ['name', 'team_id']:
@@ -131,6 +135,7 @@ def main():
         name=dict(type='str'),
         data=dict(type='dict'),
         team_id=dict(type='str'),
+        active=dict(default=True, type='bool'),
         embed=dict(type='str'),
         where=dict(type='str'),
     )

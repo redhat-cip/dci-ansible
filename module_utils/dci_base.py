@@ -103,6 +103,9 @@ class DciBase(object):
             for param in self.deterministic_params:
                 kwargs[param] = getattr(self, param)
 
+            kwargs['state'] = 'active' if self.active else 'inactive'
+            del kwargs['active']
+
             return self.resource.update(context, **kwargs)
 
         elif res.status_code in [401, 404]:
@@ -122,5 +125,8 @@ class DciBase(object):
         kwargs = {}
         for param in self.deterministic_params:
             kwargs[param] = getattr(self, param)
+
+        kwargs['state'] = 'active' if self.active else 'inactive'
+        del kwargs['active']
 
         return self.resource.create(context, **kwargs)

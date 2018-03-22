@@ -53,6 +53,9 @@ options:
   description:
     required: false
     description: Description of the role
+  active:
+    required: false
+    description: Wether of not the resource should be active
   where:
     required: false
     description: Specific criterias for search
@@ -101,11 +104,12 @@ class DciRole(DciBase):
         self.name = params.get('name')
         self.label = params.get('label')
         self.description = params.get('description')
+        self.active = params.get('active')
         self.search_criterias = {
             'embed': params.get('embed'),
             'where': params.get('where')
         }
-        self.deterministic_params = ['name', 'label', 'description']
+        self.deterministic_params = ['name', 'label', 'description', 'active']
 
     def do_create(self, context):
         if not self.name:
@@ -122,6 +126,7 @@ def main():
         name=dict(type='str'),
         label=dict(type='str'),
         description=dict(type='str'),
+        active=dict(default=True, type='bool'),
         embed=dict(type='str'),
         where=dict(type='str'),
     )
