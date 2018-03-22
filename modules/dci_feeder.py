@@ -53,6 +53,9 @@ options:
   team_id:
     required: false
     description: ID of the team the feeder belongs to
+  active:
+    required: false
+    description: Wether of not the resource should be active
   embed:
     required: false
     description:
@@ -107,11 +110,12 @@ class DciFeeder(DciBase):
         self.name = params.get('name')
         self.team_id = params.get('team_id')
         self.data = params.get('data')
+        self.active = params.get('active')
         self.search_criterias = {
             'embed': params.get('embed'),
             'where': params.get('where')
         }
-        self.deterministic_params = ['name', 'data', 'team_id']
+        self.deterministic_params = ['name', 'data', 'team_id', 'active']
 
     def do_create(self, context):
         if not self.name:
@@ -128,6 +132,7 @@ def main():
         name=dict(type='str'),
         team_id=dict(type='str'),
         data=dict(type='json'),
+        active=dict(default=True, type='bool'),
         embed=dict(type='str'),
         where=dict(type='str')
     )
