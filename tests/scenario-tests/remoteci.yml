@@ -84,6 +84,15 @@
       assert:
         that: job_informations.job.files|length == 1
 
+    - name: Request a refresh keys
+      dci_keys:
+        remoteci_id: {{ osp13_remoteci.remoteci.id }}
+      register: keys
+
+    - name: Verify that keys are well setup
+      assert:
+        that: keys.key is defined
+
 
 - hosts: localhost
   tasks:
@@ -99,3 +108,4 @@
     - name: Verify that job has 3 metadatas
       assert:
         that: job_informations.job.metas|length == 3
+
