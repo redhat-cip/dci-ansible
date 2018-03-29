@@ -104,6 +104,15 @@
       assert:
         that: job_informations.job.files|length == 1
 
+    - name: Request a refresh keys
+      dci_keys:
+        remoteci_id: "{{ lookup('env', 'DCI_CLIENT_ID') | regex_replace('^.*/(.*)$', '\\1') }}"
+      register: keys
+
+    - name: Verify that keys are well setup
+      assert:
+        that: keys.key is defined
+
 
 - hosts: localhost
   tasks:
@@ -119,3 +128,4 @@
     - name: Verify that job has 3 metadatas
       assert:
         that: job_informations.job.metas|length == 3
+
