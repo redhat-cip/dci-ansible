@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Generate a key pair
+      dci_keys:
+        remoteci_id: '{{ openstack_remoteci.remoteci.id }}'
+      register: keys
+
+    - name: Check if keys are here
+      assert:
+        that:
+          - keys.cert is defined
+            keys.key is defined
+
