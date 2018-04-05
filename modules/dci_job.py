@@ -174,7 +174,7 @@ class DciJob(DciBase):
                 self.raise_error(res)
 
         else:
-            self.raise_error(res)
+            self.raise_error(topic_res)
 
     def do_create(self, context):
         topic_res = dci_topic.list(context, where='name:' + self.topic)
@@ -198,7 +198,7 @@ class DciJob(DciBase):
                 self.raise_error(res)
 
         else:
-            self.raise_error(res)
+            self.raise_error(topic_res)
 
 
 def main():
