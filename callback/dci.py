@@ -122,6 +122,7 @@ class CallbackModule(CallbackBase):
         self._mime_type = None
         self._jobstate_id = None
         self._job_id = None
+        self._current_status = None
         self._dci_context = self._build_dci_context()
 
     def v2_runner_on_ok(self, result, **kwargs):
@@ -162,9 +163,14 @@ class CallbackModule(CallbackBase):
             self.post_message(result, output)
             return
 
+        if self._current_status in ['new', 'pre-run']:
+            status = 'error'
+        else:
+            status = 'failure'
+
         new_state = dci_jobstate.create(
             self._dci_context,
-            status='failure',
+            status=status,
             comment=self.task_name(result),
             job_id=self._job_id).json()
         self._jobstate_id = new_state['jobstate']['id']
@@ -197,17 +203,16 @@ class CallbackModule(CallbackBase):
             return comment
 
         super(CallbackModule, self).v2_playbook_on_play_start(play)
-        status = None
         comment = _get_comment(play)
         fact_cache = play._variable_manager._nonpersistent_fact_cache
         if play.get_vars():
-            status = play.get_vars().get('dci_status')
+            self._current_status = play.get_vars().get('dci_status')
             if 'dci_mime_type' in play.get_vars():
                 self._mime_type = play.get_vars()['dci_mime_type']
             else:
                 self._mime_type = 'text/plain'
 
-        if status:
+        if self._current_status:
             if not self._job_id:
                 for hostvar in fact_cache:
                     if 'job_informations' in fact_cache[hostvar]:
@@ -215,7 +220,7 @@ class CallbackModule(CallbackBase):
                             fact_cache[hostvar]['job_informations']['id']
                         break
 
-            ns = dci_jobstate.create(self._dci_context, status=status,
+            ns = dci_jobstate.create(self._dci_context, status=self._current_status,
                                      comment=comment,
                                      job_id=self._job_id).json()
             self._jobstate_id = ns['jobstate']['id']
