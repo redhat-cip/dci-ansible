@@ -149,6 +149,16 @@ class CallbackModule(CallbackBase):
         if result._task.action != 'setup' and self._job_id:
             self.post_message(result, output)
 
+    def v2_runner_on_unreachable(self, result):
+        super(CallbackModule, self).v2_runner_on_unreachable(result)
+        new_state = dci_jobstate.create(
+            self._dci_context,
+            status='failure',
+            comment=self.task_name(result),
+            job_id=self._job_id).json()
+        self._jobstate_id = new_state['jobstate']['id']
+        self.post_message(result, result._result['msg'])
+
     def v2_runner_on_failed(self, result, ignore_errors=False):
         """Event executed after each command when it fails. Get the output
         of the command and create a failure jobstate and a file associated.
