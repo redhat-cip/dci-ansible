@@ -16,6 +16,24 @@
       "revId": "86238da738d96b78c209c54f55ec5626102ea2a3",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a50d1a3_22492ad1",
+        "filename": "callback/dci.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-04-14T04:13:02Z",
+      "side": 1,
+      "message": "done for the first 1, not sure the second make the code actually more readable.",
+      "parentUuid": "ba3cc151_093c5192",
+      "revId": "86238da738d96b78c209c54f55ec5626102ea2a3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
