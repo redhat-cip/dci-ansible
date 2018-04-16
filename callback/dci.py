@@ -27,13 +27,6 @@ class Formatter(object):
 
         return '%s\n' % formatter(result)
 
-    def format_command(self, result):
-        output = ''
-        if result._result['stderr']:
-            output += 'Stderr:\n%s\nStdout:\n' % result._result['stderr']
-        output += result._result['stdout']
-        return output
-
     def format_add_host(self, result):
         output = "Adding host '%s'" % result._result['add_host']['host_name']
         if 'host_vars' in result._result['add_host'] and result._result['add_host']['host_vars']:
@@ -46,9 +39,19 @@ class Formatter(object):
     def format_authorized_key(self, result):
         return 'Adding authorized_key for user: %s (changed: %s)\nKey: %s' % (result._result['user'], result._result['changed'], result._result['key'])
 
+    def format_command(self, result):
+        output = ''
+        if result._result['stderr']:
+            output += 'Stderr:\n%s\nStdout:\n' % result._result['stderr']
+        output += result._result['stdout']
+        return output
+
     def format_copy(self, result):
         return 'Copying to file: %s (changed: %s)' % (result._result['dest'],
                                                       result._result['changed'])
+
+    def format_debug(self, result):
+        return result._result['msg']
 
     def format_fail(self, result):
         return result._result['msg']
