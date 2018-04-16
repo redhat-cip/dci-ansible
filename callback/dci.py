@@ -100,7 +100,7 @@ class Formatter(object):
                                                                       result._result['changed'])
 
     def format_slurp(self, result):
-        return 'Slurping content of %s\n\n%s' % (result._result['source'], base64.b64decode(result._result['content']))
+        return 'Slurping content of %s\n\n%s' % (result._result['src'], base64.b64decode(result._result['content']))
 
     def format_stat(self, result):
         return '%s: Stat %s' % (result._result['invocation']['module_args']['path'], str(result._result['stat']))
@@ -221,8 +221,8 @@ class CallbackModule(CallbackBase):
 
         try:
             output = Formatter().format(result)
-        except Exception:
-            output = 'All items completed. (An error while parsing the output occured, please reach to distributed-ci@redhat.com)'
+        except Exception as e:
+            output = 'An error while parsing the output occured, please reach to distributed-ci@redhat.com: %s' % e
 
         if result._task.action != 'setup' and self._job_id:
             self.post_message(result, output)
@@ -249,8 +249,8 @@ class CallbackModule(CallbackBase):
 
         try:
             output = Formatter().format(result)
-        except Exception:
-            output = 'All items completed. (An error while parsing the output occured, please reach to distributed-ci@redhat.com)'
+        except Exception as e:
+            output = 'An error while parsing the output occured, please reach to distributed-ci@redhat.com: %s' % e
 
         if ignore_errors:
             self.post_message(result, output)
