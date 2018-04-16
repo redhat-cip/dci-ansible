@@ -91,7 +91,7 @@ class Formatter(object):
         return output
 
     def format_firewalld(self, result):
-        if result._result['module_stderr']:
+        if result._result.get('module_stderr'):
             return 'Stderr:\n%s' % result._result['module_stderr']
         return result._result['msg']
 
@@ -238,8 +238,8 @@ class CallbackModule(CallbackBase):
 
         try:
             output = Formatter().format(result)
-        except Exception:
-            output = 'All items completed. (An error while parsing the output occured, please reach to distributed-ci@redhat.com)'
+        except Exception as e:
+            output = 'An error while parsing the output occured, please reach to distributed-ci@redhat.com: %s' % e
 
         if result._task.action != 'setup' and self._job_id:
             self.post_message(result, output)
@@ -263,8 +263,8 @@ class CallbackModule(CallbackBase):
 
         try:
             output = Formatter().format(result)
-        except Exception:
-            output = 'All items completed. (An error while parsing the output occured, please reach to distributed-ci@redhat.com)'
+        except Exception as e:
+            output = 'An error while parsing the output occured, please reach to distributed-ci@redhat.com: %s' % e
 
         if ignore_errors:
             self.post_message(result, output)
