@@ -50,6 +50,29 @@ class Formatter(object):
         return 'Copying to file: %s (changed: %s)' % (result._result['dest'],
                                                       result._result['changed'])
 
+    def format_dci_topic(self, result):
+        try:
+            return str(result._result['topic'])
+        except Exception:
+            return str(result._result)
+
+    def format_dci_component(self, result):
+        try:
+            return '\n'.join(
+                ['Downloading %s(%s) in %s' % (c['item']['canonical_project_name'], c['item']['name'], c['invocation']['module_args']['dest']) for c in result._result['results']]
+            )
+        except Exception:
+            return str(result._result)
+
+    def format_dci_file(self, result):
+        try:
+            return '\n'.join(
+                ['Uploading %s (filename: %s - mimetype: %s) (details: %s)' % (c['invocation']['module_args']['path'], c['invocation']['module_args']['name'], c['invocation']['module_args']['mime'], c.get('msg')) for c in result._result['results']]
+            )
+        except Exception:
+            l_file = result._result['invocation']['module_args']
+            return 'Uploading %s (filename: %s - mimetype: %s) (details: %s)' % (l_file['path'], l_file['name'], l_file['mime'], result._result.get('msg'))
+
     def format_debug(self, result):
         return result._result['msg']
 
