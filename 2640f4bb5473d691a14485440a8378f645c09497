@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a4dcd0f_5b4b032c",
+        "filename": "callback/dci.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-04-17T11:55:13Z",
+      "side": 1,
+      "message": "This isn\u0027t correct. It would break the formatter.\n\nHere the output of result._result for a dummy slurp call:\n\n\u003e {\u0027_ansible_parsed\u0027: True, \u0027_ansible_no_log\u0027: False, u\u0027encoding\u0027: u\u0027base64\u0027, \u0027changed\u0027: False, u\u0027content\u0027: u\u0027VHVlIEFwciAxNyAxMTo1MDowMSBVVEMgMjAxOAo\u003d\u0027, u\u0027source\u0027: u\u0027/tmp/toto\u0027, u\u0027invocation\u0027: {u\u0027module_args\u0027: {u\u0027src\u0027: u\u0027/tmp/toto\u0027}}}\n\nAs you can see result._result[\u0027source\u0027] is the correct value (tested with Ansible 2.5.0)",
+      "revId": "2640f4bb5473d691a14485440a8378f645c09497",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
