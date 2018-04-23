@@ -137,6 +137,19 @@ class DciJob(DciBase):
         self.deterministic_params = ['topic', 'comment', 'status',
                                      'metadata', 'team_id']
 
+    def do_set_metadata(self, context):
+        for k, v in self.metadata.items():
+            res = dci_job.set_meta(context, self.id, k, str(v))
+            if res.status_code != 201:
+                self.raise_error(res)
+
+        res = dci_job.list_metas(context, self.id)
+
+        if res.status_code == 200 and res.json()['metas'] > 0:
+            return dci_job.get(context, self.id, embed='metas')
+        else:
+            self.raise_error(res)
+
     def do_job_update(self, context):
         res = dci_job.job_update(context, job_id=self.id)
 
@@ -236,6 +249,8 @@ def main():
             action_name = 'job_update'
         if module.params['upgrade']:
             action_name = 'upgrade'
+        if module.params['metadata']:
+            action_name = 'set_metadata'
 
     elif action_name == 'create':
         if not module.params['components']:

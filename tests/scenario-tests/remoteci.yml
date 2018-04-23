@@ -83,3 +83,19 @@
     - name: Verify that job has just 1 file attached to it
       assert:
         that: job_informations.job.files|length == 1
+
+
+- hosts: localhost
+  tasks:
+    - name: Set the metadata
+      dci_job:
+        id: '{{ job_id }}'
+        metadata:
+          "foo": "bar"
+          "release": "queens"
+          "openvswitch": "2.7.1"
+      register: job_informations
+
+    - name: Verify that job has 3 metadatas
+      assert:
+        that: job_informations.job.metas|length == 3
