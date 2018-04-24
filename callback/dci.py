@@ -201,6 +201,18 @@ class CallbackModule(CallbackBase):
             self._dci_context,
             **kwargs)
 
+    def create_jobstate(self, comment, status=None):
+        if status:
+            self._current_status = status
+
+        r = dci_jobstate.create(
+            self._dci_context,
+            status=self._current_status,
+            comment=comment,
+            job_id=self._job_id)
+        ns = r.json()
+        self._jobstate_id = ns['jobstate']['id']
+
     def task_name(self, result):
         """Ensure we alway return a string"""
         name = result._task.get_name()
@@ -231,19 +243,14 @@ class CallbackModule(CallbackBase):
                 result._result['invocation']['module_args']['update'])):
 
             self._job_id = result._result['job']['id']
-            ns = dci_jobstate.create(self._dci_context, status='pre-run',
-                                     comment='starting the update/upgrade',
-                                     job_id=self._job_id).json()
-            self._jobstate_id = ns['jobstate']['id']
+            self.create_jobstate(comment='starting the update/upgrade', status='pre-run')
+
         elif (result._task.action == 'dci_job' and
               result._result['invocation']['module_args']['topic'] and
               not result._result['invocation']['module_args']['id']):
 
             self._job_id = result._result['job']['id']
-            ns = dci_jobstate.create(self._dci_context, status='new',
-                                     comment='start up',
-                                     job_id=self._job_id).json()
-            self._jobstate_id = ns['jobstate']['id']
+            self.create_jobstate(comment='starting the update/upgrade', status='new')
 
         try:
             output = Formatter().format(result)
@@ -259,12 +266,7 @@ class CallbackModule(CallbackBase):
             return
 
         super(CallbackModule, self).v2_runner_on_unreachable(result)
-        new_state = dci_jobstate.create(
-            self._dci_context,
-            status='failure',
-            comment=self.task_name(result),
-            job_id=self._job_id).json()
-        self._jobstate_id = new_state['jobstate']['id']
+        self.create_jobstate(status='failure', comment=self.task_name(result))
         self.post_message(result, result._result['msg'])
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
@@ -291,12 +293,7 @@ class CallbackModule(CallbackBase):
         else:
             status = 'failure'
 
-        new_state = dci_jobstate.create(
-            self._dci_context,
-            status=status,
-            comment=self.task_name(result),
-            job_id=self._job_id).json()
-        self._jobstate_id = new_state['jobstate']['id']
+        self.create_jobstate(status=status, comment=self.task_name(result))
         self.post_message(result, output)
 
     def v2_playbook_on_play_start(self, play):
@@ -330,8 +327,6 @@ class CallbackModule(CallbackBase):
 
         super(CallbackModule, self).v2_playbook_on_play_start(play)
         comment = _get_comment(play)
-        ns = dci_jobstate.create(self._dci_context,
-                                 self._current_status,
-                                 comment=comment,
-                                 job_id=self._job_id).json()
-        self._jobstate_id = ns['jobstate']['id']
+        self.create_jobstate(
+            comment=comment,
+            status=play.get_vars().get('dci_status'))
