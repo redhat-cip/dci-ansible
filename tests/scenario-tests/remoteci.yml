@@ -48,6 +48,26 @@
       assert:
         that: job_informations.job.files|length == 6
 
+    - debug:
+        var: job_informations.job.jobstates
+
+    - name: Check the jobstates are all created
+      assert:
+        that: job_informations.job.jobstates|length == 5
+
+    - name: And the jobstates.status are set (1/3)
+      assert:
+        that: job_informations.job.jobstates[0].status == "new"
+
+    - name: And the jobstates.status are set (2/3)
+      assert:
+        that: job_informations.job.jobstates[2].status == "post-run"
+
+    - name: And the jobstates.status are set (3/3)
+      assert:
+        that: job_informations.job.jobstates[-1].status == "success"
+
+
 - hosts: localhost
   tasks:
     - name: Request an update job
