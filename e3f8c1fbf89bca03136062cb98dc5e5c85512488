@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da20952f_428d487a",
+        "filename": "callback/dci.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 253,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-04-25T19:12:17Z",
+      "side": 1,
+      "message": "this will create a jobstate new with this comment for a new job (not related to an update/upgrade)",
+      "range": {
+        "startLine": 253,
+        "startChar": 42,
+        "endLine": 253,
+        "endChar": 69
+      },
+      "revId": "e3f8c1fbf89bca03136062cb98dc5e5c85512488",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
