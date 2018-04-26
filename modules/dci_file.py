@@ -27,7 +27,7 @@ else:
 DOCUMENTATION = '''
 ---
 module: dci_file
-short_description: An ansible module to interact with the /files endpoint of DCI
+short_description: module to interact with the files endpoint of DCI
 version_added: 2.2
 options:
   state:
@@ -131,11 +131,15 @@ class DciFile(DciBase):
 
     def do_create(self, context):
         if not self.job_id and not self.jobstate_id:
-            raise DciParameterError('Either job_id or jobstate_id must be specified')
+            raise DciParameterError(
+                'Either job_id or jobstate_id must be specified')
         if not self.content and not self.path:
-            raise DciParameterError('Either content or path must be specified')
+            raise DciParameterError(
+                'Either content or path must be specified')
         if self.content and not self.name:
-            raise DciParameterError('name parameter must be specified when content has been specified')
+            raise DciParameterError(
+                'name parameter must be specified ',
+                'when content has been specified')
 
         if self.path and not self.name:
             self.name = self.path
@@ -152,7 +156,9 @@ class DciFile(DciBase):
 def main():
 
     resource_argument_spec = dict(
-        state=dict(default='present', choices=['present', 'absent'], type='str'),
+        state=dict(default='present',
+                   choices=['present', 'absent'],
+                   type='str'),
         id=dict(type='str'),
         content=dict(type='str'),
         path=dict(type='str'),
