@@ -28,16 +28,20 @@ class Formatter(object):
         return '%s\n' % formatter(result)
 
     def format_add_host(self, result):
-        output = "Adding host '%s'" % result._result['add_host']['host_name']
-        if 'host_vars' in result._result['add_host'] and result._result['add_host']['host_vars']:
-            output += ' (%s)' % str(result._result['add_host']['host_vars'])
-        if 'groups' in result._result['add_host'] and result._result['add_host']['groups']:
-            output += ' into groups (%s)' % ''.join(result._result['add_host']['groups'])
+        add_host = result._result['add_host']
+        output = "Adding host '%s'" % add_host['host_name']
+        if 'host_vars' in add_host and add_host['host_vars']:
+            output += ' (%s)' % str(add_host['host_vars'])
+        if 'groups' in add_host and add_host['groups']:
+            output += ' into groups (%s)' % ''.join(add_host['groups'])
         output += ' in current inventory'
         return output
 
     def format_authorized_key(self, result):
-        return 'Adding authorized_key for user: %s (changed: %s)\nKey: %s' % (result._result['user'], result._result['changed'], result._result['key'])
+        return 'Adding authorized_key for user: %s (changed: %s)\nKey: %s' % (
+            result._result['user'],
+            result._result['changed'],
+            result._result['key'])
 
     def format_command(self, result):
         output = ''
@@ -47,8 +51,9 @@ class Formatter(object):
         return output
 
     def format_copy(self, result):
-        return 'Copying to file: %s (changed: %s)' % (result._result['dest'],
-                                                      result._result['changed'])
+        return 'Copying to file: %s (changed: %s)' % (
+            result._result['dest'],
+            result._result['changed'])
 
     def format_dci_topic(self, result):
         try:
@@ -59,19 +64,35 @@ class Formatter(object):
     def format_dci_component(self, result):
         try:
             return '\n'.join(
-                ['Downloading %s(%s) in %s' % (c['item']['canonical_project_name'], c['item']['name'], c['invocation']['module_args']['dest']) for c in result._result['results']]
+                ['Downloading %s(%s) in %s' % (
+                    c['item']['canonical_project_name'],
+                    c['item']['name'],
+                    c['invocation']['module_args']['dest'])
+                 for c in result._result['results']]
             )
         except Exception:
             return str(result._result)
 
     def format_dci_file(self, result):
         try:
-            return '\n'.join(
-                ['Uploading %s (filename: %s - mimetype: %s) (details: %s)' % (c['invocation']['module_args']['path'], c['invocation']['module_args']['name'], c['invocation']['module_args']['mime'], c.get('msg')) for c in result._result['results']]
-            )
+            ret = ''
+            for c in result._result['results']:
+                l_file = c['invocation']['module_args']
+                ret += (
+                    'Uploading %s (filename: %s - mimetype: %s) ',
+                    '(details: %s)\n') % (
+                        l_file['path'],
+                        l_file['name'],
+                        l_file['mime'],
+                    c.get('msg'))
+            return ret
         except Exception:
             l_file = result._result['invocation']['module_args']
-            return 'Uploading %s (filename: %s - mimetype: %s) (details: %s)' % (l_file['path'], l_file['name'], l_file['mime'], result._result.get('msg'))
+            return (
+                'Uploading %s (filename: ',
+                '%s - mimetype: %s) (details: %s)' % (
+                    l_file['path'], l_file['name'],
+                    l_file['mime'], result._result.get('msg')))
 
     def format_debug(self, result):
         return result._result['msg']
@@ -81,12 +102,23 @@ class Formatter(object):
 
     def format_file(self, result):
         try:
-            return '\n'.join(['%s: %s (changed: %s)' % (f['path'], f['state'], f['changed']) for f in result._result['results']])
+            ret = ''
+            for f in result._result['results']:
+                ret += "%s: %s (changed: %s)\n" % (
+                    f['path'],
+                    f['state'],
+                    f['changed'])
+            return ret
         except Exception:
-            return '%s: %s (changed: %s)' % (result._result['path'], result._result['state'], result._result['changed'])
+            return '%s: %s (changed: %s)' % (
+                result._result['path'],
+                result._result['state'],
+                result._result['changed'])
 
     def format_find(self, result):
-        output = 'Examined: %s\nMatched: %s\n\n' % (result._result['examined'], result._result['matched'])
+        output = 'Examined: %s\nMatched: %s\n\n' % (
+            result._result['examined'],
+            result._result['matched'])
         output += '\n'.join([item['path'] for item in result._result['files']])
         return output
 
@@ -100,61 +132,100 @@ class Formatter(object):
 
     def format_ini_file(self, result):
         try:
-            return '\n'.join(['%s - (changed: %s)\nMessage: %s (%s.%s=%s)\n' % (ini['path'], ini['changed'], ini['msg'], ini['invocation']['module_args']['section'], ini['invocation']['module_args']['option'], ini['invocation']['module_args']['value']) for ini in result._result['results']])
+            ret = ''
+            for ini in result._result['results']:
+                m_args = ini['invocation']['module_args']
+                ret += '%s - (changed: %s)\nMessage: %s (%s.%s=%s)\n' % (
+                    ini['path'],
+                    ini['changed'],
+                    ini['msg'],
+                    m_args['section'],
+                    m_args['option'],
+                    m_args['value'])
+            return ret
         except Exception:
-            return '%s - (changed: %s)\nMessage: %s (%s.%s=%s)' % (result._result['path'], result._result['changed'], result._result['msg'], result._result['invocation']['module_args']['section'], result._result['invocation']['module_args']['option'], result._result['invocation']['module_args']['value'])
+            return '%s - (changed: %s)\nMessage: %s (%s.%s=%s)' % (
+                result._result['path'],
+                result._result['changed'],
+                result._result['msg'],
+                result._result['invocation']['module_args']['section'],
+                result._result['invocation']['module_args']['option'],
+                result._result['invocation']['module_args']['value'])
 
     def format_lineinfile(self, result):
-        output = '%s - (changed: %s)' % (result._result['invocation']['module_args']['dest'], result._result['changed'])
+        m_args = result._result['invocation']['module_args']
+        output = '%s - (changed: %s)' % (
+            m_args['dest'],
+            result._result['changed'])
         if result._result['msg']:
             output += '\nMessage: %s' % result._result['msg']
-        output += '\nLine: %s' % result._result['invocation']['module_args']['line']
+        output += '\nLine: %s' % m_args['line']
         return output
 
     def format_package(self, result):
         try:
-            return '\n'.join([p['results'][0] for p in result._result['results']])
+            ret = ''
+            for p in result._result['results']:
+                ret = p['results'][0] + '\n'
+            return ret
         except Exception:
             return ''.join(result._result['results'])
 
     def format_set_fact(self, result):
-        return 'Settings the following facts:\n\n%s' % '\n'.join(['%s: %s' % (key, value) for key, value in result._result['ansible_facts'].iteritems()])
+        ret = 'Settings the following facts:\n\n'
+        for key, value in result._result['ansible_facts'].iteritems():
+            ret += '%s: %s' % (key, value)
+        return ret
 
     def format_service(self, result):
-        return 'Service Name: %s, Service State: %s (changed: %s)' % (result._result['name'],
-                                                                      result._result['state'],
-                                                                      result._result['changed'])
+        return 'Service Name: %s, Service State: %s (changed: %s)' % (
+            result._result['name'],
+            result._result['state'],
+            result._result['changed'])
 
     def format_slurp(self, result):
-        return 'Slurping content of %s\n\n%s' % (result._result['source'], base64.b64decode(result._result['content']))
+        return 'Slurping content of %s\n\n%s' % (
+            result._result['source'],
+            base64.b64decode(result._result['content']))
 
     def format_stat(self, result):
-        return '%s: Stat %s' % (result._result['invocation']['module_args']['path'], str(result._result['stat']))
+        m_args = result._result['invocation']['module_args']
+        return '%s: Stat %s' % (m_args['path'], str(result._result['stat']))
 
     def format_systemd(self, result):
-        return 'Service Name: %s, Service State: %s (changed: %s)' % (result._result['name'],
-                                                                      result._result['state'],
-                                                                      result._result['changed'])
+        return 'Service Name: %s, Service State: %s (changed: %s)' % (
+            result._result['name'],
+            result._result['state'],
+            result._result['changed'])
 
     def format_template(self, result):
-        return 'Copying template to file: %s (changed: %s)' % (result._result['dest'],
-                                                               result._result['changed'])
+        return 'Copying template to file: %s (changed: %s)' % (
+            result._result['dest'],
+            result._result['changed'])
 
     def format_unarchive(self, result):
         output = ''
         for archive in result._result['results']:
-            output += 'Source: %s, Destination: %s\n' % (archive['src'], archive['dest'])
+            output += 'Source: %s, Destination: %s\n' % (
+                archive['src'], archive['dest'])
             if 'files' in archive:
                 output += '\n'.join(archive['files'])
         return output
 
     def format_user(self, result):
-        return 'User: %s (changed: %s)\nSSH Public Key: %s' % (result._result['comment'],
-                                                               result._result['changed'],
-                                                               result._result['ssh_public_key'])
+        return 'User: %s (changed: %s)\nSSH Public Key: %s' % (
+            result._result['comment'],
+            result._result['changed'],
+            result._result['ssh_public_key'])
 
     def format_yum_repository(self, result):
-        return '\n'.join(['File: %s (changed: %s)\n\n%s' % (repo['diff']['after_header'], repo['changed'], repo['diff']['after']) for repo in result._result['results']])
+        ret = ''
+        for repo in result._result['results']:
+            ret += 'File: %s (changed: %s)\n\n%s' % (
+                repo['diff']['after_header'],
+                repo['changed'],
+                repo['diff']['after'])
+        return ret
 
 
 class CallbackModule(CallbackBase):
@@ -243,7 +314,9 @@ class CallbackModule(CallbackBase):
                 result._result['invocation']['module_args']['update'])):
 
             self._job_id = result._result['job']['id']
-            self.create_jobstate(comment='starting the update/upgrade', status='pre-run')
+            self.create_jobstate(
+                comment='starting the update/upgrade',
+                status='pre-run')
 
         elif (result._task.action == 'dci_job' and
               result._result['invocation']['module_args']['topic'] and
@@ -255,7 +328,9 @@ class CallbackModule(CallbackBase):
         try:
             output = Formatter().format(result)
         except Exception as e:
-            output = 'An error while parsing the output occured, please reach to distributed-ci@redhat.com: %s' % e
+            output = (
+                'An error while parsing the output occured, ',
+                'please reach to distributed-ci@redhat.com: %s') % e
 
         if result._task.action != 'setup' and self._job_id:
             self.post_message(result, output)
@@ -282,7 +357,9 @@ class CallbackModule(CallbackBase):
         try:
             output = Formatter().format(result)
         except Exception as e:
-            output = 'An error while parsing the output occured, please reach to distributed-ci@redhat.com: %s' % e
+            output = (
+                'An error while parsing the output occured, ',
+                'please reach to distributed-ci@redhat.com: %s') % e
 
         if ignore_errors:
             self.post_message(result, output)
