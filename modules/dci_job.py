@@ -108,7 +108,9 @@ EXAMPLES = '''
   dci_job:
     topic: 'OSP8'
     comment: 'job created manually'
-    components: ['4c282108-5086-454b-8d49-4b1d0345acd9', '4c8ec5c8-ec24-4253-abbf-63a4daddba8b']
+    components: [
+      '4c282108-5086-454b-8d49-4b1d0345acd9',
+      '4c8ec5c8-ec24-4253-abbf-63a4daddba8b']
 
 '''
 
@@ -154,8 +156,9 @@ class DciJob(DciBase):
         res = dci_job.job_update(context, job_id=self.id)
 
         if res.status_code == 201:
-            return dci_job.get(context, context.last_job_id,
-                               embed='topic,remoteci,components,rconfiguration')
+            return dci_job.get(
+                context, context.last_job_id,
+                embed='topic,remoteci,components,rconfiguration')
         else:
             self.raise_error(res)
 
@@ -163,8 +166,9 @@ class DciJob(DciBase):
         res = dci_job.upgrade(context, job_id=self.id)
 
         if res.status_code == 201:
-            return dci_job.get(context, context.last_job_id,
-                               embed='topic,remoteci,components,rconfiguration')
+            return dci_job.get(
+                context, context.last_job_id,
+                embed='topic,remoteci,components,rconfiguration')
         else:
             self.raise_error(res)
 
@@ -181,8 +185,9 @@ class DciJob(DciBase):
             topic_id = topics[0]['id']
             res = dci_job.schedule(context, topic_id=topic_id)
             if res.status_code == 201:
-                return dci_job.get(context, context.last_job_id,
-                                   embed='topic,remoteci,components,rconfiguration')
+                return dci_job.get(
+                    context, context.last_job_id,
+                    embed='topic,remoteci,components,rconfiguration')
             else:
                 self.raise_error(res)
 
@@ -217,7 +222,9 @@ class DciJob(DciBase):
 def main():
 
     resource_argument_spec = dict(
-        state=dict(default='present', choices=['present', 'absent'], type='str'),
+        state=dict(
+            default='present',
+            choices=['present', 'absent'], type='str'),
         id=dict(type='str'),
         topic=dict(required=False, type='str'),
         comment=dict(type='str'),
