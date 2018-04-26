@@ -26,7 +26,7 @@ else:
 DOCUMENTATION = '''
 ---
 module: dci_feeder
-short_description: An ansible module to interact with the /feeders endpoint of DCI
+short_description: module to interact with the feeders endpoint of DCI
 version_added: 2.4
 options:
   state:
@@ -127,7 +127,10 @@ class DciFeeder(DciBase):
 def main():
 
     resource_argument_spec = dict(
-        state=dict(default='present', choices=['present', 'absent'], type='str'),
+        state=dict(
+            default='present',
+            choices=['present', 'absent'],
+            type='str'),
         id=dict(type='str'),
         name=dict(type='str'),
         team_id=dict(type='str'),

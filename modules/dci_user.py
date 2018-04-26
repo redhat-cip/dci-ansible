@@ -26,7 +26,7 @@ else:
 DOCUMENTATION = '''
 ---
 module: dci_user
-short_description: An ansible module to interact with the /users endpoint of DCI
+short_description: module to interact with the users endpoint of DCI
 version_added: 2.2
 options:
   state:
@@ -140,7 +140,10 @@ class DciUser(DciBase):
 def main():
 
     resource_argument_spec = dict(
-        state=dict(default='present', choices=['present', 'absent'], type='str'),
+        state=dict(
+            default='present',
+            choices=['present', 'absent'],
+            type='str'),
         id=dict(type='str'),
         name=dict(type='str'),
         fullname=dict(type='str'),

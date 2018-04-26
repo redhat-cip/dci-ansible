@@ -26,7 +26,7 @@ else:
 DOCUMENTATION = '''
 ---
 module: dci_remoteci
-short_description: An ansible module to interact with the /remotecis endpoint of DCI
+short_description: module to interact with the remotecis endpoint of DCI
 version_added: 2.2
 options:
   state:
@@ -130,7 +130,10 @@ class DciRemoteci(DciBase):
 def main():
 
     resource_argument_spec = dict(
-        state=dict(default='present', choices=['present', 'absent'], type='str'),
+        state=dict(
+            default='present',
+            choices=['present', 'absent'],
+            type='str'),
         id=dict(type='str'),
         name=dict(type='str'),
         data=dict(type='dict'),
