@@ -26,7 +26,7 @@ else:
 DOCUMENTATION = '''
 ---
 module: dci_test
-short_description: An ansible module to interact with the /tests endpoint of DCI
+short_description: module to interact with the tests endpoint of DCI
 version_added: 2.2
 options:
   state:
@@ -120,7 +120,10 @@ class DciTest(DciBase):
 def main():
 
     resource_argument_spec = dict(
-        state=dict(default='present', choices=['present', 'absent'], type='str'),
+        state=dict(
+            default='present',
+            choices=['present', 'absent'],
+            type='str'),
         id=dict(type='str'),
         name=dict(type='str'),
         data=dict(type='dict'),
