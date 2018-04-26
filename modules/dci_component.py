@@ -28,7 +28,7 @@ else:
 DOCUMENTATION = '''
 ---
 module: dci_component
-short_description: An ansible module to interact with the /components endpoint of DCI
+short_description: module to interact with the components endpoint of DCI
 version_added: 2.2
 options:
   state:
@@ -109,7 +109,10 @@ def download_file(module, ctx):
 def main():
 
     resource_argument_spec = dict(
-        state=dict(default='present', choices=['present', 'absent'], type='str'),
+        state=dict(
+            default='present',
+            choices=['present', 'absent'],
+            type='str'),
         id=dict(type='str'),
         dest=dict(type='str'),
         export_control=dict(type='bool'),
@@ -136,7 +139,8 @@ def main():
     ctx = build_dci_context(module)
 
     # Action required: Delete the component matching the component id
-    # Endpoint called: /components/<component_id> DELETE via dci_component.delete()
+    # Endpoint called: /components/<component_id> DELETE
+    #                  via dci_component.delete()
     #
     # If the component exist and it has been succesfully deleted the changed is
     # set to true, else if the file does not exist changed is set to False
@@ -146,21 +150,27 @@ def main():
         res = dci_component.delete(ctx, module.params['id'])
 
     # Action required: Attach a file to a component
-    # Endpoint called: /components/<component_id>/files/ POST via dci_component.file_upload()
+    # Endpoint called: /components/<component_id>/files/ POST
+    #                  via dci_component.file_upload()
     #
     # Attach file to a component
     elif module.params['path']:
-        res = dci_component.file_upload(ctx, module.params['id'], module.params['path'])
+        res = dci_component.file_upload(
+            ctx,
+            module.params['id'],
+            module.params['path'])
 
     # Action required: Download a component
-    # Endpoint called: /components/<component_id>/files/<file_id>/content GET via dci_component.file_download()
+    # Endpoint called: /components/<component_id>/files/<file_id>/content GET
+    #          via dci_component.file_download()
     #
     # Download the component
     elif module.params['dest']:
         res = download_file(module, ctx)
 
     # Action required: Get component informations
-    # Endpoint called: /components/<component_id> GET via dci_component.get()
+    # Endpoint called: /components/<component_id> GET
+    #                  via dci_component.get()
     #
     # Get component informations
     elif module.params['id'] and module.params['export_control'] is None:
@@ -170,7 +180,8 @@ def main():
         res = dci_component.get(ctx, module.params['id'], **kwargs)
 
     # Action required: Update an existing component
-    # Endpoint called: /components/<component_id> PUT via dci_component.update()
+    # Endpoint called: /components/<component_id> PUT
+    #                  via dci_component.update()
     #
     # Update the component with the specified parameters.
     elif module.params['id']:
@@ -180,9 +191,13 @@ def main():
                 'id': module.params['id'],
                 'etag': res.json()['component']['etag']
             }
-            updated_kwargs['state'] = 'active' if module.params['active'] else 'inactive'
+            if module.params['active']:
+                updated_kwargs['state'] = 'active'
+            else:
+                updated_kwargs['state'] = 'inactive'
             if module.params['export_control'] is not None:
-                updated_kwargs['export_control'] = module.params['export_control']
+                export_control = module.params['export_control']
+                updated_kwargs['export_control'] = export_control
 
             res = dci_component.update(ctx, **updated_kwargs)
 
@@ -202,7 +217,8 @@ def main():
         }
 
         if module.params['canonical_project_name']:
-            kwargs['canonical_project_name'] = module.params['canonical_project_name']
+            canonical_project_name = module.params['canonical_project_name']
+            kwargs['canonical_project_name'] = canonical_project_name
         if module.params['url']:
             kwargs['url'] = module.params['url']
         if module.params['data']:
