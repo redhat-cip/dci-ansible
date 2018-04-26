@@ -26,7 +26,7 @@ else:
 DOCUMENTATION = '''
 ---
 module: dci_topic
-short_description: An ansible module to interact with the /topics endpoint of DCI
+short_description: module to interact with the topics endpoint of DCI
 version_added: 2.2
 options:
   state:
@@ -146,7 +146,10 @@ class DciTopic(DciBase):
 def main():
 
     resource_argument_spec = dict(
-        state=dict(default='present', choices=['present', 'absent'], type='str'),
+        state=dict(
+            default='present',
+            choices=['present', 'absent'],
+            type='str'),
         id=dict(type='str'),
         name=dict(type='str'),
         label=dict(type='str'),
