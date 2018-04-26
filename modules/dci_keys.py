@@ -26,7 +26,7 @@ else:
 DOCUMENTATION = '''
 ---
 module: dci_keys
-short_description: An ansible module to interact with the /remotecis/keys endpoint of DCI
+short_description: interact with the remotecis/keys endpoint of DCI
 version_added: 2.2
 options:
   state:

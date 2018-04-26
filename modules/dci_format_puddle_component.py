@@ -33,7 +33,7 @@ except ImportError:
 DOCUMENTATION = '''
 ---
 module: dci_format_puddle_component
-short_description: An ansible module to format the puddle output
+short_description: module to format the puddle output
 version_added: 2.2
 options:
   state:
@@ -105,9 +105,10 @@ def get_data(type, name, repo_name, version, base_url, section_name,
         commit_information = yaml.load(requests.get(
             commit_information_file_path).text
         )
-        data['dlrn']['commit_hash'] = commit_information['commits'][0]['commit_hash']
-        data['dlrn']['distro_hash'] = commit_information['commits'][0]['distro_hash']
-        data['dlrn']['commit_branch'] = commit_information['commits'][0]['commit_branch']
+        first_commit = commit_information['commits'][0]
+        data['dlrn']['commit_hash'] = first_commit['commit_hash']
+        data['dlrn']['distro_hash'] = first_commit['distro_hash']
+        data['dlrn']['commit_branch'] = first_commit['commit_branch']
 
     return data
 
@@ -137,7 +138,8 @@ def get_repo_information(url, type, name):
     repo_date = '%s-%s-%s' % (dt.year, dt.month, dt.day)
 
     component_informations = {
-        'canonical_project_name': get_canonical_project_name(type, name, repo_name),
+        'canonical_project_name': get_canonical_project_name(
+            type, name, repo_name),
         'name': get_name(type, name, repo_name, version, repo_date),
         'url': base_url,
         'data': get_data(
@@ -152,7 +154,10 @@ def get_repo_information(url, type, name):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            state=dict(default='present', choices=['present', 'absent'], type='str'),
+            state=dict(
+                default='present',
+                choices=['present', 'absent'],
+                type='str'),
             url=dict(required=True, type='str'),
             type=dict(required=True, type='str'),
             name=dict(required=True, type='str'),
@@ -162,14 +167,14 @@ def main():
     if not requests_found:
         module.fail_json(msg='The python requests module is required')
 
-    component_informations = get_repo_information(module.params['url'],
-                                                  module.params['type'],
-                                                  module.params['name'])
+    information = get_repo_information(module.params['url'],
+                                       module.params['type'],
+                                       module.params['name'])
     puddle_component = {
-        'canonical_project_name': component_informations['canonical_project_name'],
-        'name': component_informations['name'],
-        'url': component_informations['url'],
-        'data': component_informations['data'],
+        'canonical_project_name': information['canonical_project_name'],
+        'name': information['name'],
+        'url': information['url'],
+        'data': information['data'],
         'changed': False
     }
 
