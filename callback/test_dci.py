@@ -162,7 +162,7 @@ def test_ini_file_failure(capsys):
 def test_package_failure(capsys):
     args = 'name=dontexist state=present'
     run_task(dict(action=dict(module='package', args=args)))
-    assert capsys.readouterr().out == ''
+    assert capsys.readouterr().out == 'Error: This command has to be run under the root user.\n\n'
 
 
 def test_set_fact_success(capsys):

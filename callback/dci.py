@@ -163,6 +163,8 @@ class Formatter(object):
         return output
 
     def format_package(self, result):
+        if 'msg' in result._result:
+            return result._result['msg']
         try:
             ret = ''
             for p in result._result['results']:
