@@ -58,7 +58,8 @@ def run_task(task):
 
 def test_add_host_success(capsys):
     run_task(dict(action=dict(module='add_host', args='name=foo')))
-    assert capsys.readouterr().out == "Adding host 'foo' in current inventory\n\n"
+    expectation = "Adding host 'foo' in current inventory\n"
+    assert capsys.readouterr().out == expectation
 
 
 def test_add_host_failure(capsys):
@@ -68,8 +69,8 @@ def test_add_host_failure(capsys):
 
 
 def test_authorized_key_failure(capsys):
-    # TODO: Should return "missing required arguments: key"
-    run_task(dict(action=dict(module='authorized_key', args='user=charlie state=present')))
+    args = 'user=charlie state=present'
+    run_task(dict(action=dict(module='authorized_key', args=args)))
     assert capsys.readouterr().out == ''
 
 
@@ -79,24 +80,26 @@ def test_command_success(capsys):
                    'sample_2.yml\n'
                    'sample_3.yml\n'
                    'sample_4.yml\n'
-                   'sample_upgrade.yml\n\n')
+                   'sample_upgrade.yml\n')
     assert capsys.readouterr().out == expectation
 
 
 def test_command_failure(capsys):
     run_task(dict(action=dict(module='command', args='/ls')))
-    assert capsys.readouterr().out == ''
+    assert capsys.readouterr().out == '[Errno 2] No such file or directory\n'
 
 
 def test_copy_success(capsys):
-    run_task(dict(action=dict(module='copy', args='src=/etc/fstab dest=/tmp/fstab_')))
-    exceptation = ['Copying to file: /tmp/fstab_ (changed: True)\n\n',
-                   'Copying to file: /tmp/fstab_ (changed: False)\n\n']
+    args = 'src=/etc/fstab dest=/tmp/fstab_'
+    run_task(dict(action=dict(module='copy', args=args)))
+    exceptation = ['Copying to file: /tmp/fstab_ (changed: True)\n',
+                   'Copying to file: /tmp/fstab_ (changed: False)\n']
     assert capsys.readouterr().out in exceptation
 
 
 def test_copy_failure(capsys):
-    run_task(dict(action=dict(module='copy', args='src=/etc/fstab dest=/proc/fstab')))
+    args = 'src=/etc/fstab dest=/proc/fstab'
+    run_task(dict(action=dict(module='copy', args=args)))
     assert capsys.readouterr().out == ''
 
 
@@ -112,44 +115,55 @@ def test_dci_topic_failure_no_auth(capsys):
 
 def test_debug_success(capsys):
     run_task(dict(action=dict(module='debug', args='var=bar')))
-    assert capsys.readouterr().out == ''
+    assert capsys.readouterr().out == 'All items completed (changed: False)\n'
 
 
 def test_debug_failure(capsys):
     run_task(dict(action=dict(module='debug', args='foo=bar')))
-    assert capsys.readouterr().out == "'foo' is not a valid option in debug\n\n"
+    expectation = ("'foo' is not a valid option in debug\nAll items "
+                   "completed (changed: False)\n")
+    assert capsys.readouterr().out == expectation
 
 
 def test_file_success(capsys):
-    run_task(dict(action=dict(module='file', args='path=/etc/fstab state=present')))
-    assert capsys.readouterr().out == ''
+    args = 'path=/etc/fstab state=present'
+    run_task(dict(action=dict(module='file', args=args)))
+    expectation = ("value of state must be one of: file, directory, link, "
+                   "hard, touch, absent, got: present\nNone: None (changed: "
+                   "False)\n\n")
+    assert capsys.readouterr().out == expectation
 
 
 def test_file_failure(capsys):
-    run_task(dict(action=dict(module='file', args='path=/proc/1/bob state=present')))
-    assert capsys.readouterr().out == ''
+    args = 'path=/proc/1/bob state=present'
+    run_task({'action': {'module': 'file', 'args': args}})
+    expectation = ('value of state must be one of: file, directory, link, '
+                   'hard, touch, absent, got: present\nNone: None (changed: '
+                   'False)\n\n')
+    assert capsys.readouterr().out == expectation
 
 
 def test_find_success(capsys):
-    run_task(dict(action=dict(module='find', args='paths=/proc/1 age=400w')))
+    run_task({'action': {'module': 'find', 'args': 'paths=/proc/1 age=400w'}})
     assert 'Examined:' in capsys.readouterr().out
 
 
 def test_find_failure(capsys):
-    run_task(dict(action=dict(module='find', args='pathz=/proc/1/bob age=400w')))
+    args = 'pathz=/proc/1/bob age=400w'
+    run_task({'action': {'module': 'find', 'args': args}})
     assert capsys.readouterr().out == ''
 
 
 def test_firewalld_failure(capsys):
-    run_task(dict(action=dict(module='firewalld', args='port=80 state=BOB')))
-    exceptation = ('value of state must be one of: enabled, disabled, present, '
-                   'absent, got: BOB\n\n')
+    run_task({'action': {'module': 'firewalld', 'args': 'port=80 state=BOB'}})
+    exceptation = ('value of state must be one of: enabled, disabled, present,'
+                   ' absent, got: BOB\n\n')
     assert capsys.readouterr().out == exceptation
 
 
 def test_ini_file_success(capsys, tmpdir):
     args = 'path=%s/foo.ini section=bar value=1 state=present' % tmpdir
-    run_task(dict(action=dict(module='ini_file', args=args)))
+    run_task({'action': {'module': 'ini_file', 'args': args}})
     assert 'Message: OK (bar.None=1)' in capsys.readouterr().out
 
 
@@ -162,7 +176,8 @@ def test_ini_file_failure(capsys):
 def test_package_failure(capsys):
     args = 'name=dontexist state=present'
     run_task(dict(action=dict(module='package', args=args)))
-    assert capsys.readouterr().out == ''
+    expectation = 'Error: This command has to be run under the root user.\n\n'
+    assert capsys.readouterr().out == expectation
 
 
 def test_set_fact_success(capsys):
@@ -171,8 +186,12 @@ def test_set_fact_success(capsys):
 
 
 def test_service_failure(capsys):
-    run_task(dict(action=dict(module='service', args='name=nothing state=restarted')))
-    assert capsys.readouterr().out == ''
+    args = 'name=nothing state=restarted'
+    run_task(dict(action=dict(module='service', args=args)))
+    expectation = ("Could not find the requested service nothing: host\n"
+                   "Service Name: None, Service State: None (changed: "
+                   "False)\n")
+    assert capsys.readouterr().out == expectation
 
 
 def test_slurp_failure_no_src(capsys):
@@ -185,26 +204,38 @@ def test_slurp_failure_src_is_a_dir(capsys):
     assert capsys.readouterr().out == ''
 
 
+def test_invalid_module_failure(capsys):
+    run_task(dict(action=dict(module='invalid_module', args='invalid=key')))
+    assert 'not found in configured module paths.' in capsys.readouterr().out
+
+
 def test_stat_failure(capsys):
-    run_task(dict(action=dict(module='state', args='invalid=key')))
-    assert capsys.readouterr().out == ''
+    run_task(dict(action=dict(module='stat', args='invalid=key')))
+    expectation = 'Unsupported parameters for (stat) module'
+    assert expectation in capsys.readouterr().out
 
 
 def test_template_failure(capsys):
     run_task(dict(action=dict(module='template', args='invalid=key')))
-    assert capsys.readouterr().out == ''
+    expectation = ('src and dest are required\nCopying template to file: None '
+                   '(changed: False)\n')
+    assert capsys.readouterr().out == expectation
 
 
 def test_unarchive_failure(capsys):
     run_task(dict(action=dict(module='unarchive', args='invalid=key')))
-    assert capsys.readouterr().out == ''
+    expectation = ("src (or content) and dest are required\nSource: None, "
+                   "Destination: None\n\n")
+    assert capsys.readouterr().out == expectation
 
 
 def test_user_failure(capsys):
     run_task(dict(action=dict(module='user', args='invalid=key')))
-    assert capsys.readouterr().out == ''
+    expectation = 'Unsupported parameters for (user) module'
+    assert expectation in capsys.readouterr().out
 
 
 def test_yum_repository_failure(capsys):
     run_task(dict(action=dict(module='yum_repository', args='invalid=key')))
-    assert capsys.readouterr().out == ''
+    expectation = 'Unsupported parameters for (yum_repository) module'
+    assert expectation in capsys.readouterr().out
