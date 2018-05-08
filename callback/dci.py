@@ -16,16 +16,27 @@ class Formatter(object):
     def __init__(self):
         pass
 
+    @staticmethod
+    def _get_result_entries(result):
+        if 'results' in result._result:
+            return result._result['results']
+        else:
+            return [result._result]
+
     def format(self, result):
 
         module_name = result._task.action
+        msg = ''
+        if 'msg' in result._result:
+            msg += result._result['msg']
+            msg += '\n'
 
         if hasattr(self, 'format_%s' % module_name):
             formatter = getattr(self, 'format_%s' % module_name)
         else:
             formatter = getattr(self, 'format_generic')
 
-        return '%s\n' % formatter(result)
+        return '%s%s' % (msg, formatter(result) or '')
 
     def format_add_host(self, result):
         add_host = result._result['add_host']
@@ -62,114 +73,80 @@ class Formatter(object):
             return str(result._result)
 
     def format_dci_component(self, result):
-        try:
-            return '\n'.join(
-                ['Downloading %s(%s) in %s' % (
-                    c['item']['canonical_project_name'],
-                    c['item']['name'],
-                    c['invocation']['module_args']['dest'])
-                 for c in result._result['results']]
-            )
-        except Exception:
-            return str(result._result)
+        ret = ''
+        for c in self._get_result_entries(result):
+            ret += 'Downloading %s(%s) in %s' % (
+                c['item'].get('canonical_project_name'),
+                c['item'].get('name'),
+                c['invocation']['module_args'].get('dest'))
+        return ret
 
     def format_dci_file(self, result):
-        try:
-            ret = ''
-            for c in result._result['results']:
-                l_file = c['invocation']['module_args']
-                ret += (
-                    'Uploading %s (filename: %s - mimetype: %s) ',
-                    '(details: %s)\n') % (
-                        l_file['path'],
-                        l_file['name'],
-                        l_file['mime'],
+        ret = ''
+        for c in self._get_result_entries(result):
+            l_file = c['invocation']['module_args']
+            ret += (
+                'Uploading %s (filename: %s - mimetype: %s) ',
+                '(details: %s)\n') % (
+                    l_file.get('path'),
+                    l_file.get('name'),
+                    l_file.get('mime'),
                     c.get('msg'))
-            return ret
-        except Exception:
-            l_file = result._result['invocation']['module_args']
-            return (
-                'Uploading %s (filename: ',
-                '%s - mimetype: %s) (details: %s)' % (
-                    l_file['path'], l_file['name'],
-                    l_file['mime'], result._result.get('msg')))
-
-    def format_debug(self, result):
-        return result._result['msg']
-
-    def format_fail(self, result):
-        return result._result['msg']
+        return ret
 
     def format_file(self, result):
-        try:
-            ret = ''
-            for f in result._result['results']:
-                ret += "%s: %s (changed: %s)\n" % (
-                    f['path'],
-                    f['state'],
-                    f['changed'])
-            return ret
-        except Exception:
-            return '%s: %s (changed: %s)' % (
-                result._result['path'],
-                result._result['state'],
-                result._result['changed'])
+        ret = ''
+        for c in self._get_result_entries(result):
+            ret += "%s: %s (changed: %s)\n" % (
+                c.get('path'),
+                c.get('state'),
+                c.get('changed'))
+        return ret
 
     def format_find(self, result):
         output = 'Examined: %s\nMatched: %s\n\n' % (
-            result._result['examined'],
-            result._result['matched'])
-        output += '\n'.join([item['path'] for item in result._result['files']])
+            result._result.get('examined'),
+            result._result.get('matched'))
+        for item in result._result['files']:
+            output += item.get('path')
+            output += '\n'
         return output
 
     def format_firewalld(self, result):
         if result._result.get('module_stderr'):
             return 'Stderr:\n%s' % result._result['module_stderr']
-        return result._result['msg']
 
     def format_generic(self, result):
-        return 'All items completed (changed: %s)' % result._result['changed']
+        changed = result._result.get('changed')
+        return 'All items completed (changed: %s)' % changed
 
     def format_ini_file(self, result):
-        try:
-            ret = ''
-            for ini in result._result['results']:
-                m_args = ini['invocation']['module_args']
-                ret += '%s - (changed: %s)\nMessage: %s (%s.%s=%s)\n' % (
-                    ini['path'],
-                    ini['changed'],
-                    ini['msg'],
-                    m_args['section'],
-                    m_args['option'],
-                    m_args['value'])
-            return ret
-        except Exception:
-            return '%s - (changed: %s)\nMessage: %s (%s.%s=%s)' % (
-                result._result['path'],
-                result._result['changed'],
-                result._result['msg'],
-                result._result['invocation']['module_args']['section'],
-                result._result['invocation']['module_args']['option'],
-                result._result['invocation']['module_args']['value'])
+        ret = ''
+        for c in self._get_result_entries(result):
+            m_args = c['invocation']['module_args']
+            ret += '%s - (changed: %s)\nMessage: %s (%s.%s=%s)\n' % (
+                c.get('path'),
+                c.get('changed'),
+                c.get('msg'),
+                m_args.get('section'),
+                m_args.get('option'),
+                m_args.get('value'))
+        return ret
 
     def format_lineinfile(self, result):
         m_args = result._result['invocation']['module_args']
         output = '%s - (changed: %s)' % (
-            m_args['dest'],
-            result._result['changed'])
-        if result._result['msg']:
-            output += '\nMessage: %s' % result._result['msg']
-        output += '\nLine: %s' % m_args['line']
+            m_args.get('dest'),
+            result._result.get('changed'))
+        output += '\nLine: %s' % m_args.get('line')
         return output
 
     def format_package(self, result):
-        try:
-            ret = ''
-            for p in result._result['results']:
-                ret += p['results'][0] + '\n'
-            return ret
-        except Exception:
-            return ''.join(result._result['results'])
+        ret = ''
+        for c in self._get_result_entries(result):
+            if 'results' in c:
+                ret += c['results'][0] + '\n'
+        return ret
 
     def format_set_fact(self, result):
         ret = 'Settings the following facts:\n\n'
@@ -179,52 +156,54 @@ class Formatter(object):
 
     def format_service(self, result):
         return 'Service Name: %s, Service State: %s (changed: %s)' % (
-            result._result['name'],
-            result._result['state'],
-            result._result['changed'])
+            result._result.get('name'),
+            result._result.get('state'),
+            result._result.get('changed'))
 
     def format_slurp(self, result):
         return 'Slurping content of %s\n\n%s' % (
-            result._result['source'],
-            base64.b64decode(result._result['content']))
+            result._result.get('source'),
+            base64.b64decode(result._result.get('content')))
 
     def format_stat(self, result):
         m_args = result._result['invocation']['module_args']
-        return '%s: Stat %s' % (m_args['path'], str(result._result['stat']))
+        return '%s: Stat %s' % (
+            m_args.get('path'),
+            str(result._result.get('stat')))
 
     def format_systemd(self, result):
         return 'Service Name: %s, Service State: %s (changed: %s)' % (
-            result._result['name'],
-            result._result['state'],
-            result._result['changed'])
+            result._result.get('name'),
+            result._result.get('state'),
+            result._result.get('changed'))
 
     def format_template(self, result):
         return 'Copying template to file: %s (changed: %s)' % (
-            result._result['dest'],
-            result._result['changed'])
+            result._result.get('dest'),
+            result._result.get('changed'))
 
     def format_unarchive(self, result):
-        output = ''
-        for archive in result._result['results']:
-            output += 'Source: %s, Destination: %s\n' % (
-                archive['src'], archive['dest'])
-            if 'files' in archive:
-                output += '\n'.join(archive['files'])
-        return output
+        ret = ''
+        for c in self._get_result_entries(result):
+            ret += 'Source: %s, Destination: %s\n' % (
+                c.get('src'), c.get('dest'))
+            if 'files' in c:
+                ret += '\n'.join(c['files'])
+        return ret
 
     def format_user(self, result):
         return 'User: %s (changed: %s)\nSSH Public Key: %s' % (
-            result._result['comment'],
-            result._result['changed'],
-            result._result['ssh_public_key'])
+            result._result.get('comment'),
+            result._result.get('changed'),
+            result._result.get('ssh_public_key'))
 
     def format_yum_repository(self, result):
         ret = ''
-        for repo in result._result['results']:
+        for c in self._get_result_entries(result):
             ret += 'File: %s (changed: %s)\n\n%s' % (
-                repo['diff']['after_header'],
-                repo['changed'],
-                repo['diff']['after'])
+                c.get('diff', {}).get('after_header'),
+                c.get('changed'),
+                c.get('diff', {}).get('after'))
         return ret
 
 
