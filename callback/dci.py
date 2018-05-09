@@ -47,8 +47,9 @@ class Formatter(object):
         return output
 
     def format_copy(self, result):
-        return 'Copying to file: %s (changed: %s)' % (result._result['dest'],
-                                                      result._result['changed'])
+        return 'Copying to file: %s (changed: %s)' % (
+            result._result.get('dest'),
+            result._result.get('changed'))
 
     def format_dci_topic(self, result):
         try:
