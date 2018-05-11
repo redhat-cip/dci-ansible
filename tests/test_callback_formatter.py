@@ -8,30 +8,25 @@ from ansible.inventory.manager import InventoryManager
 from ansible.playbook.play import Play
 from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible.plugins.callback import CallbackBase
-import sys
 
 
 formatter = dci_callback.Formatter()
 Options = namedtuple('Options', ['connection', 'module_path', 'forks',
                                  'become', 'become_method', 'become_user',
                                  'check', 'diff'])
-options = Options(connection='local', module_path=['modules'], forks=1,
+options = Options(connection='docker', module_path=['modules'], forks=1,
                   become=None, become_method=None, become_user=None,
                   check=False, diff=False)
 loader = DataLoader()
 passwords = {'vault_pass': 'secret'}
-inventory = InventoryManager(loader=loader, sources='localhost,')
+inventory = InventoryManager(loader=loader, sources='centos-dci-ansible-test,')
 variable_manager = VariableManager(loader=loader, inventory=inventory)
-
-# NOTE(Gonéri): In case we are in a virtualenv, we must reuse the same Python
-# interpreter to be able to reach the dciclient lib.
-variable_manager.extra_vars = {'ansible_python_interpreter': sys.executable}
 
 
 def run_task(task):
     play_source = dict(
         name="Ansible Play",
-        hosts='localhost',
+        hosts='centos-dci-ansible-test',
         gather_facts='no',
         tasks=[task])
 
@@ -83,15 +78,11 @@ def test_authorized_key_failure(capsys):
 
 
 def test_command_success(capsys):
-    run_task({'action': {'module': 'command', 'args': 'ls samples'}})
-    expectation = ('sample_1.yml\n'
-                   'sample_2.yml\n'
-                   'sample_3.yml\n'
-                   'sample_4.yml\n'
-                   'sample_upgrade.yml\n')
+    run_task({'action': {'module': 'command', 'args': 'ls /etc'}})
+    expectation = 'terminfo'
     outerr = capsys.readouterr()
     assert not outerr.err
-    assert outerr.out == expectation
+    assert expectation in outerr.out
 
 
 def test_command_failure(capsys):
@@ -101,8 +92,8 @@ def test_command_failure(capsys):
     assert outerr.out == '[Errno 2] No such file or directory\n\n'
 
 
-def test_copy_success(capsys, tmpdir):
-    args = 'content=foo dest=%s/aliases_' % tmpdir
+def test_copy_success(capsys):
+    args = 'content=foo dest=/tmp/aliases_'
     run_task({'action': {'module': 'copy', 'args': args}})
     outerr = capsys.readouterr()
     assert not outerr.err
@@ -112,12 +103,12 @@ def test_copy_success(capsys, tmpdir):
 
 
 def test_copy_failure(capsys):
-    args = 'src=/etc/aliases dest=/proc/aliases'
+    args = 'content=aa dest=/proc/aliases'
     run_task({'action': {'module': 'copy', 'args': args}})
-    expectation = "Destination /proc not writable\n\n"
+    expectation = "not writable"
     outerr = capsys.readouterr()
     assert not outerr.err
-    assert outerr.out == expectation
+    assert expectation in outerr.out
 
 
 # def test_dci_topic_failure_bad_params(capsys):
@@ -189,11 +180,10 @@ def test_find_failure(capsys):
 
 def test_firewalld_failure(capsys):
     run_task({'action': {'module': 'firewalld', 'args': 'port=80 state=BOB'}})
-    exceptation = ('value of state must be one of: enabled, disabled, '
-                   'present, absent, got: BOB\n\n')
+    expectation = 'value of state must be one of'
     outerr = capsys.readouterr()
     assert not outerr.err
-    assert outerr.out == exceptation
+    assert expectation in outerr.out
 
 
 def test_ini_file_success(capsys, tmpdir):
@@ -217,9 +207,9 @@ def test_package_failure(capsys):
     run_task(dict(action=dict(module='package', args=args)))
     outerr = capsys.readouterr()
     assert not outerr.err
-    expectation = 'Error: This command has to be run under the root user.\n\n'
-    if 'bindings for rpm are needed for this module.' not in outerr.out:
-        assert outerr.out == expectation
+    expectation = ("No package matching 'dontexist' found available, "
+                   "installed or updated\n\n")
+    assert outerr.out == expectation
 
 
 def test_package_failure_with_items(capsys):
@@ -229,11 +219,14 @@ def test_package_failure_with_items(capsys):
             'module': 'package',
             'args': args},
         'with_items': ['aa', 'bb']})
-    expectation = 'All items completed\n\n'
+    expectation = ("All items completed\n"
+                   "No package matching 'aa' found available, installed "
+                   "or updated\n"
+                   "No package matching 'bb' found available, installed "
+                   "or updated\n\n")
     outerr = capsys.readouterr()
     assert not outerr.err
-    if 'bindings for rpm are needed for this module.' not in outerr.out:
-        assert outerr.out == expectation
+    assert outerr.out == expectation
 
 
 def test_set_fact_success(capsys):
@@ -272,8 +265,8 @@ def test_slurp_failure_no_src(capsys):
     assert 'Unsupported parameters' in outerr.out
 
 
-def test_slurp_failure_src_is_a_dir(capsys, tmpdir):
-    run_task(dict(action=dict(module='slurp', args='src=%s' % tmpdir)))
+def test_slurp_failure_src_is_a_dir(capsys):
+    run_task(dict(action=dict(module='slurp', args='src=/tmp')))
     outerr = capsys.readouterr()
     assert not outerr.err
     assert outerr.out == 'MODULE FAILURE\n\n'
@@ -312,8 +305,8 @@ def test_unarchive_failure_bad_args(capsys):
     assert outerr.out == expectation
 
 
-def test_unarchive_failure_bad_file(capsys, tmpdir):
-    args = 'src=/etc/fstab dest=%s' % tmpdir
+def test_unarchive_failure_bad_file(capsys):
+    args = 'src=/etc/fstab dest=/tmp'
     run_task(dict(action=dict(module='unarchive', args=args)))
     expectation = "sure the required command to extract the file is installed."
     outerr = capsys.readouterr()
