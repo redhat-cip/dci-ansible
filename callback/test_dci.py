@@ -8,30 +8,25 @@ from ansible.inventory.manager import InventoryManager
 from ansible.playbook.play import Play
 from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible.plugins.callback import CallbackBase
-import sys
 
 
 formatter = dci_callback.Formatter()
 Options = namedtuple('Options', ['connection', 'module_path', 'forks',
                                  'become', 'become_method', 'become_user',
                                  'check', 'diff'])
-options = Options(connection='local', module_path=['modules'], forks=1,
+options = Options(connection='docker', module_path=['modules'], forks=1,
                   become=None, become_method=None, become_user=None,
                   check=False, diff=False)
 loader = DataLoader()
 passwords = {'vault_pass': 'secret'}
-inventory = InventoryManager(loader=loader, sources='localhost,')
+inventory = InventoryManager(loader=loader, sources='centos-dci-ansible-test,')
 variable_manager = VariableManager(loader=loader, inventory=inventory)
-
-# NOTE(Gonéri): In case we are in a virtualenv, we must reuse the same Python
-# interpreter to be able to reach the dciclient lib.
-variable_manager.extra_vars = {'ansible_python_interpreter': sys.executable}
 
 
 def run_task(task):
     play_source = dict(
         name="Ansible Play",
-        hosts='localhost',
+        hosts='centos-dci-ansible-test',
         gather_facts='no',
         tasks=[task])
 
@@ -77,13 +72,9 @@ def test_authorized_key_failure(capsys):
 
 
 def test_command_success(capsys):
-    run_task({'action': {'module': 'command', 'args': 'ls samples'}})
-    expectation = ('sample_1.yml\n'
-                   'sample_2.yml\n'
-                   'sample_3.yml\n'
-                   'sample_4.yml\n'
-                   'sample_upgrade.yml\n')
-    assert capsys.readouterr().out == expectation
+    run_task({'action': {'module': 'command', 'args': 'ls /etc'}})
+    expectation = 'terminfo'
+    assert expectation in capsys.readouterr().out
 
 
 def test_command_failure(capsys):
@@ -104,14 +95,14 @@ def test_copy_failure(capsys):
     assert capsys.readouterr().out == expectation
 
 
-def test_dci_topic_failure_bad_params(capsys):
-    run_task(dict(action=dict(module='dci_topic', args='named=bob')))
-    assert 'Unsupported parameters' in capsys.readouterr().out
+# def test_dci_topic_failure_bad_params(capsys):
+#     run_task(dict(action=dict(module='dci_topic', args='named=bob')))
+#     assert 'Unsupported parameters' in capsys.readouterr().out
 
 
-def test_dci_topic_failure_no_auth(capsys):
-    run_task(dict(action=dict(module='dci_topic', args='name=bob')))
-    assert 'Missing or incomplete credentials.' in capsys.readouterr().out
+# def test_dci_topic_failure_no_auth(capsys):
+#     run_task(dict(action=dict(module='dci_topic', args='name=bob')))
+#     assert 'Missing or incomplete credentials.' in capsys.readouterr().out
 
 
 def test_debug_success(capsys):
@@ -157,9 +148,11 @@ def test_find_failure(capsys):
 
 def test_firewalld_failure(capsys):
     run_task({'action': {'module': 'firewalld', 'args': 'port=80 state=BOB'}})
-    exceptation = ('value of state must be one of: enabled, disabled, '
-                   'present, absent, got: BOB\n\n')
-    assert capsys.readouterr().out == exceptation
+    exceptation = ('value of state must be one of: enabled, disabled, present,'
+                   ' absent, got: BOB\n\n')
+    captured = capsys.readouterr()
+    assert captured.err == ''
+    assert captured.out == exceptation
 
 
 def test_ini_file_success(capsys, tmpdir):
@@ -175,9 +168,10 @@ def test_ini_file_failure(capsys):
 
 
 def test_package_failure(capsys):
-    args = 'name=dontexist state=present'
-    run_task(dict(action=dict(module='package', args=args)))
-    expectation = 'Error: This command has to be run under the root user.\n\n'
+    args = 'name=dontexist state=present use=yum'
+    run_task({'action': {'module': 'package', 'args': args}})
+    expectation = ("No package matching 'dontexist' found available, "
+                   "installed or updated\n\n")
     assert capsys.readouterr().out == expectation
 
 
@@ -188,7 +182,11 @@ def test_package_failure_with_items(capsys):
             'module': 'package',
             'args': args},
         'with_items': ['aa', 'bb']})
-    expectation = 'All items completed\n\n'
+    expectation = ("All items completed\n"
+                   "No package matching 'aa' found available, installed "
+                   "or updated\n"
+                   "No package matching 'bb' found available, installed "
+                   "or updated\n\n")
     assert capsys.readouterr().out == expectation
 
 
