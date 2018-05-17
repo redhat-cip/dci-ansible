@@ -2,6 +2,57 @@
   "comments": [
     {
       "key": {
+        "uuid": "7a2fa921_5f72077e",
+        "filename": "callback/test_dci.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-17T12:03:35Z",
+      "side": 1,
+      "message": "This test actually causes an issue (look at capsys.readouterr().err)",
+      "revId": "06e9de49538018e213b7b447941f6d612660e69c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_7f6fc392",
+        "filename": "callback/test_dci.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-17T12:03:35Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "06e9de49538018e213b7b447941f6d612660e69c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_1f6c8f9b",
+        "filename": "callback/test_dci.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-17T12:03:35Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "06e9de49538018e213b7b447941f6d612660e69c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a2fa921_7fc10380",
         "filename": "callback/test_dci.py",
         "patchSetId": 11
@@ -30,6 +81,176 @@
       "writtenOn": "2018-05-17T10:16:22Z",
       "side": 1,
       "message": "This test actually causes an issue (look at capsys.readouterr().err)",
+      "revId": "06e9de49538018e213b7b447941f6d612660e69c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_3f694b8c",
+        "filename": "callback/test_dci.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-17T12:03:35Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "06e9de49538018e213b7b447941f6d612660e69c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_ff0993de",
+        "filename": "callback/test_dci.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-17T12:03:35Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "06e9de49538018e213b7b447941f6d612660e69c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_9f0e5fe4",
+        "filename": "callback/test_dci.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-17T12:03:35Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "06e9de49538018e213b7b447941f6d612660e69c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_bf131b0d",
+        "filename": "callback/test_dci.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 183,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-17T12:03:35Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "06e9de49538018e213b7b447941f6d612660e69c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_5ff9a7c7",
+        "filename": "callback/test_dci.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 188,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-17T12:03:35Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "06e9de49538018e213b7b447941f6d612660e69c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_7ff6e3d8",
+        "filename": "callback/test_dci.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-17T12:03:35Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "06e9de49538018e213b7b447941f6d612660e69c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_1f032fba",
+        "filename": "callback/test_dci.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 198,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-17T12:03:35Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "06e9de49538018e213b7b447941f6d612660e69c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_3f006baa",
+        "filename": "callback/test_dci.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 203,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-17T12:03:35Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "06e9de49538018e213b7b447941f6d612660e69c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_df2b7732",
+        "filename": "callback/test_dci.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 208,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-17T12:03:35Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "06e9de49538018e213b7b447941f6d612660e69c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_ff30b3a0",
+        "filename": "callback/test_dci.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 213,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-17T12:03:35Z",
+      "side": 1,
+      "message": "ditto",
       "revId": "06e9de49538018e213b7b447941f6d612660e69c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
