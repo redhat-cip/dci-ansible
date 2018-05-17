@@ -16,6 +16,7 @@
         name: OpenStack
         description: OpenStack is a free and open-source software platform for cloud computing,
         team_id: '{{ openstack_team.team.id }}'
+        a: lala
       register: openstack_product
 
     - name: Create an OSP13 topic
