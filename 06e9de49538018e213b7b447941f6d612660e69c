@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a2fa921_7fc10380",
+        "filename": "callback/test_dci.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-17T10:16:22Z",
+      "side": 1,
+      "message": "This test actually causes an issue (look at capsys.readouterr().err)",
+      "revId": "06e9de49538018e213b7b447941f6d612660e69c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_1fbecfff",
+        "filename": "callback/test_dci.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-17T10:16:22Z",
+      "side": 1,
+      "message": "This test actually causes an issue (look at capsys.readouterr().err)",
+      "revId": "06e9de49538018e213b7b447941f6d612660e69c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
