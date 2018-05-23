@@ -1,0 +1,140 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a2fa921_d0a3644e",
+        "filename": "callback/dci.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-23T07:32:16Z",
+      "side": 1,
+      "message": "Shouldn\u0027t we return msg if exists else formatter(result) ? I see all formatter returning \u0027\u0027 if msg is in result._result",
+      "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_708930ca",
+        "filename": "callback/dci.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-23T07:32:16Z",
+      "side": 1,
+      "message": "Why coming in if this can be checked outside this method?",
+      "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_90864cb8",
+        "filename": "callback/dci.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-23T07:32:16Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_3093b8fc",
+        "filename": "callback/dci.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-23T07:32:16Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_f0bb0074",
+        "filename": "callback/dci.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-23T07:32:16Z",
+      "side": 1,
+      "message": "The use of self._get_result_entries() is really nice as it permits to be generic wether it was a single or many resources operated at once. Could it be used in every formatter? Part of the job has already been done, can this be added to the missing formatter?",
+      "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_5090b4ec",
+        "filename": "callback/dci.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 172,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-23T07:32:16Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_109a3c15",
+        "filename": "tests/test_callback_formatter.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-23T07:32:16Z",
+      "side": 1,
+      "message": "Needs to be removed",
+      "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_b09ee805",
+        "filename": "tests/test_callback_formatter.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-05-23T07:32:16Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
