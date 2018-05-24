@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "7a2fa921_cbb415d3",
+        "filename": "callback/dci.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-05-24T05:11:42Z",
+      "side": 1,
+      "message": "Some dci_ modules return \u0027msg\u0027 in case of success. If we just return msg, we lose the output of the command. There is probably some other modules doing the same.",
+      "parentUuid": "7a2fa921_d0a3644e",
+      "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a2fa921_708930ca",
         "filename": "callback/dci.py",
         "patchSetId": 13
@@ -30,6 +48,24 @@
       "writtenOn": "2018-05-23T07:32:16Z",
       "side": 1,
       "message": "Why coming in if this can be checked outside this method?",
+      "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_6bcaa151",
+        "filename": "callback/dci.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-05-24T05:11:42Z",
+      "side": 1,
+      "message": "In the case of add_host, if the \u0027msg\u0027 key is set, we know something bad happened.",
+      "parentUuid": "7a2fa921_708930ca",
       "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "7a2fa921_8bc7fd44",
+        "filename": "callback/dci.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-05-24T05:11:42Z",
+      "side": 1,
+      "message": "The same.",
+      "parentUuid": "7a2fa921_90864cb8",
+      "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a2fa921_3093b8fc",
         "filename": "callback/dci.py",
         "patchSetId": 13
@@ -64,6 +118,24 @@
       "writtenOn": "2018-05-23T07:32:16Z",
       "side": 1,
       "message": "ditto",
+      "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_2bc4a93e",
+        "filename": "callback/dci.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-05-24T05:11:42Z",
+      "side": 1,
+      "message": "The same.",
+      "parentUuid": "7a2fa921_3093b8fc",
       "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "7a2fa921_4bc1e52d",
+        "filename": "callback/dci.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-05-24T05:11:42Z",
+      "side": 1,
+      "message": "We don\u0027t correctly test the dci_* commands. I prefer the status-quo until we are able to test what we do.",
+      "parentUuid": "7a2fa921_f0bb0074",
+      "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a2fa921_5090b4ec",
         "filename": "callback/dci.py",
         "patchSetId": 13
@@ -98,6 +188,24 @@
       "writtenOn": "2018-05-23T07:32:16Z",
       "side": 1,
       "message": "ditto",
+      "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_ebdc711a",
+        "filename": "callback/dci.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 172,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-05-24T05:11:42Z",
+      "side": 1,
+      "message": "Again, the present of the \u0027msg\u0027 does not imply a failure of all the modules.",
+      "parentUuid": "7a2fa921_5090b4ec",
       "revId": "f0b43e4287a62b9ba5bc1ea666f19bc02c9357a8",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
