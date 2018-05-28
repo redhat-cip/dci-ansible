@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a2fa921_7395b73e",
+        "filename": "test-requirements.txt",
+        "patchSetId": 13
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-05-28T17:20:54Z",
+      "side": 1,
+      "message": "I don\u0027t see mock used anywhere in the code. Is this mandatory ?",
+      "range": {
+        "startLine": 2,
+        "startChar": 0,
+        "endLine": 2,
+        "endChar": 4
+      },
+      "revId": "3853a51b7379e67c1cd9178c9b651b09fc935336",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
