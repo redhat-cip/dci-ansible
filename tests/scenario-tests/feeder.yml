@@ -15,24 +15,39 @@
       register: components
       with_items: '{{ all_topics.topics }}'
 
-    - name: Register content of the uploaded file
-      command: "cat {{ lookup('env', 'PWD')  }}/data/content"
+    - name: Register content of the images_list.yaml
+      command: "cat {{ lookup('env', 'PWD')  }}/data/images_list.yaml"
       register: component_file_before_upload
+
+    - name: Build the component archive
+      archive:
+        path: "{{ lookup('env', 'PWD') }}/data"
+        dest: "{{ lookup('env', 'PWD') }}/data.tar"
 
     - name: Upload the component content
       dci_component:
         id: '{{ item.component.id }}'
-        path: "{{ lookup('env', 'PWD')  }}/data/content"
+        path: "{{ lookup('env', 'PWD')  }}/data.tar"
       with_items: "{{ components.results }}"
+
+    - name: Create temporary extract directory
+      tempfile:
+        state: directory
+      register: temp_dir
 
     - name: Download component content
       dci_component:
         id: '{{ item.component.id }}'
-        dest: "{{ lookup('env', 'PWD')  }}/content.download"
+        dest: "{{ temp_dir.path }}/data.download.tar"
       with_items: "{{ components.results }}"
 
+    - name: Unarchive component
+      unarchive:
+        src: "{{ temp_dir.path }}/data.download.tar"
+        dest: "{{ temp_dir.path}}/"
+
     - name: Register content of the download file
-      command: "cat {{ lookup('env', 'PWD')  }}/content.download"
+      command: "cat {{ temp_dir.path  }}/data/images_list.yaml"
       register: component_file_after_download
 
     - name: Ensure proper file has been downloaded
