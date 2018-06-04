@@ -24,6 +24,8 @@
         component_types:
           - puddles
         product_id: '{{ openstack_product.product.id }}'
+        data:
+          releasename: queens
       register: openstack_topic_osp13
 
     - name: Attach OpenStack team to OSP13 topic
@@ -39,6 +41,8 @@
         component_types:
           - puddles
         product_id: '{{ openstack_product.product.id }}'
+        data:
+          releasename: pike
       register: openstack_topic_osp12
 
     - name: Attach OpenStack team to OSP12 topic
