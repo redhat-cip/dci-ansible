@@ -1,0 +1,10 @@
+Code-Review+1: François Charlier <francois.charlier@redhat.com>
+Code-Review+1: Dimitri Savineau <dsavinea@redhat.com>
+Code-Review+2: Yanis Guenane <yguenane@gmail.com>
+Workflow+1: Yanis Guenane <yguenane@gmail.com>
+Verified+2: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-by: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-at: Mon, 04 Jun 2018 14:36:23 +0000
+Reviewed-on: https://softwarefactory-project.io/r/12079
+Project: dci-ansible
+Branch: refs/heads/master
