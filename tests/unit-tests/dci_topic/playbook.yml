@@ -18,6 +18,8 @@
         component_types:
           - osp_puddles
         product_id: '{{ openstack.product.id }}'
+        data:
+          foo: 'bar'
       register: ospx_topic
 
     - name: Retrieve all topics
@@ -29,6 +31,7 @@
         that:
           - all_topics.topics[0].name == 'OSPX'
           - all_topics.topics[0].product_id == '{{ openstack.product.id }}'
+          - all_topics.topics[0].data['foo'] == 'bar'
 
     - name: Retrieve ospx topic
       dci_topic:

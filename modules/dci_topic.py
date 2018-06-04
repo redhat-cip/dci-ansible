@@ -47,6 +47,9 @@ options:
   name:
     required: false
     description: Topic name
+  data:
+    required: false
+    description: Data field of a topic
   label:
     required: false
     description: Topic label
@@ -115,6 +118,7 @@ class DciTopic(DciBase):
         super(DciTopic, self).__init__(dci_topic)
         self.id = params.get('id')
         self.name = params.get('name')
+        self.data = params.get('data')
         self.label = params.get('label')
         self.product_id = params.get('product_id')
         self.next_topic = params.get('next_topic')
@@ -126,7 +130,7 @@ class DciTopic(DciBase):
             'where': params.get('where')
         }
         self.deterministic_params = ['name', 'label', 'product_id', 'active',
-                                     'component_types', 'next_topic']
+                                     'component_types', 'next_topic', 'data']
 
     def do_create(self, context):
         if not self.name:
@@ -149,6 +153,7 @@ def main():
         state=dict(default='present', choices=['present', 'absent'], type='str'),
         id=dict(type='str'),
         name=dict(type='str'),
+        data=dict(type='json'),
         label=dict(type='str'),
         product_id=dict(type='str'),
         next_topic=dict(type='str'),
