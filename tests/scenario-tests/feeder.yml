@@ -15,40 +15,60 @@
       register: components
       with_items: '{{ all_topics.topics }}'
 
-    - name: Register content of the images_list.yaml
-      command: "cat {{ lookup('env', 'PWD')  }}/data/images_list.yaml"
-      register: component_file_before_upload
-
-    - name: Build the component archive
-      archive:
-        path: "{{ lookup('env', 'PWD') }}/data"
-        dest: "{{ lookup('env', 'PWD') }}/data.tar"
-        format: tar
-
-    - name: Upload the component content
-      dci_component:
-        id: '{{ item.component.id }}'
-        path: "{{ lookup('env', 'PWD')  }}/data.tar"
-      with_items: "{{ components.results }}"
-
-    - name: Create temporary extract directory
+    - name: Create temporary directory - for archive creation
       tempfile:
         state: directory
       register: temp_dir
 
+    - name: Create canonical_component_name dir
+      file:
+        state: directory
+        path: '{{ temp_dir.path }}/{{ item.component.canonical_project_name }}'
+      with_items: "{{ components.results }}"
+
+    - name: Copy images_list.yaml
+      copy:
+        remote_src: true
+        src: "{{ lookup('env', 'PWD')  }}/data/images_list.yaml"
+        dest: '{{ temp_dir.path }}/{{ item.component.canonical_project_name }}'
+      with_items: "{{ components.results }}"
+
+    - name: Build the component archive
+      archive:
+        path: "{{ temp_dir.path }}/{{ item.component.canonical_project_name }}"
+        dest: "{{ temp_dir.path }}/{{ item.component.canonical_project_name }}.tar"
+        format: tar
+      with_items: "{{ components.results }}"
+
+    - name: Register content of the images_list.yaml
+      command: "cat {{ lookup('env', 'PWD')  }}/data/images_list.yaml"
+      register: component_file_before_upload
+
+    - name: Upload the component content
+      dci_component:
+        id: '{{ item.component.id }}'
+        path: "{{ temp_dir.path }}/{{ item.component.canonical_project_name }}.tar"
+      with_items: "{{ components.results }}"
+
+    - name: Create temporary directory - for archive extraction
+      tempfile:
+        state: directory
+      register: temp_dir_extraction
+
     - name: Download component content
       dci_component:
         id: '{{ item.component.id }}'
-        dest: "{{ temp_dir.path }}/data.download.tar"
+        dest: "{{ temp_dir_extraction.path }}/{{ item.component.canonical_project_name }}.download.tar"
       with_items: "{{ components.results }}"
 
     - name: Unarchive component
       unarchive:
-        src: "{{ temp_dir.path }}/data.download.tar"
-        dest: "{{ temp_dir.path}}/"
+        src: "{{ temp_dir_extraction.path }}/{{ item.component.canonical_project_name }}.download.tar"
+        dest: "{{ temp_dir_extraction.path}}/"
+      with_items: "{{ components.results }}"
 
     - name: Register content of the download file
-      command: "cat {{ temp_dir.path  }}/data/images_list.yaml"
+      command: "cat {{ temp_dir_extraction.path  }}/{{ components.results[0].component.canonical_project_name }}/images_list.yaml"
       register: component_file_after_download
 
     - name: Ensure proper file has been downloaded
