@@ -150,26 +150,21 @@ def test_debug_failure(capsys):
     assert outerr.out == expectation
 
 
-def test_file_success(capsys):
-    args = 'path=/etc/aliases state=present'
+def test_file_success(capsys, tmpdir):
+    args = 'path=%s/aliases state=touch' % tmpdir
     run_task({'action': {'module': 'file', 'args': args}})
-    expectation = ("value of state must be one of: file, directory, link, "
-                   "hard, touch, absent, got: present\nNone: None (changed: "
-                   "False)\n\n")
     outerr = capsys.readouterr()
     assert not outerr.err
-    assert outerr.out == expectation
+    assert 'changed: True' in outerr.out
 
 
 def test_file_failure(capsys):
-    args = 'path=/proc/1/bob state=present'
+    args = 'path=/proc/1/bob state=touch'
     run_task({'action': {'module': 'file', 'args': args}})
-    expectation = ('value of state must be one of: file, directory, link, '
-                   'hard, touch, absent, got: present\nNone: None (changed: '
-                   'False)\n\n')
+    expectation = 'No such file or directory'
     outerr = capsys.readouterr()
     assert not outerr.err
-    assert outerr.out == expectation
+    assert expectation in outerr.out
 
 
 def test_find_success(capsys):
@@ -237,10 +232,11 @@ def test_package_failure_with_items(capsys):
 
 
 def test_set_fact_success(capsys):
-    run_task({'action': {'module': 'set_fact', 'args': 'foo=bar'}})
+    run_task({'action': {'module': 'set_fact', 'args': 'foo=bar bar=foo'}})
     outerr = capsys.readouterr()
     assert not outerr.err
-    assert 'Settings the following facts:' in outerr.out
+    assert 'Settings the following facts:n' in outerr.out
+    assert 'foo: bar\nbar: foo' in outerr.out
 
 
 def test_set_fact_success_with_items(capsys):
