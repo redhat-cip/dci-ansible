@@ -37,7 +37,7 @@
     - name: Create an OSP12 topic
       dci_topic:
         name: OSP12
-        next_topic: '{{ openstack_topic_osp13.topic.id }}'
+        next_topic_id: '{{ openstack_topic_osp13.topic.id }}'
         component_types:
           - puddles
         product_id: '{{ openstack_product.product.id }}'
