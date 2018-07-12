@@ -1,6 +1,6 @@
 FROM centos:7
 
-LABEL name="DCI ANSIBLE" version="0.0.1"
+LABEL name="DCI ANSIBLE" version="0.0.2"
 LABEL maintainer="DCI Team <distributed-ci@redhat.com>"
 
 ENV LANG en_US.UTF-8
