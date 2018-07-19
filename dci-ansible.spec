@@ -20,6 +20,7 @@ control server
 
 
 %build
+ls -l /rewrew
 
 %install
 mkdir -p %{buildroot}%{_datadir}/dci
