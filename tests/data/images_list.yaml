@@ -1,2 +1,2 @@
 ---
-- registry.distributed-ci.io/rhosp12/openstack-base:2018-05-29.1
+- docker.io/openshift/base-centos7:latest
