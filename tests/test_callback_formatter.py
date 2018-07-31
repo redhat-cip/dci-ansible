@@ -135,19 +135,18 @@ def test_copy_failure(capsys):
 
 
 def test_debug_success(capsys):
-    run_task(dict(action=dict(module='debug', args='var=bar')))
+    run_task(dict(action=dict(module='debug', args='var=hostvars')))
     outerr = capsys.readouterr()
     assert not outerr.err
-    assert outerr.out == 'All items completed (changed: False)\n'
+    assert 'inventory_hostname' in outerr.out
 
 
 def test_debug_failure(capsys):
     run_task(dict(action=dict(module='debug', args='foo=bar')))
-    expectation = ("'foo' is not a valid option in debug\nAll items "
-                   "completed (changed: False)\n")
+    expectation = "'foo' is not a valid option in debug"
     outerr = capsys.readouterr()
     assert not outerr.err
-    assert outerr.out == expectation
+    assert expectation in outerr.out
 
 
 def test_file_success(capsys):

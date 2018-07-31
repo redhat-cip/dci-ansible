@@ -216,6 +216,15 @@ class Formatter(object):
                 c.get('diff', {}).get('after'))
         return ret
 
+    def format_debug(self, result):
+        if 'msg' in result._result:
+            return ''
+        result = result._result
+        for k in result.keys():
+            if k.startswith('_ansible'):
+                del result[k]
+        return str(result)
+
 
 class CallbackModule(CallbackBase):
     """
