@@ -159,7 +159,7 @@ class Formatter(object):
         ret = 'Settings the following facts:\n\n'
         for c in self._get_result_entries(result):
             for key, value in c.get('ansible_facts', {}).iteritems():
-                ret += '%s: %s' % (key, value)
+                ret += '%s: %s\n' % (key, value)
         return ret
 
     def format_service(self, result):
