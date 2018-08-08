@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 set -eux
 
@@ -34,19 +34,23 @@ function run_unit_tests() {
 # --- Starting scenario-tests
 
 function run_functional_tests() {
-    source ./admin.sh
-    ansible-playbook scenario-tests/setup_env.yml -vvv
-    clean_environment
 
-    source ./feeder.sh
-    ansible-playbook scenario-tests/feeder.yml -vvv
-    clean_environment
+    environments='openstack rhel'
+    for environment in $environments; do
+        source ./admin.sh
+        ansible-playbook "scenario-tests/${environment}/setup_env.yml" -vvv
+        clean_environment
 
-    source ./remoteci.sh
-    ansible-playbook scenario-tests/remoteci.yml -vvv
-    clean_environment
+        source ./feeder.sh
+        ansible-playbook "scenario-tests/${environment}/feeder.yml" -vvv
+        clean_environment
 
-    rm -f feeder.sh remoteci.sh content.download
+        source ./remoteci.sh
+        ansible-playbook "scenario-tests/${environment}/remoteci.yml" -vvv
+        clean_environment
+
+        rm -f feeder.sh remoteci.sh content.download
+    done
 }
 
 if [[ ! -z ${1+x} ]]; then
