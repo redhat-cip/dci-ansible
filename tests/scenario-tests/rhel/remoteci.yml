@@ -1,0 +1,68 @@
+---
+- hosts: localhost
+  tasks:
+    - name: schedule a job
+      dci_job:
+        topic: rhel7
+      register: job_informations
+
+    - name: Set global variables
+      set_fact:
+        job_id: '{{ hostvars.localhost.job_informations.job.id  }}'
+        components: '{{ hostvars.localhost.job_informations.job.components  }}'
+
+- hosts: localhost
+  vars:
+    dci_status: running
+  tasks:
+    - name: echo runnning
+      command: echo "running"
+
+- hosts: localhost
+  vars:
+    dci_status: post-run
+  tasks:
+    - name: Attach result to job
+      dci_file:
+        job_id: '{{ job_id }}'
+        path: "{{ lookup('env', 'PWD')  }}/data/content"
+        name: content
+
+- hosts: localhost
+  vars:
+    dci_status: success
+  tasks:
+    - name: echo success
+      command: echo "success"
+
+
+- hosts: localhost
+  tasks:
+    - name: Ensure job_id has proper file and jobstates attached to it
+      dci_job:
+        id: '{{ job_id }}'
+        embed: files,jobstates
+      register: job_informations
+
+    - name: Verify that job has 6 files attached
+      assert:
+        that: job_informations.job.files|length == 6
+
+    - debug:
+        var: job_informations.job.jobstates
+
+    - name: Check the jobstates are all created
+      assert:
+        that: job_informations.job.jobstates|length == 5
+
+    - name: And the jobstates.status are set (1/3)
+      assert:
+        that: job_informations.job.jobstates[0].status == "new"
+
+    - name: And the jobstates.status are set (2/3)
+      assert:
+        that: job_informations.job.jobstates[2].status == "post-run"
+
+    - name: And the jobstates.status are set (3/3)
+      assert:
+        that: job_informations.job.jobstates[-1].status == "success"
