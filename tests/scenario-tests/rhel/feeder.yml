@@ -1,0 +1,37 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Retrieve topics
+      dci_topic:
+        where: name=rhel7
+        embed: product
+      register: _topics
+
+    - name: Create new RHEL component
+      dci_component:
+        name: "{{ _topics[0].name }}.6-20180809.n.0"
+        type: Compose
+        canonical_project_name: "{{ _topics[0].name }}.6-20180809.n.0"
+        url: https://www.example.com
+        topic_id: '{{ _topics[0].id }}'
+      register: rhel_component
+
+    - name: Ensure directory exists
+      file:
+        state: directory
+        recurse: yes
+        path: '/repo/{{ _topics[0].product.product.id }}/{{ _topics[0].id }}/{{ rhel_component.component.id }}'
+
+    - name: Install createrepo
+      package:
+        name: createrepo
+
+    - name: Retrieve a dummy package
+      get_url:
+        url: https://packages.distributed-ci.io/dci-release.el7.noarch.rpm
+        path: '/repo/{{ _topics[0].product.product.id }}/{{ _topics[0].id }}/{{ rhel_component.component.id }}/dci-release.el7.noarch.rpm'
+
+    - name: Create repodata
+      shell: createrepo .
+      args:
+        chdir: '/repo/{{ _topics[0].product.product.id }}/{{ _topics[0].id }}/{{ rhel_component.component.id }}'
