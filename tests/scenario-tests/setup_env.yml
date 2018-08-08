@@ -89,3 +89,62 @@
         content: |
           export DCI_CLIENT_ID=remoteci/{{ osp13_remoteci.remoteci.id }}
           export DCI_API_SECRET={{ osp13_remoteci.remoteci.api_secret }}
+
+
+    - name: Create Product Team
+      dci_team:
+        name: RHEL
+      register: rhel_team
+
+
+## TEMP WORK
+    - name: Create Product
+      dci_product:
+        name: RHEL
+        description: Red Hat Enterprise Linux
+        team_id: '{{ rhel_team.team.id }}'
+      register: rhel_product
+
+    - name: Create a RHEL7 topic
+      dci_topic:
+        name: rhel7
+        component_types:
+          - Compose
+        product_id: '{{ rhel_product.product.id }}'
+      register: rhel_topic_rhel7
+
+    - name: Attach RHEL team to RHEL7 topic
+      dci_topic:
+        id: '{{ rhel_topic_rhel7.topic.id }}'
+        team_ids:
+          - '{{ rhel_team.team.id }}'
+
+    - name: Create a remoteci for the RHEL team
+      dci_remoteci:
+        name: rhel
+        team_id: '{{ rhel_team.team.id }}'
+      register: rhel_remoteci
+
+    - name: Create new RHEL component
+      dci_component:
+        name: "RHEL7-Compose-2018.08.03-3"
+        type: Compose
+        canonical_project_name: "RHEL7-Compose-2018.08.03-3"
+        url: https://www.example.com
+        topic_id: '{{ rhel_topic_rhel7.topic.id }}'
+      register: rhel_component
+
+    - name: Ensure directory exists
+      file:
+        state: directory
+        recurse: yes
+        path: '/repo/{{ rhel_product.product.id }}/{{ rhel_topic_rhel7.topic.id }}/{{ rhel_component.component.id }}'
+
+    - name: Install createrepo
+      package:
+        name: createrepo
+
+    - name: Create repodata
+      shell: createrepo .
+      args:
+        chdir: '/repo/{{ rhel_product.product.id }}/{{ rhel_topic_rhel7.topic.id }}/{{ rhel_component.component.id }}'
