@@ -20,7 +20,7 @@
 
     - name: Create a RHEL7 topic
       dci_topic:
-        name: rhel7
+        name: RHEL-7
         component_types:
           - Compose
         product_id: '{{ rhel_product.product.id }}'
