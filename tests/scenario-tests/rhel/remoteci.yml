@@ -3,7 +3,7 @@
   tasks:
     - name: schedule a job
       dci_job:
-        topic: rhel7
+        topic: RHEL-7
       register: job_informations
 
     - name: Set global variables
