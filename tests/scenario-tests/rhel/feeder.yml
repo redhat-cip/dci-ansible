@@ -21,7 +21,11 @@
       file:
         state: directory
         recurse: yes
-        path: '/repo/{{ _topics.topics[0].product_id }}/{{ _topics.topics[0].id }}/{{ rhel_component.component.id }}'
+        path: '/repo/{{ _topics.topics[0].product_id }}/{{ _topics.topics[0].id }}/{{ rhel_component.component.id }}/Packages'
+        selevel: s0
+        serole: object_r
+        setype: httpd_sys_content_t
+        seuser: system_u
 
     - name: Install createrepo
       package:
@@ -30,7 +34,7 @@
     - name: Retrieve a dummy package
       get_url:
         url: https://packages.distributed-ci.io/dci-release.el7.noarch.rpm
-        dest: '/repo/{{ _topics.topics[0].product_id }}/{{ _topics.topics[0].id }}/{{ rhel_component.component.id }}/dci-release.el7.noarch.rpm'
+        dest: '/repo/{{ _topics.topics[0].product_id }}/{{ _topics.topics[0].id }}/{{ rhel_component.component.id }}/Packages/dci-release.el7.noarch.rpm'
 
     - name: Create repodata
       shell: createrepo .
