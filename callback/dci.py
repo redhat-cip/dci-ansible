@@ -153,6 +153,8 @@ class Formatter(object):
         for c in self._get_result_entries(result):
             if 'results' in c:
                 ret += c['results'][0] + '\n'
+            else:
+                ret += c + '\n'
         return ret
 
     def format_set_fact(self, result):
