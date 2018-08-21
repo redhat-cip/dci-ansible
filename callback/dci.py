@@ -27,7 +27,7 @@ class Formatter(object):
 
         module_name = result._task.action
         msg = ''
-        if 'msg' in result._result:
+        if result._result.get('msg'):
             msg += result._result['msg']
             msg += '\n'
 
