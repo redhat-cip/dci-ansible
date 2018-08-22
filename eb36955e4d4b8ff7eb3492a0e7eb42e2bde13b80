@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "700bc992_6a6226c6",
+        "filename": "callback/dci.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-08-22T11:54:43Z",
+      "side": 1,
+      "message": "I think result._result.get(\u0027msg\u0027) would be enough here.",
+      "revId": "eb36955e4d4b8ff7eb3492a0e7eb42e2bde13b80",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
