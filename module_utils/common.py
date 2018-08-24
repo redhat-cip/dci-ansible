@@ -17,6 +17,9 @@
 from ansible.module_utils.basic import env_fallback
 from ansible.module_utils.dci_base import *
 from dciclient.v1.api import context as dci_context
+from ansible.release import __version__ as ansible_version
+from dciclient.version import __version__ as dciclient_version
+from dciauth.version import __version__ as dciauth_version
 
 
 def authentication_argument_spec():
@@ -37,19 +40,21 @@ def authentication_argument_spec():
 
 
 def build_dci_context(module):
+    user_agent = ('Ansible/%s (python-dciclient/%s, python-dciauth/%s)'
+                 ) % (ansible_version, dciclient_version, dciauth_version)
     if module.params['dci_login'] and module.params['dci_password']:
         return dci_context.build_dci_context(
             module.params['dci_cs_url'],
             module.params['dci_login'],
             module.params['dci_password'],
-            'Ansible'
+            user_agent
         )
     elif module.params['dci_client_id'] and module.params['dci_api_secret']:
         return dci_context.build_signature_context(
             module.params['dci_cs_url'],
             module.params['dci_client_id'],
             module.params['dci_api_secret'],
-            'Ansible'
+            user_agent
         )
     else:
         module.fail_json(msg='Missing or incomplete credentials.')

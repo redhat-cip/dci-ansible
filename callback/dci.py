@@ -9,6 +9,9 @@ import os
 from dciclient.v1.api import context as dci_context
 from dciclient.v1.api import jobstate as dci_jobstate
 from dciclient.v1.api import file as dci_file
+from ansible.release import __version__ as ansible_version
+from dciclient.version import __version__ as dciclient_version
+from dciauth.version import __version__ as dciauth_version
 
 
 class Formatter(object):
@@ -250,12 +253,14 @@ class CallbackModule(CallbackBase):
 
     def _build_dci_context(self):
         login, password, url, client_id, api_secret = self._get_details()
+        user_agent = ('Ansible/%s (python-dciclient/%s, python-dciauth/%s)'
+                     ) % (ansible_version, dciclient_version, dciauth_version)
         if login is not None and password is not None:
             return dci_context.build_dci_context(url, login, password,
-                                                 'Ansible')
+                                                 user_agent)
         elif client_id is not None and api_secret is not None:
             return dci_context.build_signature_context(url, client_id,
-                                                       api_secret, 'Ansible')
+                                                       api_secret, user_agent)
 
     def post_message(self, result, output):
         kwargs = {
