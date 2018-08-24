@@ -1,0 +1,9 @@
+Code-Review+2: Gonéri Le Bouder <goneri@lebouder.net>
+Code-Review+2: Yanis Guenane <yguenane@gmail.com>
+Workflow+1: Yanis Guenane <yguenane@gmail.com>
+Verified+2: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-by: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-at: Fri, 24 Aug 2018 07:37:29 +0000
+Reviewed-on: https://softwarefactory-project.io/r/13481
+Project: dci-ansible
+Branch: refs/heads/master
