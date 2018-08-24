@@ -36,7 +36,7 @@ class Formatter(object):
         else:
             formatter = getattr(self, 'format_generic')
 
-        return '%s%s' % (msg, formatter(result) or '')
+        return '%s%s' % (msg, formatter(result) or 'All items completed')
 
     def format_add_host(self, result):
         if 'msg' in result._result:
