@@ -25,13 +25,11 @@
       assert:
         that:
           - ospx_component.component.name == 'OSP10-2017.10.08'
-          - ospx_component.component.export_control == True
           - ospx_component.component.state == 'inactive'
 
     - name: Update ospx component
       dci_component:
         id: '{{ ospx_component.component.id }}'
-        export_control: False
         active: True
 
     - name: Retrieve ospx component
@@ -42,7 +40,6 @@
     - name: Ensure ospx component changed
       assert:
         that:
-          - ospx_component.component.export_control == False
           - ospx_component.component.state == 'active'
 
     - name: Delete ospx component
