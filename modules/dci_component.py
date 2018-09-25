@@ -44,9 +44,6 @@ options:
   dci_cs_url:
     required: false
     description: DCI Control Server URL
-  export_control:
-    required: false
-    description: Wether or not the component has been export_control approved
   dest:
     required: true
     description: Path where to drop the retrieved component
@@ -115,7 +112,6 @@ def main():
             type='str'),
         id=dict(type='str'),
         dest=dict(type='str'),
-        export_control=dict(type='bool'),
         name=dict(type='str'),
         type=dict(type='str'),
         canonical_project_name=dict(type='str'),
@@ -173,7 +169,7 @@ def main():
     #                  via dci_component.get()
     #
     # Get component informations
-    elif module.params['id'] and module.params['export_control'] is None:
+    elif module.params['id']:
         kwargs = {}
         if module.params['embed']:
             kwargs['embed'] = module.params['embed']
@@ -195,9 +191,6 @@ def main():
                 updated_kwargs['state'] = 'active'
             else:
                 updated_kwargs['state'] = 'inactive'
-            if module.params['export_control'] is not None:
-                export_control = module.params['export_control']
-                updated_kwargs['export_control'] = export_control
 
             res = dci_component.update(ctx, **updated_kwargs)
 
