@@ -370,12 +370,7 @@ class CallbackModule(CallbackBase):
             self.post_message(result, output)
             return
 
-        if self._current_status in ['new', 'pre-run']:
-            status = 'error'
-        else:
-            status = 'failure'
-
-        self.create_jobstate(status=status, comment=self.task_name(result))
+        self.create_jobstate(status='failure', comment=self.task_name(result))
         self.post_message(result, output)
 
     def v2_playbook_on_play_start(self, play):
