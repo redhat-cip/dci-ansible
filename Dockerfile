@@ -5,9 +5,9 @@ LABEL maintainer="DCI Team <distributed-ci@redhat.com>"
 
 ENV LANG en_US.UTF-8
 
-RUN yum -y install epel-release && \
+RUN yum -y install https://packages.distributed-ci.io/dci-release.el7.noarch.rpm epel-release && \
     yum -y install git \
-    python python2-devel python2-pip python2-setuptools && \
+    python python2-devel python2-pip python2-setuptools postgresql ansible && \
     yum clean all
 
 RUN pip install -U pip
