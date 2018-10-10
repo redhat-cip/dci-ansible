@@ -12,7 +12,7 @@
 # limitations under the License.
 
 from ansible.module_utils.basic import *
-from ansible.module_utils.common import *
+from ansible.module_utils.dci_common import *
 from ansible.module_utils.dci_base import *
 
 try:
