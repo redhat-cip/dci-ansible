@@ -114,10 +114,10 @@ def test_copy_success(capsys, tmpdir):
 def test_copy_failure(capsys):
     args = 'src=/etc/aliases dest=/proc/aliases'
     run_task({'action': {'module': 'copy', 'args': args}})
-    expectation = "Destination /proc not writable\n\n"
+    expectation = "not writable"
     outerr = capsys.readouterr()
     assert not outerr.err
-    assert outerr.out == expectation
+    assert expectation in outerr.out
 
 
 # def test_dci_topic_failure_bad_params(capsys):
@@ -143,10 +143,16 @@ def test_debug_success(capsys):
 
 def test_debug_failure(capsys):
     run_task(dict(action=dict(module='debug', args='foo=bar')))
-    expectation = "'foo' is not a valid option in debug"
+    expectation = [
+        "'foo' is not a valid option in debug",
+        "Invalid options for debug"]
     outerr = capsys.readouterr()
     assert not outerr.err
-    assert expectation in outerr.out
+    for i in expectation:
+        if i in outerr.out:
+            break
+    else:
+        assert False
 
 
 def test_file_success(capsys, tmpdir):
@@ -272,7 +278,7 @@ def test_slurp_failure_src_is_a_dir(capsys, tmpdir):
     run_task(dict(action=dict(module='slurp', args='src=%s' % tmpdir)))
     outerr = capsys.readouterr()
     assert not outerr.err
-    assert outerr.out == 'MODULE FAILURE\n\n'
+    assert 'MODULE FAILURE' in outerr.out
 
 
 def test_invalid_module_failure(capsys):
@@ -311,10 +317,16 @@ def test_unarchive_failure_bad_args(capsys):
 def test_unarchive_failure_bad_file(capsys, tmpdir):
     args = 'src=/etc/fstab dest=%s' % tmpdir
     run_task(dict(action=dict(module='unarchive', args=args)))
-    expectation = "sure the required command to extract the file is installed."
+    expectation = [
+        "sure the required command to extract the file is installed.",
+        "Could not find or access '/etc/fstab'"]
     outerr = capsys.readouterr()
     assert not outerr.err
-    assert expectation in outerr.out
+    for i in expectation:
+        if i in outerr.out:
+            break
+    else:
+        assert False
 
 
 def test_user_failure(capsys):
