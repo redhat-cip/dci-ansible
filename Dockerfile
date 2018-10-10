@@ -7,7 +7,7 @@ ENV LANG en_US.UTF-8
 
 RUN yum -y install epel-release && \
     yum -y install git \
-    python python2-devel python2-pip python2-setuptools && \
+    python python2-devel python2-pip python2-setuptools postgresql ansible && \
     yum clean all
 
 RUN pip install -U pip
