@@ -47,13 +47,14 @@ class DciKeys(DciBase):
         self.remoteci_id = params.get('remoteci_id')
 
     def do_refresh(self, context):
-        rci = dci_remoteci.get(context, self.remoteci_id).json()
-        res = dci_remoteci.refresh_keys(context,
+        r = dci_remoteci.get(context, self.remoteci_id)
+        data = response_json(r)
+        r = dci_remoteci.refresh_keys(context,
                                         id=self.remoteci_id,
-                                        etag=rci['remoteci']['etag'])
-
-        if res.status_code == 201:
-            return res.json()['keys']
+                                        etag=data['remoteci']['etag'])
+        if r.status_code == 201:
+            data = response_json(r)
+            return data['keys']
         else:
             self.raise_error(res)
 

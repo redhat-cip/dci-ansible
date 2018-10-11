@@ -286,7 +286,7 @@ class CallbackModule(CallbackBase):
             status=self._current_status,
             comment=comment,
             job_id=self._job_id)
-        ns = r.json()
+        ns = response_json(r)
         self._jobstate_id = ns['jobstate']['id']
 
     def task_name(self, result):

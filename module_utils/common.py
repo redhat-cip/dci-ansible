@@ -125,6 +125,18 @@ def get_standard_action(params):
     return 'create'
 
 
+def response_json(response):
+    try:
+        return response.json()
+    except simplejson.scanner.JSONDecodeError as e:
+        module.fail_json(
+            msg='Failed to decode JSON answer: %s - %s (%s)' % (
+                response.text,
+                response.status_code,
+                e)
+        )
+
+
 def parse_http_response(response, resource, context, module):
     """
     Properly parse the HTTP response.
@@ -151,7 +163,7 @@ def parse_http_response(response, resource, context, module):
         module.fail_json(msg='Internal Server Error')
 
     elif response.status_code == 400:
-        error = response.json()
+        error = response_json(response)
         module.fail_json(
             msg='%s - %s' % (error['message'], str(error['payload']))
         )
@@ -159,27 +171,24 @@ def parse_http_response(response, resource, context, module):
     elif response.status_code == 204:
         result = {}
         if module.params['state'] != 'absent':
+            r = resource.get(context, module.params['id'])
             result = {
-                '%s' % resource_name: resource.get(
-                    context, module.params['id']
-                ).json()[resource_name]
+                '%s' % resource_name: response_json(r)[resource_name]
             }
         result['changed'] = True
 
     elif response.status_code == 409:
         if module.params['name'] is not None:
+            r = resource.list(context, where='name:' + module.params['name'])
             result = {
-                '%s' % resource_name: resource.list(
-                    context, where='name:' + module.params['name']
-                ).json()['%ss' % resource_name][0]
+                '%s' % response_json(r)['%ss' % resource_name][0]
             }
         else:
-            result = {'%s' % resource_name: resource.get(
-                context, module.params['id']).json()[resource_name]
-            }
+            r = resource.get(context, module.params['id'])
+            result = {'%s' % resource_name: response_json(r)[resource_name]}
         result['changed'] = False
     else:
-        result = response.json()
+        result = response_json(response)
         result['changed'] = True
 
     return result

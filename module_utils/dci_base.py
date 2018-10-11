@@ -63,9 +63,10 @@ class DciBase(object):
         res = self.resource.get(context, self.id)
         if res.status_code == 200:
             kwargs = {}
-            if 'etag' in res.json()[self.resource_name]:
+            data = response_json(res)
+            if 'etag' in data[self.resource_name]:
                 kwargs = {
-                    'etag': res.json()[self.resource_name]['etag']
+                    'etag': data[self.resource_name]['etag']
                 }
             return self.resource.delete(context, self.id, **kwargs)
 
@@ -96,9 +97,10 @@ class DciBase(object):
         res = self.resource.get(context, self.id)
 
         if res.status_code == 200:
+            data = response_json(res)
             kwargs = {
                 'id': self.id,
-                'etag': res.json()[self.resource_name]['etag']
+                'etag': data[self.resource_name]['etag']
             }
             for param in self.deterministic_params:
                 kwargs[param] = getattr(self, param)
