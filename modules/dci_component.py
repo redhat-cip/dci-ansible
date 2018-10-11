@@ -89,9 +89,11 @@ def download_file(module, ctx):
         module.exit_json(changed=False)
     else:
         try:
-            component_files = dci_component.file_list(
+            r = dci_component.file_list(
                 ctx,
-                module.params['id']).json()['component_files']
+                module.params['id'])
+            data = response_json(r)
+            data['component_files']
             component_file_id = component_files[0]['id']
         except (KeyError, IndexError):
             module.fail_json(
@@ -183,9 +185,10 @@ def main():
     elif module.params['id']:
         res = dci_component.get(ctx, module.params['id'])
         if res.status_code not in [400, 401, 404, 409]:
+            data = response_json(res)
             updated_kwargs = {
                 'id': module.params['id'],
-                'etag': res.json()['component']['etag']
+                'etag': data['component']['etag']
             }
             if module.params['active']:
                 updated_kwargs['state'] = 'active'
@@ -222,16 +225,15 @@ def main():
         res = dci_component.create(ctx, **kwargs)
 
     try:
-        result = res.json()
+        result = response_json(res)
         if res.status_code == 404:
             module.fail_json(msg='The resource does not exist')
         if res.status_code == 409:
-            result = {
-                'component': dci_topic.list_components(
-                    ctx, module.params['topic_id'],
-                    where='name:' + module.params['name']
-                ).json()['components'][0],
-            }
+            r = dci_topic.list_components(
+                ctx, module.params['topic_id'],
+                where='name:' + module.params['name'])
+            data = response_json(r)
+            result = {'component': data['components'][0]}
         if res.status_code in [400, 401, 409]:
             result['changed'] = False
         else:
