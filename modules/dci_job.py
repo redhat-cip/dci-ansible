@@ -147,7 +147,8 @@ class DciJob(DciBase):
 
         res = dci_job.list_metas(context, self.id)
 
-        if res.status_code == 200 and res.json()['metas'] > 0:
+        data = response_json(res)
+        if res.status_code == 200 and data['metas'] > 0:
             return dci_job.get(context, self.id, embed='metas')
         else:
             self.raise_error(res)
@@ -176,7 +177,8 @@ class DciJob(DciBase):
         topic_res = dci_topic.list(context, where='name:' + self.topic)
 
         if topic_res.status_code == 200:
-            topics = topic_res.json()['topics']
+            data = response_json(topic_res)
+            topics = data['topics']
             if not len(topics):
                 raise DciResourceNotFoundException(
                     'Topic: %s resource not found' % self.topic
@@ -198,7 +200,8 @@ class DciJob(DciBase):
         topic_res = dci_topic.list(context, where='name:' + self.topic)
 
         if topic_res.status_code == 200:
-            topics = topic_res.json()['topics']
+            data = response_data(topic_res)
+            topics = data['topics']
             if not len(topics):
                 raise DciResourceNotFoundException(
                     'Topic: %s resource not found' % self.topic
