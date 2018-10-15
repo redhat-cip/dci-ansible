@@ -58,6 +58,9 @@ options:
   metadata:
     required: false
     description: Metadatas attached to the job
+  tags:
+    required: false
+    description: Tags attached to the job
   update:
     required: false
     description: Schedule an update job
@@ -128,6 +131,7 @@ class DciJob(DciBase):
         self.comment = params.get('comment')
         self.status = params.get('status')
         self.metadata = params.get('metadata')
+        self.tags = params.get('tags')
         self.update = params.get('update')
         self.upgrade = params.get('upgrade')
         self.components = params.get('components', [])
@@ -137,7 +141,7 @@ class DciJob(DciBase):
             'where': params.get('where')
         }
         self.deterministic_params = ['topic', 'comment', 'status',
-                                     'metadata', 'team_id']
+                                     'metadata', 'tags', 'team_id']
 
     def do_set_metadata(self, context):
         for k, v in self.metadata.items():
@@ -149,6 +153,19 @@ class DciJob(DciBase):
 
         if res.status_code == 200 and res.json()['metas'] > 0:
             return dci_job.get(context, self.id, embed='metas')
+        else:
+            self.raise_error(res)
+
+    def do_set_tags(self, context):
+        for tag_name in self.tags:
+            res = dci_job.add_tag(context, self.id, tag_name)
+            if res.status_code != 201:
+                self.raise_error(res)
+
+        res = dci_job.list_tags(context, self.id)
+
+        if res.status_code == 200 and res.json()['tags'] > 0:
+            return dci_job.get(context, self.id, embed='tags')
         else:
             self.raise_error(res)
 
@@ -230,6 +247,7 @@ def main():
         comment=dict(type='str'),
         status=dict(type='str'),
         metadata=dict(type='dict'),
+        tags=dict(type='list'),
         upgrade=dict(type='bool'),
         update=dict(type='bool'),
         components=dict(type='list'),
@@ -258,6 +276,8 @@ def main():
             action_name = 'upgrade'
         if module.params['metadata']:
             action_name = 'set_metadata'
+        if module.params['tags']:
+            action_name = 'set_tags'
 
     elif action_name == 'create':
         if not module.params['components']:
