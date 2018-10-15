@@ -25,6 +25,9 @@
           - puddles
         product_id: '{{ openstack_product.product.id }}'
         data:
+          registry:
+            login: null
+            password: null
           releasename: queens
       register: openstack_topic_osp13
 
@@ -42,6 +45,9 @@
           - puddles
         product_id: '{{ openstack_product.product.id }}'
         data:
+          registry:
+            login: null
+            password: null
           releasename: pike
       register: openstack_topic_osp12
 
