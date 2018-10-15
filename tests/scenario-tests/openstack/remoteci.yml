@@ -129,3 +129,15 @@
       assert:
         that: job_informations.job.metas|length == 3
 
+    - name: Set the tags
+      dci_job:
+        id: '{{ job_id }}'
+        tags:
+          - foo
+          - queens
+          - je-sais-pas-moi
+      register: job_informations
+
+    - name: Verify that job has 3 tags
+      assert:
+        that: job_informations.job.tags|length == 3
