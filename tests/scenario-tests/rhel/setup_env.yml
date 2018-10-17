@@ -23,6 +23,8 @@
         name: RHEL-7
         component_types:
           - Compose
+          - hwcert
+          - extras
         product_id: '{{ rhel_product.product.id }}'
       register: rhel_topic_rhel7
 
