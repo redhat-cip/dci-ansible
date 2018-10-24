@@ -27,6 +27,8 @@ DOCUMENTATION = '''
 ---
 module: dci_feeder
 short_description: module to interact with the feeders endpoint of DCI
+description:
+  - DCI module to manage the feeder resources
 version_added: 2.4
 options:
   state:

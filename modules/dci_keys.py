@@ -27,6 +27,8 @@ DOCUMENTATION = '''
 ---
 module: dci_keys
 short_description: interact with the remotecis/keys endpoint of DCI
+description:
+  - DCI module to manage the remoteci key resources
 version_added: 2.2
 options:
   state:

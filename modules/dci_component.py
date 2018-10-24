@@ -29,6 +29,8 @@ DOCUMENTATION = '''
 ---
 module: dci_component
 short_description: module to interact with the components endpoint of DCI
+description:
+  - DCI module to manage the components
 version_added: 2.2
 options:
   state:

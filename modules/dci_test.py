@@ -27,6 +27,8 @@ DOCUMENTATION = '''
 ---
 module: dci_test
 short_description: module to interact with the tests endpoint of DCI
+description:
+  - DCI module to manage the test resources
 version_added: 2.2
 options:
   state:

@@ -27,6 +27,8 @@ DOCUMENTATION = '''
 ---
 module: dci_product
 short_description: module to interact with the products endpoint of DCI
+description:
+  - DCI module to manage the remoteci product resources
 version_added: 2.4
 options:
   state:

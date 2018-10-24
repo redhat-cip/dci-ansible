@@ -27,6 +27,8 @@ DOCUMENTATION = '''
 ---
 module: dci_remoteci
 short_description: module to interact with the remotecis endpoint of DCI
+description:
+  - DCI module to manage the remoteci resources
 version_added: 2.2
 options:
   state:
