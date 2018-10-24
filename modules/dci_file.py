@@ -28,6 +28,8 @@ DOCUMENTATION = '''
 ---
 module: dci_file
 short_description: module to interact with the files endpoint of DCI
+description:
+  - DCI module to manage the file resources
 version_added: 2.2
 options:
   state:

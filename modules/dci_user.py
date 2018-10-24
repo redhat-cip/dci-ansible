@@ -27,6 +27,8 @@ DOCUMENTATION = '''
 ---
 module: dci_user
 short_description: module to interact with the users endpoint of DCI
+description:
+  - DCI module to manage the user resources
 version_added: 2.2
 options:
   state:

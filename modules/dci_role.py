@@ -27,6 +27,8 @@ DOCUMENTATION = '''
 ---
 module: dci_role
 short_description: module to interact with the roles endpoint of DCI
+description:
+  - DCI module to manage the role resources
 version_added: 2.4
 options:
   state:
