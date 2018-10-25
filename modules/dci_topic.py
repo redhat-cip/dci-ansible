@@ -27,6 +27,8 @@ DOCUMENTATION = '''
 ---
 module: dci_topic
 short_description: module to interact with the topics endpoint of DCI
+description:
+  - DCI module to manage the topic resources
 version_added: 2.2
 options:
   state:

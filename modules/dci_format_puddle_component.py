@@ -34,6 +34,8 @@ DOCUMENTATION = '''
 ---
 module: dci_format_puddle_component
 short_description: module to format the puddle output
+description:
+  - DCI module to manage the dci puddle component
 version_added: 2.2
 options:
   state:

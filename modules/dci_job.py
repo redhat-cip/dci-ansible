@@ -28,6 +28,8 @@ DOCUMENTATION = '''
 ---
 module: dci_job
 short_description: An ansible module to interact with the /jobs endpoint of DCI
+description:
+  - DCI module to manage the job resources
 version_added: 2.2
 options:
   state:

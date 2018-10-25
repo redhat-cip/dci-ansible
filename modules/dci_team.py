@@ -27,6 +27,8 @@ DOCUMENTATION = '''
 ---
 module: dci_team
 short_description: module to interact with the teams endpoint of DCI
+description:
+  - DCI module to manage the team resources
 version_added: 2.2
 options:
   state:
