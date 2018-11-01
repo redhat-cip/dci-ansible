@@ -230,7 +230,9 @@ class DciJob(DciBase):
                 components=self.components, comment=self.comment
             )
             if res.status_code == 201:
-                return dci_job.get_full_data(context, context.last_job_id)
+                return dci_job.get(
+                    context, context.last_job_id,
+                    embed='topic,remoteci,components,rconfiguration')
             else:
                 self.raise_error(res)
 
