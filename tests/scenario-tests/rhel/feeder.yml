@@ -63,6 +63,21 @@
         - {'name': 'upgrade.img', 'path': 'images/pxeboot'}
         - {'name': 'vmlinuz', 'path': 'images/pxeboot'}
 
+    - name: Create .treeinfo file
+      copy:
+        dest: '/repo/{{ _topics.topics[0].product_id }}/{{ _topics.topics[0].id }}/{{ rhel_component.component.id }}/.treeinfo'
+        content: |
+          [checksums]
+          LiveOS/squashfs.img = sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+          images/boot.iso = sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+          images/pxeboot/initrd.img = sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+          images/pxeboot/upgrade.img = sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+          images/pxeboot/vmlinuz = sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        selevel: s0
+        serole: object_r
+        setype: httpd_sys_content_t
+        seuser: system_u
+
     - name: Install createrepo
       package:
         name: createrepo
