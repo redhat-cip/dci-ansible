@@ -10,10 +10,11 @@ function clean_environment() {
 }
 
 function clean_db() {
+    DB_HOST="${DB_HOST:-localhost}"
     echo "
       truncate products cascade;
       delete from teams where name <> 'admin';" | \
-        PGPASSWORD=dci psql -h localhost -U dci -d dci
+        PGPASSWORD=dci psql -h ${DB_HOST} -U dci -d dci
 }
 
 
