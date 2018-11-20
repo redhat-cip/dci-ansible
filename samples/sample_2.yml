@@ -11,7 +11,7 @@
       dci_job:
         topic: 'OSP8'
         remoteci: 'dci-env-ovb-1'
-      register: job_informations
+      register: job_info
 
 
 # New state

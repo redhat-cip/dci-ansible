@@ -11,7 +11,7 @@
       dci_job:
         topic: 'OSP10'
         remoteci: 'dci-env-ovb-1'
-      register: job_informations
+      register: job_info
 
 # New state
 # Pre-run state
@@ -33,9 +33,9 @@
   tasks:
     - name: Schedule an upgrade job
       dci_job:
-        id: "{{ job_informations['id'] }}"
+        id: "{{ job_info['id'] }}"
         upgrade: true
-      register: job_informations
+      register: job_info
 
     - name: echo 'Success'
       shell: echo 'Succes'

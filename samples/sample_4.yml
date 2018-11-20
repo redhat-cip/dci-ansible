@@ -11,7 +11,7 @@
       dci_job:
         topic: 'OSP8'
         remoteci: 'dci-env-ovb-1'
-      register: job_informations
+      register: job_info
 
 
 # New state
@@ -23,8 +23,8 @@
   vars:
     dci_status: 'new'
     dci_comment: 'Creating OSP 8 local mirrors and synchronizing them'
-    components: "{{ job_informations['components'] }}"
-    job_id: "{{ job_informations['job_id'] }}"
+    components: "{{ job_info['components'] }}"
+    job_id: "{{ job_info['job_id'] }}"
   tasks:
     - block:
       - name: Ensure proper directories are created
@@ -104,7 +104,7 @@
   vars:
     dci_status: 'post-run'
     dci_comment: 'Running tests'
-    job_id: "{{ job_informations['job_id'] }}"
+    job_id: "{{ job_info['job_id'] }}"
   tasks:
     - block:
        - name: Run tests
@@ -140,7 +140,7 @@
 #  vars:
 #    dci_status: 'post-run'
 #    dci_comment: 'Running tests'
-#    tests: "{{ job_informations['tests'] }}"
+#    tests: "{{ job_info['tests'] }}"
 #  roles:
 #    - { role: ansible-role-certification, when: 'certification' in tests }
 #    - { role: ansible-role-tempest, when: 'tempest' in tests }
