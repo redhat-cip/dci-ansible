@@ -57,9 +57,6 @@ options:
   status:
     required: false
     description: Status the job should be entitled
-  metadata:
-    required: false
-    description: Metadatas attached to the job
   tags:
     required: false
     description: Tags attached to the job
@@ -132,7 +129,6 @@ class DciJob(DciBase):
         self.topic = params.get('topic')
         self.comment = params.get('comment')
         self.status = params.get('status')
-        self.metadata = params.get('metadata')
         self.tags = params.get('tags')
         self.update = params.get('update')
         self.upgrade = params.get('upgrade')
@@ -143,20 +139,7 @@ class DciJob(DciBase):
             'where': params.get('where')
         }
         self.deterministic_params = ['topic', 'comment', 'status',
-                                     'metadata', 'tags', 'team_id']
-
-    def do_set_metadata(self, context):
-        for k, v in self.metadata.items():
-            res = dci_job.set_meta(context, self.id, k, str(v))
-            if res.status_code != 201:
-                self.raise_error(res)
-
-        res = dci_job.list_metas(context, self.id)
-
-        if res.status_code == 200 and res.json()['metas'] > 0:
-            return dci_job.get(context, self.id, embed='metas')
-        else:
-            self.raise_error(res)
+                                     'tags', 'team_id']
 
     def do_set_tags(self, context):
         for tag_name in self.tags:
@@ -250,7 +233,6 @@ def main():
         topic=dict(required=False, type='str'),
         comment=dict(type='str'),
         status=dict(type='str'),
-        metadata=dict(type='dict'),
         tags=dict(type='list'),
         upgrade=dict(type='bool'),
         update=dict(type='bool'),
@@ -278,8 +260,6 @@ def main():
             action_name = 'job_update'
         if module.params['upgrade']:
             action_name = 'upgrade'
-        if module.params['metadata']:
-            action_name = 'set_metadata'
         if module.params['tags']:
             action_name = 'set_tags'
 
