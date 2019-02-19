@@ -1,0 +1,9 @@
+Code-Review+2: Cédric Lecomte <ced.lecomte@gmail.com>
+Code-Review+1: Haïkel Guémar <hguemar@fedoraproject.org>
+Workflow+1: Yassine Lamgarchal <yassine.lamgarchal@redhat.com>
+Verified+2: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-by: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-at: Tue, 19 Feb 2019 13:24:24 +0000
+Reviewed-on: https://softwarefactory-project.io/r/15061
+Project: dci-ansible
+Branch: refs/heads/master
