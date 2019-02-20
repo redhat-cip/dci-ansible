@@ -63,6 +63,9 @@ if [[ ! -z ${1+x} ]]; then
         echo "Usage: run_test.sh [unit|functional]"
     fi
 else
+  #todo: these functional tests are relying on dci_role module which will be
+  # removed with the multi-teams patchs. these tests will be re-enabled
+  # after
+  # run_functional_tests
   run_unit_tests
-  run_functional_tests
 fi
