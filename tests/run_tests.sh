@@ -54,15 +54,19 @@ function run_functional_tests() {
     done
 }
 
+#todo: these functional tests are relying on dci_role module which will be
+# removed with the multi-teams patchs. these tests will be re-enabled
+# after
+
 if [[ ! -z ${1+x} ]]; then
     if [[ "$1" == "unit" ]]; then
         run_unit_tests
     elif [[ "$1" == "functional" ]]; then
-        run_functional_tests
+    #    run_functional_tests
     else
         echo "Usage: run_test.sh [unit|functional]"
     fi
 else
+  # run_functional_tests
   run_unit_tests
-  run_functional_tests
 fi
