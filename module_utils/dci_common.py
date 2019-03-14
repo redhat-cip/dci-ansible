@@ -141,16 +141,13 @@ def parse_http_response(response, resource, context, module):
     if response.status_code == 404:
         module.fail_json(msg='The specified resource does not exist')
 
-    elif response.status_code == 401:
-        module.fail_json(msg='Unauthorized credentials')
-
     elif response.status_code == 412:
         module.fail_json(msg='Unauthorized resource access')
 
     elif response.status_code == 500:
         module.fail_json(msg='Internal Server Error')
 
-    elif response.status_code == 400:
+    elif response.status_code == 400 or response.status_code == 401:
         error = response.json()
         module.fail_json(
             msg='%s - %s' % (error['message'], str(error['payload']))
