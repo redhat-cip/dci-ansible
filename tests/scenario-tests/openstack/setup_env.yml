@@ -1,11 +1,6 @@
 ---
 - hosts: localhost
   tasks:
-    - name: Retrieve PRODUCT_OWNER role
-      dci_role:
-        where: label:PRODUCT_OWNER
-      register: po_role
-
     - name: Create Product Team
       dci_team:
         name: OpenStack
@@ -63,7 +58,6 @@
         email: openstack-po@distributed-ci.io
         fullname: OpenStack PO
         password: Apassword
-        role_id: '{{ po_role.roles[0].id }}'
         team_id: '{{ openstack_team.team.id }}'
 
     - name: Create a feeder for the OpenStack team

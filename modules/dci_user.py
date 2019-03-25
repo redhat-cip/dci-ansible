@@ -58,9 +58,6 @@ options:
   email:
     required: false
     description: User email
-  role_id:
-    required: false
-    description: ID of the role the user is attached to
   team_id:
     required: false
     description: ID of the team the user belongs to
@@ -83,7 +80,6 @@ EXAMPLES = '''
     fullname: John Doe
     email: jdoe@example.tld
     password: 'APassw0rd!'
-    role_id: XXXXX
     team_id: XXXXX
 
 
@@ -95,7 +91,6 @@ EXAMPLES = '''
 - name: Update user informations
   dci_user:
     id: XXXX
-    role_id: XXXX
     email: jdoe@newcompany.org
 
 
@@ -119,7 +114,6 @@ class DciUser(DciBase):
         self.fullname = params.get('fullname')
         self.email = params.get('email')
         self.password = params.get('password')
-        self.role_id = params.get('role_id')
         self.team_id = params.get('team_id')
         self.active = params.get('active')
         self.search_criterias = {
@@ -127,7 +121,7 @@ class DciUser(DciBase):
             'where': params.get('where')
         }
         self.deterministic_params = ['name', 'fullname', 'email', 'password',
-                                     'role_id', 'team_id', 'active']
+                                     'team_id', 'active']
 
     def do_create(self, context):
         for param in ['name', 'password', 'team_id', 'email']:
@@ -151,7 +145,6 @@ def main():
         fullname=dict(type='str'),
         email=dict(type='str'),
         password=dict(type='str', no_log=True),
-        role_id=dict(type='str'),
         team_id=dict(type='str'),
         active=dict(default=True, type='bool'),
         embed=dict(type='str'),

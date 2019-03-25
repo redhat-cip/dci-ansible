@@ -1,11 +1,6 @@
 ---
 - hosts: localhost
   tasks:
-    - name: Retrieve PRODUCT_OWNER role
-      dci_role:
-        where: label:PRODUCT_OWNER
-      register: po_role
-
     - name: Create Product Team
       dci_team:
         name: RHEL
@@ -40,7 +35,6 @@
         email: rhel-po@distributed-ci.io
         fullname: RHEL PO
         password: Apassword
-        role_id: '{{ po_role.roles[0].id }}'
         team_id: '{{ rhel_team.team.id }}'
 
     - name: Create a feeder for the RHEL team
