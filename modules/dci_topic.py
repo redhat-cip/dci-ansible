@@ -97,6 +97,12 @@ EXAMPLES = '''
     id: XXXXX
 
 
+- name: Get Components IDs like a normal schedule
+  dci_topic:
+    id: XXXXX
+    scheduled: True
+
+
 - name: Update topic informations
   dci_topic:
     id: XXXX
@@ -149,6 +155,9 @@ class DciTopic(DciBase):
             res = dci_topic.attach_team(context, self.id, team)
         return res
 
+    def do_get_components_from_schedule(self, context)
+        return dci_topic.get_components_from_schedule(context, self.id)
+
 
 def main():
 
@@ -164,6 +173,7 @@ def main():
         product_id=dict(type='str'),
         next_topic_id=dict(type='str'),
         component_types=dict(type='list'),
+        scheduled=dict(type='bool'),
         team_ids=dict(type='list'),
         active=dict(default=True, type='bool'),
         embed=dict(type='str'),
