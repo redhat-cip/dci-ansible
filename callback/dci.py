@@ -292,6 +292,11 @@ class CallbackModule(CallbackBase):
     def task_name(self, result):
         """Ensure we alway return a string"""
         name = result._task.get_name()
+        # add the included file name in the task's name
+        if name == 'include_tasks':
+            if hasattr(result._task, 'get_ds'):
+                if 'include_tasks' in result._task.get_ds():
+                    name = '%s: %s' % (name, result._task.get_ds()['include_tasks'])  # noqa
         return name.encode('UTF-8')
 
     def __init__(self):
