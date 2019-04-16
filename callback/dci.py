@@ -6,6 +6,7 @@ from ansible.plugins.callback import CallbackBase
 
 import base64
 import os
+import pprint
 from dciclient.v1.api import context as dci_context
 from dciclient.v1.api import jobstate as dci_jobstate
 from dciclient.v1.api import file as dci_file
@@ -31,7 +32,7 @@ class Formatter(object):
         module_name = result._task.action
         msg = ''
         if result._result.get('msg'):
-            msg += result._result['msg']
+            msg += str(result._result['msg'])
             msg += '\n'
 
         if hasattr(self, 'format_%s' % module_name):
@@ -96,7 +97,7 @@ class Formatter(object):
         for c in self._get_result_entries(result):
             l_file = c['invocation']['module_args']
             ret += (
-                'Uploading %s (filename: %s - mimetype: %s) ',
+                'Uploading %s (filename: %s - mimetype: %s) '
                 '(details: %s)\n') % (
                     l_file.get('path'),
                     l_file.get('name'),
@@ -127,8 +128,7 @@ class Formatter(object):
             return 'Stderr:\n%s' % result._result['module_stderr']
 
     def format_generic(self, result):
-        changed = result._result.get('changed')
-        return 'All items completed (changed: %s)' % changed
+        return pprint.pformat(self._get_result_entries(result))
 
     def format_ini_file(self, result):
         ret = ''
