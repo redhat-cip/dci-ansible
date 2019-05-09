@@ -160,7 +160,7 @@ class DciJob(DciBase):
         if res.status_code == 201:
             return dci_job.get(
                 context, context.last_job_id,
-                embed='topic,remoteci,components,rconfiguration')
+                embed='topic,remoteci,components')
         else:
             self.raise_error(res)
 
@@ -170,7 +170,7 @@ class DciJob(DciBase):
         if res.status_code == 201:
             return dci_job.get(
                 context, context.last_job_id,
-                embed='topic,remoteci,components,rconfiguration')
+                embed='topic,remoteci,components')
         else:
             self.raise_error(res)
 
@@ -189,7 +189,7 @@ class DciJob(DciBase):
             if res.status_code == 201:
                 return dci_job.get(
                     context, context.last_job_id,
-                    embed='topic,remoteci,components,rconfiguration')
+                    embed='topic,remoteci,components')
             else:
                 self.raise_error(res)
 
@@ -215,7 +215,7 @@ class DciJob(DciBase):
             if res.status_code == 201:
                 return dci_job.get(
                     context, context.last_job_id,
-                    embed='topic,remoteci,components,rconfiguration')
+                    embed='topic,remoteci,components')
             else:
                 self.raise_error(res)
 
