@@ -25,7 +25,7 @@ variable_manager = VariableManager(loader=loader, inventory=inventory)
 
 # NOTE(Gonéri): In case we are in a virtualenv, we must reuse the same Python
 # interpreter to be able to reach the dciclient lib.
-variable_manager.extra_vars = {'ansible_python_interpreter': sys.executable}
+variable_manager._extra_vars = {'ansible_python_interpreter': sys.executable}  # noqa
 
 
 def run_task(task):
