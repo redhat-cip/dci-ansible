@@ -44,6 +44,12 @@
         embed: files,jobstates
       register: job_info
 
+    - debug:
+        var: job_info.job.files
+
+    - debug:
+        var: job_info.job.files|length
+  
     - name: Verify that job has 6 files attached
       assert:
         that: job_info.job.files|length == 6
