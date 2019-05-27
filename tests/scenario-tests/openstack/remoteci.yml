@@ -46,7 +46,7 @@
 
     - name: Verify that job has 6 files attached
       assert:
-        that: job_info.job.files|length == 6
+        that: job_info.job.files|length == 10
 
     - debug:
         var: job_info.job.jobstates
