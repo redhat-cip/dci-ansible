@@ -25,7 +25,7 @@ variable_manager = VariableManager(loader=loader, inventory=inventory)
 
 # NOTE(Gonéri): In case we are in a virtualenv, we must reuse the same Python
 # interpreter to be able to reach the dciclient lib.
-variable_manager.extra_vars = {'ansible_python_interpreter': sys.executable}
+variable_manager._extra_vars = {'ansible_python_interpreter': sys.executable}  # noqa
 
 
 def run_task(task):
@@ -33,6 +33,7 @@ def run_task(task):
         name="Ansible Play",
         hosts='localhost',
         gather_facts='no',
+        connection='local',
         tasks=[task])
 
     play = Play().load(play_source)
@@ -50,7 +51,6 @@ def run_task(task):
         inventory=inventory,
         variable_manager=variable_manager,
         loader=loader,
-        options=options,
         passwords=passwords,
         stdout_callback=results_callback)
     tqm.run(play)
@@ -189,8 +189,8 @@ def test_find_failure(capsys):
 
 def test_firewalld_failure(capsys):
     run_task({'action': {'module': 'firewalld', 'args': 'port=80 state=BOB'}})
-    exceptation = ('value of state must be one of: enabled, disabled, '
-                   'present, absent, got: BOB\n\n')
+    exceptation = ('value of state must be one of: absent, disabled, '
+                   'enabled, present, got: BOB\n\n')
     outerr = capsys.readouterr()
     assert not outerr.err
     assert outerr.out == exceptation
