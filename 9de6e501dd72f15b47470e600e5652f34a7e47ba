@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c47100be_d2499511",
+        "filename": "tests/scenario-tests/openstack/remoteci.yml",
+        "patchSetId": 11
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2019-05-27T16:45:58Z",
+      "side": 1,
+      "message": "10\n\nor \"the right number of\"",
+      "range": {
+        "startLine": 47,
+        "startChar": 31,
+        "endLine": 47,
+        "endChar": 34
+      },
+      "revId": "9de6e501dd72f15b47470e600e5652f34a7e47ba",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f5a20975_222c814b",
+        "filename": "tests/scenario-tests/rhel/remoteci.yml",
+        "patchSetId": 11
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2019-05-27T16:45:58Z",
+      "side": 1,
+      "message": "10\n\nor \"the right number of\"",
+      "range": {
+        "startLine": 47,
+        "startChar": 32,
+        "endLine": 47,
+        "endChar": 33
+      },
+      "revId": "9de6e501dd72f15b47470e600e5652f34a7e47ba",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
