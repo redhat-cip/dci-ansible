@@ -145,7 +145,7 @@ def parse_http_response(response, resource, context, module):
         module.fail_json(msg='Unauthorized resource access')
 
     elif response.status_code == 500:
-        module.fail_json(msg='Internal Server Error')
+        module.fail_json(msg=response.text)
 
     elif response.status_code == 400 or response.status_code == 401:
         error = response.json()
