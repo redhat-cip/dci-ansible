@@ -39,7 +39,7 @@ function run_functional_tests() {
     environments='openstack rhel'
     for environment in $environments; do
         source ./admin.sh
-        ansible-playbook "scenario-tests/${environment}/setup_env.yml" -vvv
+        ansible-playbook -vvv "scenario-tests/${environment}/setup_env.yml"
         clean_environment
 
         source ./feeder.sh
