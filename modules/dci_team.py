@@ -52,9 +52,6 @@ options:
   country:
     required: false
     description: Team country
-  parent_id:
-    required: false
-    description: ID of the parent team
   active:
     required: false
     description: Wether of not the resource should be active
@@ -111,13 +108,12 @@ class DciTeam(DciBase):
         self.id = params.get('id')
         self.name = params.get('name')
         self.country = params.get('country')
-        self.parent_id = params.get('parent_id')
         self.active = params.get('active')
         self.search_criterias = {
             'embed': params.get('embed'),
             'where': params.get('where')
         }
-        self.deterministic_params = ['name', 'country', 'parent_id', 'active']
+        self.deterministic_params = ['name', 'country', 'active']
 
     def do_create(self, context):
         if not self.name:
@@ -136,7 +132,6 @@ def main():
         id=dict(type='str'),
         name=dict(type='str'),
         country=dict(type='str'),
-        parent_id=dict(type='str'),
         active=dict(default=True, type='bool'),
         embed=dict(type='str'),
         where=dict(type='str'),
