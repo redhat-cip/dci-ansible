@@ -55,9 +55,6 @@ options:
   description:
     required: false
     description: Description of a product
-  team_id:
-    required: false
-    description: ID of the team the product belongs to
   active:
     required: false
     description: Wether of not the resource should be active
@@ -70,13 +67,11 @@ EXAMPLES = '''
 - name: Create a new product
   dci_product:
     name: 'product-A'
-    team_id: XXX
 
 
 - name: Create a new product
   dci_product:
     name: 'product-A'
-    team_id: XXX
     label: PRODUCTA-PKI
     description: This is the description of product A
 
@@ -109,7 +104,6 @@ class DciProduct(DciBase):
         super(DciProduct, self).__init__(dci_product)
         self.id = params.get('id')
         self.name = params.get('name')
-        self.team_id = params.get('team_id')
         self.label = params.get('label')
         self.description = params.get('description')
         self.active = params.get('active')
@@ -117,8 +111,7 @@ class DciProduct(DciBase):
             'embed': params.get('embed'),
             'where': params.get('where')
         }
-        self.deterministic_params = ['name', 'team_id', 'label', 'description',
-                                     'active']
+        self.deterministic_params = ['name', 'label', 'description', 'active']
 
     def do_create(self, context):
         if not self.name:
@@ -136,7 +129,6 @@ def main():
             type='str'),
         id=dict(type='str'),
         name=dict(type='str'),
-        team_id=dict(type='str'),
         label=dict(type='str'),
         description=dict(type='str'),
         active=dict(default=True, type='bool'),
