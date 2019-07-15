@@ -9,7 +9,6 @@
     - name: Create OpenStack
       dci_product:
         name: openstack
-        team_id: '{{ openstack_team.team.id }}'
       register: openstack
 
     - name: Create the OSPX topic

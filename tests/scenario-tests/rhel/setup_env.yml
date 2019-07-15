@@ -10,7 +10,6 @@
       dci_product:
         name: RHEL
         description: Red Hat Enterprise Linux
-        team_id: '{{ rhel_team.team.id }}'
       register: rhel_product
 
     - name: Create a RHEL7 topic

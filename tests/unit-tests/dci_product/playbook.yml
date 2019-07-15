@@ -9,7 +9,6 @@
     - name: Create product-A
       dci_product:
         name: product-A
-        team_id: '{{ producta_team.team.id }}'
       register: producta
 
     - name: Retrieve all products
@@ -49,9 +48,4 @@
     - name: Delete roduct-A
       dci_product:
         id: '{{ producta.product.id }}'
-        state: absent
-
-    - name: Delete product-A team
-      dci_team:
-        id: '{{ producta_team.team.id }}'
         state: absent
