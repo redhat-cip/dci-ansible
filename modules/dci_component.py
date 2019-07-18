@@ -240,7 +240,7 @@ def main():
             result['changed'] = True
     except Exception:
         result = {}
-        result['changed'] = True
+        result['changed'] = False
 
     module.exit_json(**result)
 
