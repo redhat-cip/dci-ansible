@@ -52,10 +52,14 @@ class DciBase(object):
             )
 
         elif res.status_code == 500:
-            raise DciServerErrorException
-
+            raise DciServerErrorException(res.status_code)
         else:
-            raise DciUnexpectedErrorException(res.status_code)
+            message = str(res.status_code)
+            try:
+                message = message + ": " + res.json()['message']
+            except Exception:
+                message = message + ": " + res.text
+            raise DciUnexpectedErrorException(message)
 
     def do_delete(self, context):
         """Remove a resource."""
@@ -108,17 +112,8 @@ class DciBase(object):
                 del kwargs['active']
 
             return self.resource.update(context, **kwargs)
-
-        elif res.status_code in [401, 404]:
-            raise DciResourceNotFoundException(
-                '%s: %s resource not found' % (self.resource_name, self.id)
-            )
-
-        elif res.status_code == 500:
-            raise DciServerErrorException
-
         else:
-            raise DciUnexpectedErrorException(res.status_code)
+            self.raise_error(res)
 
     def do_create(self, context):
         """Create a resource."""
