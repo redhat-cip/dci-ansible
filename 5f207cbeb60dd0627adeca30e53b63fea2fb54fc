@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2e4a6e7f_2c831990",
+        "filename": "module_utils/dci_base.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-09-26T09:08:31Z",
+      "side": 1,
+      "message": "status_code \u003d str(res.status_code)\n\nor\n\nmessage \u003d \"status code: %s\" % str(res.status_code)",
+      "range": {
+        "startLine": 57,
+        "startChar": 12,
+        "endLine": 57,
+        "endChar": 42
+      },
+      "revId": "5f207cbeb60dd0627adeca30e53b63fea2fb54fc",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d88b86eb_2897d6cb",
+        "filename": "module_utils/dci_base.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-09-26T09:08:31Z",
+      "side": 1,
+      "message": "status_code if status_code on line 57",
+      "range": {
+        "startLine": 59,
+        "startChar": 26,
+        "endLine": 59,
+        "endChar": 33
+      },
+      "revId": "5f207cbeb60dd0627adeca30e53b63fea2fb54fc",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3abfa13a_ad3f80fe",
+        "filename": "module_utils/dci_base.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-09-26T09:08:31Z",
+      "side": 1,
+      "message": "status_code if status_code on line 57",
+      "range": {
+        "startLine": 61,
+        "startChar": 26,
+        "endLine": 61,
+        "endChar": 33
+      },
+      "revId": "5f207cbeb60dd0627adeca30e53b63fea2fb54fc",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f1de76b4_f8399f69",
+        "filename": "module_utils/dci_base.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-09-26T09:08:31Z",
+      "side": 1,
+      "message": "The recommended way to do it is to raise the exception using:\n\nres.raise_for_status()\n\nsomething like\n\nres \u003d self.resource.get(context, self.id)\nres.raise_for_status()\n# continue\nkwargs \u003d {}\nif \u0027etag\u0027 in res.json()[self.resource_name]:\n\nWe just need to be sure the exception handler print the whole traceback to be sure we have status code and the full error.",
+      "range": {
+        "startLine": 69,
+        "startChar": 0,
+        "endLine": 114,
+        "endChar": 58
+      },
+      "revId": "5f207cbeb60dd0627adeca30e53b63fea2fb54fc",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
