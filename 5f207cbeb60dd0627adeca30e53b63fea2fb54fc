@@ -91,6 +91,30 @@
       "revId": "5f207cbeb60dd0627adeca30e53b63fea2fb54fc",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "34240a67_9098753a",
+        "filename": "module_utils/dci_base.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2019-09-26T10:43:10Z",
+      "side": 1,
+      "message": "Well.\n\nI just wanted to add the error message, not refactor the way errors are handled.",
+      "parentUuid": "f1de76b4_f8399f69",
+      "range": {
+        "startLine": 69,
+        "startChar": 0,
+        "endLine": 114,
+        "endChar": 58
+      },
+      "revId": "5f207cbeb60dd0627adeca30e53b63fea2fb54fc",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
