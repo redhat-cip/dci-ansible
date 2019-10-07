@@ -22,6 +22,30 @@
       "revId": "12f85fc8634111f2a869697f6028817d40ce76a5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e30e5b8b_105c540d",
+        "filename": "callback/dci.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2019-10-07T10:18:42Z",
+      "side": 1,
+      "message": "That\u0027s interesting, I learnt something here :)",
+      "parentUuid": "800fe759_c0bb6eac",
+      "range": {
+        "startLine": 275,
+        "startChar": 4,
+        "endLine": 276,
+        "endChar": 58
+      },
+      "revId": "12f85fc8634111f2a869697f6028817d40ce76a5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
