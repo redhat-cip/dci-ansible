@@ -297,6 +297,9 @@ class CallbackModule(CallbackBase):
             if hasattr(result._task, 'get_ds'):
                 if 'include_tasks' in result._task.get_ds():
                     name = '%s: %s' % (name, result._task.get_ds()['include_tasks'])  # noqa
+        if self._mime_type == 'application/junit':
+            if not name.endswith('.xml'):
+                name = '%s.xml' % name
         return name.encode('UTF-8')
 
     def __init__(self):
