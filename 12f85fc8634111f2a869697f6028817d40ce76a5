@@ -46,6 +46,30 @@
       "revId": "12f85fc8634111f2a869697f6028817d40ce76a5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fd75f3b2_5dab85d0",
+        "filename": "callback/dci.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-10-07T10:27:55Z",
+      "side": 1,
+      "message": "I guess the self.task_name(result) returns the ansible task\u0027s name while the post_message() expect a file name which is based on the task\u0027s name.",
+      "parentUuid": "800fe759_c0bb6eac",
+      "range": {
+        "startLine": 275,
+        "startChar": 4,
+        "endLine": 276,
+        "endChar": 58
+      },
+      "revId": "12f85fc8634111f2a869697f6028817d40ce76a5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
