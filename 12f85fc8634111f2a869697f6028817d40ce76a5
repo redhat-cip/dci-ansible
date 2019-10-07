@@ -70,6 +70,30 @@
       "revId": "12f85fc8634111f2a869697f6028817d40ce76a5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a4a8ec0b_6a26f345",
+        "filename": "callback/dci.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-10-07T10:38:32Z",
+      "side": 1,
+      "message": "This part of the code is related to the following feature:\n\n    If the file is not a test result, then attach the file to the current job state.\n\nIf you are trying to implement: \n\n    If the file is a junit file and name don\u0027t finish with a type \".xml\", add a type \".xml\" to it\n\nthen you are in the wrong place. First I think you want to have if self._mime_type \u003d\u003d \u0027application/junit\u0027: without the negation, then single responsibility encourage you to put this outside this block of code.\n\nIf this is a rule related to the name of the file, we already use a function self.task_name(result)\nThe name is not good, I agree, should be self._get_file_name(result) and can have some unit tests to specify the business rules",
+      "parentUuid": "fd75f3b2_5dab85d0",
+      "range": {
+        "startLine": 275,
+        "startChar": 4,
+        "endLine": 276,
+        "endChar": 58
+      },
+      "revId": "12f85fc8634111f2a869697f6028817d40ce76a5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
