@@ -272,6 +272,7 @@ class CallbackModule(CallbackBase):
 
         kwargs['job_id'] = self._job_id
         if not self._mime_type == 'application/junit':
+            kwargs['name'] = '%s.xml' % kwargs['name']
             kwargs['jobstate_id'] = self._jobstate_id
         dci_file.create(
             self._dci_context,
