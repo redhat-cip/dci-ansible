@@ -5,6 +5,10 @@
       dci_topic:
       register: all_topics
 
+    - name: Ensure that we got some topics back
+      assert:
+        that: all_topics.topics|length > 0
+
     - name: Create new component
       dci_component:
         name: "RH7-RHOS-{{ item.name }}-2018-01-13"
@@ -14,6 +18,10 @@
         topic_id: '{{ item.id }}'
       register: components
       with_items: '{{ all_topics.topics }}'
+
+    - name: Ensure that we created as many components as we have topics
+      assert:
+        that: all_topics.topics|length == components.results|length
 
     - name: Create temporary directory - for archive creation
       tempfile:
@@ -40,6 +48,12 @@
         format: tar
       with_items: "{{ components.results }}"
 
+    - name: Get size of the component archive
+      stat:
+        path: "{{ temp_dir.path }}/{{ item.component.canonical_project_name }}.tar"
+      register: stat_archive
+      with_items: "{{ components.results }}"
+
     - name: Register content of the images_list.yaml
       command: "cat {{ lookup('env', 'PWD')  }}/data/images_list.yaml"
       register: component_file_before_upload
@@ -60,6 +74,17 @@
         id: '{{ item.component.id }}'
         dest: "{{ temp_dir_extraction.path }}/{{ item.component.canonical_project_name }}.download.tar"
       with_items: "{{ components.results }}"
+
+    - name: Get size of the component archive downloaded
+      stat:
+        path: "{{ temp_dir_extraction.path }}/{{ item.component.canonical_project_name }}.download.tar"
+      register: stat_archive_download
+      with_items: "{{ components.results }}"
+
+    - name: Debug output size of archive downloaded
+      debug:
+        var: stat_archive_downloaded
+        verbosity: 0
 
     - name: Unarchive component
       unarchive:
