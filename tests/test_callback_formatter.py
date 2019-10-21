@@ -278,7 +278,7 @@ def test_invalid_module_failure(capsys):
     run_task(dict(action=dict(module='invalid_module', args='invalid=key')))
     outerr = capsys.readouterr()
     assert not outerr.err
-    assert 'not found in configured module paths.' in outerr.out
+    assert 'not found in configured module paths' in outerr.out
 
 
 def test_stat_failure(capsys):
