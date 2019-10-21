@@ -70,6 +70,9 @@ options:
   active:
     required: false
     description: Wether of not the resource should be active
+  export_control:
+    required: false
+    description: wether or not the topic is export_control restricted
   embed:
     required: false
     description:
@@ -127,13 +130,14 @@ class DciTopic(DciBase):
         self.component_types = params.get('component_types')
         self.team_ids = params.get('team_ids')
         self.active = params.get('active')
+        self.export_control = params.get('export_control')
         self.search_criterias = {
             'embed': params.get('embed'),
             'where': params.get('where')
         }
         self.deterministic_params = ['name', 'label', 'product_id', 'active',
                                      'component_types', 'next_topic_id',
-                                     'data']
+                                     'data', 'export_control']
 
     def do_create(self, context):
         if not self.name:
@@ -166,6 +170,7 @@ def main():
         component_types=dict(type='list'),
         team_ids=dict(type='list'),
         active=dict(default=True, type='bool'),
+        export_control=dict(default=False, type='bool'),
         embed=dict(type='str'),
         where=dict(type='str'),
     )
