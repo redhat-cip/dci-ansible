@@ -12,12 +12,20 @@
         description: OpenStack is a free and open-source software platform for cloud computing,
       register: openstack_product
 
+    - name: Attach the OpenStack team to the OpenStack product
+      dci_product:
+        id: "{{ openstack_product.product.id }}"
+        team_ids:
+          - "{{ openstack_team.team.id }}"
+
+
     - name: Create an OSP13 topic
       dci_topic:
         name: OSP13
         component_types:
           - puddles
         product_id: '{{ openstack_product.product.id }}'
+        export_control: False
         data:
           registry:
             login: null
@@ -38,6 +46,7 @@
         component_types:
           - puddles
         product_id: '{{ openstack_product.product.id }}'
+        export_control: True
         data:
           registry:
             login: null
