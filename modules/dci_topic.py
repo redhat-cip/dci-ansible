@@ -170,7 +170,7 @@ def main():
         component_types=dict(type='list'),
         team_ids=dict(type='list'),
         active=dict(default=True, type='bool'),
-        export_control=dict(default=False, type='bool'),
+        export_control=dict(type='bool'),
         embed=dict(type='str'),
         where=dict(type='str'),
     )
