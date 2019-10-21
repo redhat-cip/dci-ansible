@@ -55,6 +55,9 @@ options:
   description:
     required: false
     description: Description of a product
+  team_ids:
+    required: false
+    description: List of Teams to detach from this topic
   active:
     required: false
     description: Wether of not the resource should be active
@@ -106,6 +109,7 @@ class DciProduct(DciBase):
         self.name = params.get('name')
         self.label = params.get('label')
         self.description = params.get('description')
+        self.team_ids = params.get('team_ids')
         self.active = params.get('active')
         self.search_criterias = {
             'embed': params.get('embed'),
@@ -119,6 +123,11 @@ class DciProduct(DciBase):
 
         return super(DciProduct, self).do_create(context)
 
+    def do_attach_teams(self, context):
+        for team in self.team_ids:
+            res = dci_topic.attach_team(context, self.id, team)
+        return res
+
 
 def main():
 
@@ -131,6 +140,7 @@ def main():
         name=dict(type='str'),
         label=dict(type='str'),
         description=dict(type='str'),
+        team_ids=dict(type='list'),
         active=dict(default=True, type='bool'),
         embed=dict(type='str'),
         where=dict(type='str'),
@@ -147,6 +157,9 @@ def main():
 
     context = build_dci_context(module)
     action_name = get_standard_action(module.params)
+    if action_name == 'update':
+        if module.params['team_ids']:
+            action_name = 'attach_teams'
 
     product = DciProduct(module.params)
     action_func = getattr(product, 'do_%s' % action_name)
