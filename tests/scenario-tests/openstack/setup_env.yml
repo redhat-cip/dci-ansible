@@ -18,6 +18,7 @@
         component_types:
           - puddles
         product_id: '{{ openstack_product.product.id }}'
+        export_control: True
         data:
           registry:
             login: null
@@ -38,6 +39,7 @@
         component_types:
           - puddles
         product_id: '{{ openstack_product.product.id }}'
+        export_control: True
         data:
           registry:
             login: null
