@@ -163,7 +163,7 @@ class Formatter(object):
     def format_set_fact(self, result):
         ret = 'Settings the following facts:\n\n'
         for c in self._get_result_entries(result):
-            for key, value in c.get('ansible_facts', {}).iteritems():
+            for key, value in c.get('ansible_facts', {}).items():
                 ret += '%s: %s\n' % (key, value)
         return ret
 
@@ -225,7 +225,7 @@ class Formatter(object):
         if 'msg' in result._result:
             return ''
         result = result._result
-        for k in result.keys():
+        for k in result.copy().keys():
             if k.startswith('_ansible'):
                 del result[k]
         return str(result)

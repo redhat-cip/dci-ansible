@@ -91,7 +91,7 @@ def test_command_failure(capsys):
     run_task({'action': {'module': 'command', 'args': '/ls'}})
     outerr = capsys.readouterr()
     assert not outerr.err
-    assert outerr.out == '[Errno 2] No such file or directory\n\n'
+    assert '[Errno 2] No such file or directory' in outerr.out
 
 
 def test_copy_success(capsys, tmpdir):
