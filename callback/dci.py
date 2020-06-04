@@ -266,7 +266,7 @@ class CallbackModule(CallbackBase):
 
     def post_message(self, result, output):
         kwargs = {
-            'name': self.task_name(result),
+            'name': self.task_name(result).decode('UTF-8'),
             'content': output and output.encode('UTF-8'),
             'mime': self._mime_type}
 
