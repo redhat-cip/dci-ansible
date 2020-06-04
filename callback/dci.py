@@ -265,8 +265,12 @@ class CallbackModule(CallbackBase):
                                                        api_secret, user_agent)
 
     def post_message(self, result, output):
+        if isinstance(self.task_name(result), bytes):
+            name = self.task_name(result).decode('UTF-8')
+        else:
+            name = self.task_name(result)
         kwargs = {
-            'name': self.task_name(result),
+            'name': name,
             'content': output and output.encode('UTF-8'),
             'mime': self._mime_type}
 
