@@ -147,12 +147,7 @@ class DciJob(DciBase):
             if res.status_code != 201:
                 self.raise_error(res)
 
-        res = dci_job.list_tags(context, self.id)
-
-        if res.status_code == 200 and res.json()['tags'] > 0:
-            return dci_job.get(context, self.id, embed='tags')
-        else:
-            self.raise_error(res)
+        return dci_job.get(context, self.id)
 
     def do_job_update(self, context):
         res = dci_job.job_update(context, job_id=self.id)
