@@ -150,7 +150,7 @@ class DciJob(DciBase):
         res = dci_job.list_tags(context, self.id)
 
         if res.status_code == 200 and res.json()['tags'] > 0:
-            return dci_job.get(context, self.id, embed='tags')
+            return dci_job.get(context, self.id)
         else:
             self.raise_error(res)
 
