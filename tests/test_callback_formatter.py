@@ -9,6 +9,17 @@ from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible.plugins.callback import CallbackBase
 import sys
 
+import pytest
+
+has_dnf = True
+try:
+    import yum  # noqa
+except ImportError:
+    try:
+        import dnf  # noqa
+    except ImportError:
+        has_dnf = False
+
 
 formatter = dci_callback.Formatter()
 loader = DataLoader()
@@ -205,6 +216,7 @@ def test_ini_file_failure(capsys):
     assert '/proc/1/foo.ini - (changed: False)' in outerr.out
 
 
+@pytest.mark.skipif(not has_dnf, reason="no dnf available in virtualenv")
 def test_package_failure(capsys):
     args = 'name=dontexist state=present'
     run_task(dict(action=dict(module='package', args=args)))
@@ -215,6 +227,7 @@ def test_package_failure(capsys):
         assert outerr.out == expectation
 
 
+@pytest.mark.skipif(not has_dnf, reason="no dnf available in virtualenv")
 def test_package_failure_with_items(capsys):
     args = 'name={{ item }} state=present'
     run_task({
