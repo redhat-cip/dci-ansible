@@ -11,14 +11,14 @@ DCI comes as a webservice that exposes its resources via a REST API. The [dci-an
 ## Table of Contents
 
 - [Get Started](#get-started)
-  * [Installation](#installation)
-    + [Packages](#packages)
-    + [Sources](#sources)
-  * [How to use it](#how-to-use-it)
-    + [Authentication](#authentication)
-    + [File Organization](#file-organization)
+  - [Installation](#installation)
+    - [Packages](#packages)
+    - [Sources](#sources)
+  - [How to use it](#how-to-use-it)
+    - [Authentication](#authentication)
+    - [File Organization](#file-organization)
 - [Contributing](#contributing)
-  + [Running Tests](#running-tests)
+  - [Running Tests](#running-tests)
 - [License](#license)
 - [Contact](#contact)
 
@@ -26,7 +26,7 @@ DCI comes as a webservice that exposes its resources via a REST API. The [dci-an
 
 ### Installation
 
-There are two ways to  install [dci-ansible](https://github.com/redhat-cip/dci-ansible), either via rpm packages or directly via Github source code.
+There are two ways to install [dci-ansible](https://github.com/redhat-cip/dci-ansible), either via rpm packages or directly via Github source code.
 
 Unless you are looking to contribute to this project, we recommend you use the rpm packages.
 
@@ -34,9 +34,9 @@ Unless you are looking to contribute to this project, we recommend you use the r
 
 Officially supported platforms:
 
-  * CentOS (latest version)
-  * RHEL (latest version)
-  * Fedora (latest version)
+- CentOS (latest version)
+- RHEL (latest version)
+- Fedora (latest version)
 
 If you're looking to install those modules on a different Operating System, please install it from [source]()
 
@@ -68,19 +68,18 @@ The modules provided by this project covers all the endpoints Distributed-CI off
 
 This means that this project allows one to interact with Distributed-CI for various use-cases:
 
-  * To act as an agent: Scheduling jobs, uploading logs and tests results.
-  * To act as a feeder: Creating Topics, Components and uploading Files.
-  * To complete adminitrative tasks: Creating Teams, Users, RemoteCIs.
-  * And more...
+- To act as an agent: Scheduling jobs, uploading logs and tests results.
+- To act as a feeder: Creating Topics, Components and uploading Files.
+- To complete adminitrative tasks: Creating Teams, Users, RemoteCIs.
+- And more...
 
 For any of the modules made available to work with the Distributed-CI API, one needs to authenticate itself first.
 
 Each module relies on 3 environment variables to authenticate the author of the query:
 
-  * `DCI_CLIENT_ID`: The ID of the resource that wish to authenticate (RemoteCI, User, Feeder)
-  * `DCI_API_SECRET`: The API Secret of the resource that wish to authenticate
-  * `DCI_CS_URL`: The API address (default to https://api.distributed-ci.io)
-
+- `DCI_CLIENT_ID`: The ID of the resource that wish to authenticate (RemoteCI, User, Feeder)
+- `DCI_API_SECRET`: The API Secret of the resource that wish to authenticate
+- `DCI_CS_URL`: The API address (default to https://api.distributed-ci.io)
 
 The recommended way is to retrieve the `dcirc.sh` file directly from the https://www.distributed-ci.io or create it yourself in the same folder as your playbook:
 
@@ -138,7 +137,7 @@ total 1014
 
 The following examples will highlight how to interact with a resource. The remoteci resource will be taken as an example. The same pattern applies to all Distributed-CI resources,
 
-  * Create a RemoteCI
+- Create a RemoteCI
 
 ```
 ---
@@ -149,7 +148,7 @@ The following examples will highlight how to interact with a resource. The remot
         name: MyRemoteCI
 ```
 
-  * List all RemoteCI
+- List all RemoteCI
 
 ```
 ---
@@ -159,7 +158,7 @@ The following examples will highlight how to interact with a resource. The remot
       dci_remoteci:
 ```
 
-  * Update a RemoteCI
+- Update a RemoteCI
 
 ```
 ---
@@ -171,7 +170,7 @@ The following examples will highlight how to interact with a resource. The remot
         name: NewName
 ```
 
-  * Delete a RemoteCI
+- Delete a RemoteCI
 
 ```
 ---
@@ -194,7 +193,6 @@ If you'd like to report a bug or suggest new ideas you can do it [here](https://
 If you'd like to contribute code back to dci-ansible, our code is hosted on [Software Factory](https://softwarefactory-project.io/sf/welcome.html) and then mirrored on Github.
 [Software Factory](https://softwarefactory-project.io/sf/welcome.html) is Gerrit based, if you don't feel comfortable with the workflow or have any question, feel free to ping someone on [IRC](#contact).
 
-
 ### Running tests
 
 Before you can run test you need to get familiarized with the [dci-dev-env](https://github.com/redhat-cip/dci-dev-env) project.
@@ -204,13 +202,12 @@ Once deployed locally, you'll be able to run the test suite against this deploym
 
 To run the test, ensure the api is running by running `docker ps` and then simply run `./run_tests.sh` in the [tests/](tests/) folder
 
-
 ## License
 
 Apache License, Version 2.0 (see [LICENSE](LICENSE) file)
 
 ## Contact
 
-Email: Distributed-CI Team  <distributed-ci@redhat.com>
+Email: Distributed-CI Team <distributed-ci@redhat.com>
 
 IRC: #distributed-ci on Freenode
