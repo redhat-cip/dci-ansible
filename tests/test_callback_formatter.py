@@ -102,7 +102,7 @@ def test_command_failure(capsys):
     run_task({'action': {'module': 'command', 'args': '/ls'}})
     outerr = capsys.readouterr()
     assert not outerr.err
-    assert '[Errno 2] No such file or directory' in outerr.out
+    assert '[Errno 2]' in outerr.out
 
 
 def test_copy_success(capsys, tmpdir):
@@ -170,7 +170,7 @@ def test_file_success(capsys, tmpdir):
 def test_file_failure(capsys):
     args = 'path=/proc/1/bob state=touch'
     run_task({'action': {'module': 'file', 'args': args}})
-    expectation = 'No such file or directory'
+    expectation = '[Errno 2]'
     outerr = capsys.readouterr()
     assert not outerr.err
     assert expectation in outerr.out
