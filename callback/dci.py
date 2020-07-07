@@ -288,7 +288,7 @@ class CallbackModule(CallbackBase):
         r = dci_jobstate.create(
             self._dci_context,
             status=self._current_status,
-            comment=comment,
+            comment=comment.decode('utf-8'),
             job_id=self._job_id)
         ns = r.json()
         self._jobstate_id = ns['jobstate']['id']
