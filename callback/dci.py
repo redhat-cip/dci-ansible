@@ -329,13 +329,15 @@ class CallbackModule(CallbackBase):
             self.create_jobstate(
                 comment='starting the update/upgrade',
                 status='pre-run')
-
         elif (result._task.action == 'dci_job' and
               result._result['invocation']['module_args']['topic'] and
               not result._result['invocation']['module_args']['id']):
 
             self._job_id = result._result['job']['id']
             self.create_jobstate(comment='start up', status='new')
+        elif ('ansible_facts' in result._result and
+              'job_id' in result._result['ansible_facts']:
+            self._job_id = result._result['ansible_facts']['job_id']
 
         try:
             output = Formatter().format(result)
