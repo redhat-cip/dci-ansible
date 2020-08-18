@@ -133,6 +133,7 @@ class DciJob(DciBase):
         self.update = params.get('update')
         self.upgrade = params.get('upgrade')
         self.components = params.get('components', [])
+        self.components_by_query = params.get('components_by_query', [])
         self.team_id = params.get('team_id')
         self.search_criterias = {
             'embed': params.get('embed'),
@@ -191,6 +192,21 @@ class DciJob(DciBase):
         else:
             self.raise_error(topic_res)
 
+    def find_components(self, context, topic_id):
+        components = []
+        for component in self.components_by_query:
+            components_res = dci_topic.list_components(context,
+                    topic_id, where=component)
+            if resp.status_code == 200:
+                _components = components_res.json()['components']
+                if not len(components):
+                    raise DciResourceNotFoundException(
+                            'Component: %s resource not found' % component
+                            )
+                components.append(_components[0]['id'])
+        return components
+
+
     def do_create(self, context):
         topic_res = dci_topic.list(context, where='name:' + self.topic)
 
@@ -202,6 +218,9 @@ class DciJob(DciBase):
                 )
 
             topic_id = topics[0]['id']
+
+            if self.components_by_query:
+                components.extend(find_components(context, topic_id))
 
             res = dci_job.create(
                 context, team_id=self.team_id, topic_id=topic_id,
@@ -259,7 +278,8 @@ def main():
             action_name = 'set_tags'
 
     elif action_name == 'create':
-        if not module.params['components']:
+        if not module.params['components'] and \
+           not module.params['components_by_query']:
             action_name = 'schedule'
 
     job = DciJob(module.params)
