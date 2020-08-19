@@ -204,7 +204,7 @@ class DciJob(DciBase):
             components_res = dci_topic.list_components(context,
                                                        topic_id,
                                                        where=component)
-            if resp.status_code == 200:
+            if components_res.status_code == 200:
                 _components = components_res.json()['components']
                 if not len(_components):
                     raise DciResourceNotFoundException(
@@ -257,6 +257,7 @@ def main():
         upgrade=dict(type='bool'),
         update=dict(type='bool'),
         components=dict(type='list'),
+        components_by_query=dict(type='list'),
         team_id=dict(type='str'),
         embed=dict(type='str'),
         where=dict(type='str'),
