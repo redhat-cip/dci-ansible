@@ -66,7 +66,6 @@
         email: openstack-po@distributed-ci.io
         fullname: OpenStack PO
         password: Apassword
-        team_id: '{{ openstack_team.team.id }}'
 
     - name: Create a feeder for the OpenStack team
       dci_feeder:

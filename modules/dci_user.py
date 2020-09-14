@@ -58,9 +58,6 @@ options:
   email:
     required: false
     description: User email
-  team_id:
-    required: false
-    description: ID of the team the user belongs to
   active:
     required: false
     description: Wether of not the resource should be active
@@ -80,7 +77,6 @@ EXAMPLES = '''
     fullname: John Doe
     email: jdoe@example.tld
     password: 'APassw0rd!'
-    team_id: XXXXX
 
 
 - name: Get user information
@@ -114,17 +110,16 @@ class DciUser(DciBase):
         self.fullname = params.get('fullname')
         self.email = params.get('email')
         self.password = params.get('password')
-        self.team_id = params.get('team_id')
         self.active = params.get('active')
         self.search_criterias = {
             'embed': params.get('embed'),
             'where': params.get('where')
         }
         self.deterministic_params = ['name', 'fullname', 'email', 'password',
-                                     'team_id', 'active']
+                                     active']
 
     def do_create(self, context):
-        for param in ['name', 'password', 'team_id', 'email']:
+        for param in ['name', 'password', 'email']:
             if not getattr(self, param):
                 raise DciParameterError(
                     '%s parameter must be speficied' % param
@@ -145,7 +140,6 @@ def main():
         fullname=dict(type='str'),
         email=dict(type='str'),
         password=dict(type='str', no_log=True),
-        team_id=dict(type='str'),
         active=dict(default=True, type='bool'),
         embed=dict(type='str'),
         where=dict(type='str'),
