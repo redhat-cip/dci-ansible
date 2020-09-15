@@ -151,7 +151,7 @@ class DciJob(DciBase):
     def do_set_tags(self, context):
         for tag_name in self.tags:
             res = dci_job.add_tag(context, self.id, tag_name)
-            if res.status_code != 201:
+            if res.status_code != 200:
                 self.raise_error(res)
 
         return dci_job.get(context, self.id)
