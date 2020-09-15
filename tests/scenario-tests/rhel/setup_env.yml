@@ -34,7 +34,6 @@
         email: rhel-po@distributed-ci.io
         fullname: RHEL PO
         password: Apassword
-        team_id: '{{ rhel_team.team.id }}'
 
     - name: Create a feeder for the RHEL team
       dci_feeder:
