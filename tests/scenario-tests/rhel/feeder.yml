@@ -5,7 +5,7 @@
   tasks:
     - name: Retrieve topics
       dci_topic:
-        where: "name:RHEL-7"
+        where: "name:RHEL-7-8"
       register: _topics
 
     - name: Create new RHEL component
