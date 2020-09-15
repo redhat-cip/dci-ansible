@@ -18,7 +18,6 @@
         team_ids:
           - "{{ openstack_team.team.id }}"
 
-
     - name: Create an OSP13 topic
       dci_topic:
         name: OSP13

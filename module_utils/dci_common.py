@@ -15,7 +15,10 @@
 # under the License.
 
 from ansible.module_utils.basic import env_fallback
-from ansible.module_utils.dci_base import *
+from ansible.module_utils.dci_base import DciParameterError
+from ansible.module_utils.dci_base import DciServerErrorException
+from ansible.module_utils.dci_base import DciUnexpectedErrorException
+from ansible.module_utils.dci_base import DciResourceNotFoundException
 from dciclient.v1.api import context as dci_context
 from ansible.release import __version__ as ansible_version
 from dciclient.version import __version__ as dciclient_version
@@ -23,7 +26,6 @@ from dciauth.version import __version__ as dciauth_version
 
 
 def authentication_argument_spec():
-
     return dict(
         dci_login=dict(required=False, type='str',
                        fallback=(env_fallback, ['DCI_LOGIN'])),

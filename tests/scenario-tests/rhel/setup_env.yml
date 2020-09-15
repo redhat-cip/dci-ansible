@@ -12,6 +12,12 @@
         description: Red Hat Enterprise Linux
       register: rhel_product
 
+    - name: Attach the RHEL team to the RHEL product
+      dci_product:
+        id: "{{ rhel_product.product.id }}"
+        team_ids:
+          - "{{ rhel_team.team.id }}"
+
     - name: Create a RHEL7 topic
       dci_topic:
         name: RHEL-7
@@ -34,7 +40,6 @@
         email: rhel-po@distributed-ci.io
         fullname: RHEL PO
         password: Apassword
-        team_id: '{{ rhel_team.team.id }}'
 
     - name: Create a feeder for the RHEL team
       dci_feeder:
