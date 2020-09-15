@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import os
+
 from ansible.module_utils.basic import env_fallback
 from ansible.module_utils.dci_base import *
 from dciclient.v1.api import context as dci_context
@@ -23,6 +25,7 @@ from dciauth.version import __version__ as dciauth_version
 
 
 def authentication_argument_spec():
+    no_log = False if "DCI_DEBUG" in os.environ else True
 
     return dict(
         dci_login=dict(required=False, type='str',
@@ -34,7 +37,7 @@ def authentication_argument_spec():
                         default='https://api.distributed-ci.io'),
         dci_client_id=dict(required=False, type='str',
                            fallback=(env_fallback, ['DCI_CLIENT_ID'])),
-        dci_api_secret=dict(required=False, type='str', no_log=True,
+        dci_api_secret=dict(required=False, type='str', no_log=no_log,
                             fallback=(env_fallback, ['DCI_API_SECRET']))
     )
 

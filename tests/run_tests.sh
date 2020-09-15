@@ -38,6 +38,7 @@ function run_functional_tests() {
 
     environments='openstack rhel'
     for environment in $environments; do
+        export DCI_DEBUG=1
         source ./admin.sh
         ansible-playbook "scenario-tests/${environment}/setup_env.yml" -vvv
         clean_environment
@@ -51,6 +52,7 @@ function run_functional_tests() {
         clean_environment
 
         rm -f feeder.sh remoteci.sh content.download
+        unset DCI_DEBUG
     done
 }
 
