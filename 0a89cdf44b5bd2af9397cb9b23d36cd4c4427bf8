@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ffbfe310_6897d7cc",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 8
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-09-18T07:34:24Z",
+      "side": 1,
+      "message": "what was the issue ? was it about the team not attached to the product ?",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 14
+      },
+      "revId": "0a89cdf44b5bd2af9397cb9b23d36cd4c4427bf8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8ad91be6_7974ae92",
+        "filename": "module_utils/dci_common.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-09-18T07:34:24Z",
+      "side": 1,
+      "message": "debugging leftover ?",
+      "range": {
+        "startLine": 17,
+        "startChar": 0,
+        "endLine": 17,
+        "endChar": 9
+      },
+      "revId": "0a89cdf44b5bd2af9397cb9b23d36cd4c4427bf8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}

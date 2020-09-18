@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c4150915_2382e12d",
+        "filename": "module_utils/dci_common.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-09-18T07:34:24Z",
+      "side": 0,
+      "message": "This should not be removed as we don\u0027t want passwords to end up in logs.",
+      "range": {
+        "startLine": 37,
+        "startChar": 55,
+        "endLine": 37,
+        "endChar": 68
+      },
+      "revId": "cf8d8922d835b26280c96bb05bd4ed2b344b0be8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
