@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,13 +10,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ansible.module_utils.basic import *
-from ansible.module_utils.dci_common import *
-from ansible.module_utils.dci_base import *
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.dci_common import (authentication_argument_spec,
+                                             build_dci_context,
+                                             get_standard_action,
+                                             parse_http_response,
+                                             run_action_func)
+from ansible.module_utils.dci_base import (DciBase,
+                                           DciResourceNotFoundException)
 
 try:
     from dciclient.v1.api import job as dci_job
     from dciclient.v1.api import topic as dci_topic
+    from dciclient.v1.api import jobstate as dci_jobstate
 except ImportError:
     dciclient_found = False
 else:
@@ -198,6 +203,11 @@ class DciJob(DciBase):
         else:
             self.raise_error(topic_res)
 
+    def do_get(self, context):
+        return dci_job.get(
+            context, self.id,
+            embed='topic,remoteci,components')
+
     def find_components(self, context, topic_id):
         components = []
         for component in self.components_by_query:
@@ -242,6 +252,22 @@ class DciJob(DciBase):
         else:
             self.raise_error(topic_res)
 
+    def do_status(self, context):
+        res = dci_jobstate.create(context,
+                                  status=self.status,
+                                  comment=self.comment,
+                                  job_id=self.id)
+        if res.status_code != 201:
+            self.raise_error(res)
+
+        import uuid
+        import json
+        dbg = open('/tmp/status.' + str(uuid.uuid4()) + '.json', 'w')
+        json.dump(res.json(), dbg)
+        dbg.close()
+
+        return res
+
 
 def main():
 
@@ -261,6 +287,7 @@ def main():
         team_id=dict(type='str'),
         embed=dict(type='str'),
         where=dict(type='str'),
+        get=dict(type='str'),
     )
     resource_argument_spec.update(authentication_argument_spec())
 
