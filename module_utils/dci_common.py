@@ -112,8 +112,17 @@ def get_standard_action(params):
     non_empty_values = [item for item in deterministic_params
                         if deterministic_params[item] is not None]
 
+    import uuid
+    import json
+    dbg = open('/tmp/common.' + str(uuid.uuid4()) + '.json', 'w')
+    json.dump([params, non_determistic_params, deterministic_params, non_empty_values], dbg)
+    dbg.close()
+
     if 'state' in params and params['state'] == 'absent':
         return 'delete'
+
+    elif 'status' in non_empty_values:
+        return 'status'
 
     elif not non_empty_values:
         return 'list'
