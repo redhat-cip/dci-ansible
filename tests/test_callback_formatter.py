@@ -56,7 +56,8 @@ def run_task(task):
         variable_manager=variable_manager,
         loader=loader,
         passwords=passwords,
-        stdout_callback=results_callback)
+        stdout_callback=results_callback,
+        run_additional_callbacks=False)
     tqm.run(play)
 
 
@@ -69,9 +70,9 @@ def test_add_host_success(capsys):
 
 
 def test_add_host_failure(capsys):
-    # TODO: Should return "name or hostname arg needs to be provided"
+    # TODO: Should return "name, host or hostname arg needs to be provided"
     run_task({'action': {'module': 'add_host', 'args': 'state=bob'}})
-    expectation = 'name or hostname arg needs to be provided\n\n'
+    expectation = 'name, host or hostname needs to be provided\n\n'
     outerr = capsys.readouterr()
     assert not outerr.err
     assert outerr.out == expectation
