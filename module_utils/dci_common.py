@@ -121,6 +121,9 @@ def get_standard_action(params):
     elif non_empty_values == ['id']:
         return 'get'
 
+    elif 'status' in non_empty_values:
+        return 'status'
+
     elif 'id' in non_empty_values:
         return 'update'
 
