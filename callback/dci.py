@@ -240,6 +240,17 @@ class CallbackModule(CallbackBase):
     CALLBACK_NAME = 'dci'
     CALLBACK_NEEDS_WHITELIST = True
 
+    def __init__(self):
+
+        super(CallbackModule, self).__init__()
+
+        self._mime_type = None
+        self._jobstate_id = None
+        self._job_id = None
+        self._current_status = None
+        self._dci_context = self._build_dci_context()
+        self._explicit = False
+
     @staticmethod
     def _get_details():
         """Method that retrieves the appropriate credentials. """
@@ -291,6 +302,9 @@ class CallbackModule(CallbackBase):
         self.create_file(name, output)
 
     def create_jobstate(self, comment, status=None):
+        if self._explicit:
+            return
+
         if status:
             self._current_status = status
 
@@ -315,16 +329,6 @@ class CallbackModule(CallbackBase):
             name = '%s.xml' % name
         return name
 
-    def __init__(self):
-
-        super(CallbackModule, self).__init__()
-
-        self._mime_type = None
-        self._jobstate_id = None
-        self._job_id = None
-        self._current_status = None
-        self._dci_context = self._build_dci_context()
-
     def v2_runner_on_ok(self, result, **kwargs):
         """Event executed after each command when it succeed. Get the output
         of the command and create a file associated to the current
@@ -334,6 +338,12 @@ class CallbackModule(CallbackBase):
         super(CallbackModule, self).v2_runner_on_ok(result, **kwargs)
         # Check if the task that just run was the schedule of an upgrade
         # job. If so, set self._job_id to the new job ID
+
+        # store the jobstate id
+        if ("jobstate" in result._result and
+           "id" in result._result["jobstate"]):
+            self._jobstate_id = result._result["jobstate"]["id"]
+            self._explicit = True
 
         if (result._task.action == 'dci_job' and (
                 result._result['invocation']['module_args']['upgrade'] or
@@ -433,6 +443,7 @@ class CallbackModule(CallbackBase):
             return comment
 
         super(CallbackModule, self).v2_playbook_on_play_start(play)
+
         comment = _get_comment(play)
         self.create_jobstate(
             comment=comment,
