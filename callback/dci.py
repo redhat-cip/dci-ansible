@@ -264,22 +264,24 @@ class CallbackModule(CallbackBase):
             return dci_context.build_signature_context(url, client_id,
                                                        api_secret, user_agent)
 
-    def post_message(self, result, output):
-        if isinstance(self.task_name(result), bytes):
-            name = self.task_name(result).decode('UTF-8')
-        else:
-            name = self.task_name(result)
+    def create_file(self, name, content):
         kwargs = {
             'name': name,
-            'content': output and output.encode('UTF-8'),
-            'mime': self._mime_type}
-
+            'content': content and content.encode('UTF-8'),
+            'mime': self._mime_type
+        }
         kwargs['job_id'] = self._job_id
         if not self._mime_type == 'application/junit':
             kwargs['jobstate_id'] = self._jobstate_id
-        dci_file.create(
-            self._dci_context,
-            **kwargs)
+        dci_file.create(self._dci_context, **kwargs)
+
+    def post_message(self, result, output):
+        name = self.task_name(result)
+        self.create_file(name, output)
+
+    def post_skipped_message(self, result, output):
+        name = "skipped/%s" % self.task_name(result)
+        self.create_file(name, output)
 
     def create_jobstate(self, comment, status=None):
         if status:
@@ -288,8 +290,9 @@ class CallbackModule(CallbackBase):
         r = dci_jobstate.create(
             self._dci_context,
             status=self._current_status,
-            comment=comment.decode('utf-8'),
-            job_id=self._job_id)
+            comment=comment,
+            job_id=self._job_id
+        )
         ns = r.json()
         self._jobstate_id = ns['jobstate']['id']
 
@@ -303,7 +306,7 @@ class CallbackModule(CallbackBase):
                     name = '%s: %s' % (name, result._task.get_ds()['include_tasks'])  # noqa
         if self._mime_type == 'application/junit' and not name.endswith('.xml'):  # noqa
             name = '%s.xml' % name
-        return name.encode('UTF-8')
+        return name
 
     def __init__(self):
 
@@ -332,7 +335,8 @@ class CallbackModule(CallbackBase):
             self._job_id = result._result['job']['id']
             self.create_jobstate(
                 comment='starting the update/upgrade',
-                status='pre-run')
+                status='pre-run'
+            )
         elif (result._task.action == 'dci_job' and
               result._result['invocation']['module_args']['topic'] and
               not result._result['invocation']['module_args']['id']):
@@ -359,7 +363,7 @@ class CallbackModule(CallbackBase):
             return
 
         super(CallbackModule, self).v2_runner_on_unreachable(result)
-        self.create_jobstate(status='failure', comment=self.task_name(result))
+        self.create_jobstate(comment=self.task_name(result), status='failure')
         self.post_message(result, result._result['msg'])
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
@@ -383,8 +387,14 @@ class CallbackModule(CallbackBase):
             self.post_message(result, output)
             return
 
-        self.create_jobstate(status='failure', comment=self.task_name(result))
+        self.create_jobstate(comment=self.task_name(result), status='failure')
         self.post_message(result, output)
+
+    def v2_runner_on_skipped(self, result):
+        super(CallbackModule, self).v2_runner_on_skipped(result)
+        if not self._job_id:
+            return
+        self.post_skipped_message(result, result._result['skip_reason'])
 
     def v2_playbook_on_play_start(self, play):
         """Event executed before each play. Create a new jobstate and save
@@ -419,4 +429,5 @@ class CallbackModule(CallbackBase):
         comment = _get_comment(play)
         self.create_jobstate(
             comment=comment,
-            status=play.get_vars().get('dci_status'))
+            status=play.get_vars().get('dci_status')
+        )
