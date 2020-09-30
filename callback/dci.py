@@ -264,11 +264,7 @@ class CallbackModule(CallbackBase):
             return dci_context.build_signature_context(url, client_id,
                                                        api_secret, user_agent)
 
-    def post_message(self, result, output):
-        if isinstance(self.task_name(result), bytes):
-            name = self.task_name(result).decode('UTF-8')
-        else:
-            name = self.task_name(result)
+    def _post_message(self, name, result, output):
         kwargs = {
             'name': name,
             'content': output and output.encode('UTF-8'),
@@ -280,6 +276,22 @@ class CallbackModule(CallbackBase):
         dci_file.create(
             self._dci_context,
             **kwargs)
+
+    def post_message(self, result, output):
+        if isinstance(self.task_name(result), bytes):
+            name = self.task_name(result).decode('UTF-8')
+        else:
+            name = self.task_name(result)
+        self._post_message(name, result, output)
+
+    def post_skipped_message(self, result, output):
+        if isinstance(self.task_name(result), bytes):
+            name = self.task_name(result).decode('UTF-8')
+        else:
+            name = self.task_name(result)
+        name = "skipped/%s" % name
+        self._post_message(name, result, output)
+
 
     def create_jobstate(self, comment, status=None):
         if status:
@@ -385,6 +397,12 @@ class CallbackModule(CallbackBase):
 
         self.create_jobstate(status='failure', comment=self.task_name(result))
         self.post_message(result, output)
+
+    def v2_runner_on_skipped(self, result):
+        super(CallbackModule, self).v2_runner_on_skipped(result)
+        if not self._job_id:
+            return
+        self.post_skipped_message(result, result._result['skip_reason'])
 
     def v2_playbook_on_play_start(self, play):
         """Event executed before each play. Create a new jobstate and save
