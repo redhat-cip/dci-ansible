@@ -314,6 +314,7 @@ class CallbackModule(CallbackBase):
         self._job_id = None
         self._current_status = None
         self._dci_context = self._build_dci_context()
+        self._explicit = os.getenv('DCI_CALLBACK_EXPLICIT') is not None
 
     def v2_runner_on_ok(self, result, **kwargs):
         """Event executed after each command when it succeed. Get the output
@@ -383,7 +384,9 @@ class CallbackModule(CallbackBase):
             self.post_message(result, output)
             return
 
-        self.create_jobstate(status='failure', comment=self.task_name(result))
+        if not self._explicit:
+            self.create_jobstate(status='failure',
+                                 comment=self.task_name(result))
         self.post_message(result, output)
 
     def v2_playbook_on_play_start(self, play):
@@ -416,7 +419,8 @@ class CallbackModule(CallbackBase):
             return comment
 
         super(CallbackModule, self).v2_playbook_on_play_start(play)
-        comment = _get_comment(play)
-        self.create_jobstate(
-            comment=comment,
-            status=play.get_vars().get('dci_status'))
+        if not self._explicit:
+            comment = _get_comment(play)
+            self.create_jobstate(
+                comment=comment,
+                status=play.get_vars().get('dci_status'))
