@@ -324,6 +324,7 @@ class CallbackModule(CallbackBase):
         self._job_id = None
         self._current_status = None
         self._dci_context = self._build_dci_context()
+        self._explicit = os.getenv('DCI_CALLBACK_EXPLICIT') is not None
 
     def v2_runner_on_ok(self, result, **kwargs):
         """Event executed after each command when it succeed. Get the output
@@ -370,7 +371,9 @@ class CallbackModule(CallbackBase):
             return
 
         super(CallbackModule, self).v2_runner_on_unreachable(result)
-        self.create_jobstate(comment=self.task_name(result), status='failure')
+        if not self._explicit:
+            self.create_jobstate(comment=self.task_name(result),
+                                 status='failure')
         self.post_message(result, "msg:%s\n%s" % json.dumps(result._result['results']))  # noqa
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
@@ -394,7 +397,9 @@ class CallbackModule(CallbackBase):
             self.post_message(result, output)
             return
 
-        self.create_jobstate(comment=self.task_name(result), status='failure')
+        if not self._explicit:
+            self.create_jobstate(comment=self.task_name(result),
+                                 status='failure')
         self.post_message(result, output)
 
     def v2_runner_on_skipped(self, result):
@@ -433,11 +438,13 @@ class CallbackModule(CallbackBase):
             return comment
 
         super(CallbackModule, self).v2_playbook_on_play_start(play)
-        comment = _get_comment(play)
-        self.create_jobstate(
-            comment=comment,
-            status=play.get_vars().get('dci_status')
-        )
+
+        if not self._explicit:
+            comment = _get_comment(play)
+            self.create_jobstate(
+                comment=comment,
+                status=play.get_vars().get('dci_status')
+            )
 
     def v2_runner_item_on_ok(self, result):
         if not self._job_id:
