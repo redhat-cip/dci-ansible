@@ -264,11 +264,13 @@ class CallbackModule(CallbackBase):
             return dci_context.build_signature_context(url, client_id,
                                                        api_secret, user_agent)
 
-    def post_message(self, result, output):
+    def post_message(self, result, output, is_skipped=False):
         if isinstance(self.task_name(result), bytes):
             name = self.task_name(result).decode('UTF-8')
         else:
             name = self.task_name(result)
+        if is_skipped:
+            name = "skipped/%s" % name
         kwargs = {
             'name': name,
             'content': output and output.encode('UTF-8'),
@@ -362,6 +364,7 @@ class CallbackModule(CallbackBase):
         self.create_jobstate(status='failure', comment=self.task_name(result))
         self.post_message(result, result._result['msg'])
 
+
     def v2_runner_on_failed(self, result, ignore_errors=False):
         """Event executed after each command when it fails. Get the output
         of the command and create a failure jobstate and a file associated.
@@ -385,6 +388,13 @@ class CallbackModule(CallbackBase):
 
         self.create_jobstate(status='failure', comment=self.task_name(result))
         self.post_message(result, output)
+
+    def v2_runner_on_skipped(self, result):
+        super(CallbackModule, self).v2_runner_on_skipped(result)
+        if not self._job_id:
+            return
+        self.post_message(result, result._result['skip_reason'])
+
 
     def v2_playbook_on_play_start(self, play):
         """Event executed before each play. Create a new jobstate and save
