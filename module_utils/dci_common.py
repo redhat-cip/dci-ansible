@@ -115,6 +115,9 @@ def get_standard_action(params):
     if 'state' in params and params['state'] == 'absent':
         return 'delete'
 
+    elif 'status' in non_empty_values:
+        return 'status'
+
     elif not non_empty_values:
         return 'list'
 
