@@ -120,6 +120,8 @@ def main():
         url=dict(type='str'),
         data=dict(type='dict'),
         topic_id=dict(type='str'),
+        team_id=dict(type='str'),
+        job_id=dict(type='str'),
         path=dict(type='str'),
         active=dict(default=True, type='bool'),
         embed=dict(type='str'),
@@ -222,6 +224,8 @@ def main():
             kwargs['topic_id'] = module.params['topic_id']
         if module.params['team_id']:
             kwargs['team_id'] = module.params['team_id']
+        if module.params['job_id']:
+            kwargs['job_id'] = module.params['job_id']
         kwargs['state'] = 'active' if module.params['active'] else 'inactive'
         res = dci_component.create(ctx, **kwargs)
 
