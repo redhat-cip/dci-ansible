@@ -220,6 +220,8 @@ def main():
             kwargs['data'] = module.params['data']
         if module.params['topic_id']:
             kwargs['topic_id'] = module.params['topic_id']
+        if module.params['team_id']:
+            kwargs['team_id'] = module.params['team_id']
         kwargs['state'] = 'active' if module.params['active'] else 'inactive'
         res = dci_component.create(ctx, **kwargs)
 
