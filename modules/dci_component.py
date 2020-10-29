@@ -120,6 +120,7 @@ def main():
         url=dict(type='str'),
         data=dict(type='dict'),
         topic_id=dict(type='str'),
+        team_id=dict(type='str'),
         path=dict(type='str'),
         active=dict(default=True, type='bool'),
         embed=dict(type='str'),
