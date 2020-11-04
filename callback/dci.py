@@ -431,3 +431,8 @@ class CallbackModule(CallbackBase):
             comment=comment,
             status=play.get_vars().get('dci_status')
         )
+
+    def v2_runner_on_unreachable(self, result):
+        super(CallbackModule, self).v2_runner_on_unreachable(result)
+        output = "host %s unreachable" % result._host.get_name()
+        self.post_message(result, output)
