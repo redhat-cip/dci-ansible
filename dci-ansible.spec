@@ -1,6 +1,6 @@
 Name:		dci-ansible
-Version:	0.0.VERS
-Release:	3%{?dist}
+Version:	0.1.0
+Release:	1.VERS%{?dist}
 Summary:	DCI Ansible modules and callback
 License:	ASL 2.0
 URL:		https://github.com/redhat-cip/dci-ansible
@@ -27,14 +27,9 @@ control server
 
 %install
 mkdir -p %{buildroot}%{_datadir}/dci
-cp -r modules %{buildroot}%{_datadir}/dci/
-cp -r module_utils %{buildroot}%{_datadir}/dci/
-cp -r callback %{buildroot}%{_datadir}/dci/
+cp -r modules module_utils callback action_plugins %{buildroot}%{_datadir}/dci/
 chmod 755 %{buildroot}%{_datadir}/dci
-chmod 755 %{buildroot}%{_datadir}/dci/modules
-chmod 755 %{buildroot}%{_datadir}/dci/module_utils
-chmod 755 %{buildroot}%{_datadir}/dci/callback
-
+chmod 755 %{buildroot}%{_datadir}/dci/*
 
 %files
 %doc README.md
@@ -43,6 +38,9 @@ chmod 755 %{buildroot}%{_datadir}/dci/callback
 
 
 %changelog
+* Tue Nov 10 2020 Yassine Lamgarchal <ylamgarc@redhat.com> - 0.1.0-1.VERS
+- Adding action_plugins directory
+
 * Thu Jun 04 2020 Bill Peck <bpeck@rehdat.com> - 0.0.1-3
 - Rebuild for RHEL-8
 
