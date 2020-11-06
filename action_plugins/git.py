@@ -48,17 +48,36 @@ class ActionModule(ActionBase):
             return dci_context.build_signature_context(url, client_id,
                                                        api_secret, user_agent)
 
+    def _git_to_reproduce(self, repo_name, git_components):
+        for git_component in git_components:
+            split_git_component = git_component.split(":")
+            if len(split_git_component != 2):
+                continue
+            component_name, commit_id = split_git_component
+            if repo_name == component_name:
+                return commit_id
+        return None
+
     def run(self, tmp=None, task_vars=None):
         super(ActionModule, self).run(tmp, task_vars)
         ctx = self._build_dci_context()
         job_id = task_vars['job_info']['job']['id']
         team_id = task_vars['job_info']['job']['team_id']
         topic_id = task_vars['job_info']['job']['topic_id']
-
+        components = task_vars['job_info']['job']['components']
         git_args = self._task.args.copy()
+        git_components = filter(lambda c: c['type'] == 'type', components)
+        
+        commit_id = self._git_to_reproduce(git_args['repo'], git_components)
+        if commit_id is not None:
+            git_args['version'] = commit_id
+            return self._execute_module(module_name='git',
+                                        module_args=git_args,
+                                        task_vars=task_vars, tmp=tmp)
+                
         module_return = self._execute_module(module_name='git',
-                                             module_args=git_args,
-                                             task_vars=task_vars, tmp=tmp)
+                                            module_args=git_args,
+                                            task_vars=task_vars, tmp=tmp)
 
         # format = <repo name>:<commit id>
         cmpt_name = '%s:%s' % (git_args['repo'], module_return['after'])
