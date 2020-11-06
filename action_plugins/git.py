@@ -10,6 +10,7 @@ from dciclient.v1.api import context as dci_context
 from dciclient.version import __version__ as dciclient_version
 
 import os
+import os.path
 
 try:
     from dciclient.v1.api import component as dci_component
@@ -19,6 +20,13 @@ except ImportError:
     dciclient_found = False
 else:
     dciclient_found = True
+
+import sys
+
+if sys.version_info >= (3, 0):
+    from urllib.parse import urlparse
+if sys.version_info < (3, 0) and sys.version_info >= (2, 5):
+    from urlparse import urlparse  # noqa
 
 
 class ActionModule(ActionBase):
@@ -48,45 +56,71 @@ class ActionModule(ActionBase):
             return dci_context.build_signature_context(url, client_id,
                                                        api_secret, user_agent)
 
+    def _git_to_reproduce(self, repo_name, components):
+        for git_component in components:
+            if git_component['type'] != repo_name:
+                continue
+            # support both naming: <commit id> or <repo name>=<commit id>
+            split_git_component = git_component['name'].split("=")
+            if len(split_git_component) == 2:
+                return split_git_component[1]
+            else:
+                return git_component['name']
+        return None
+
+    def _get_repo_project_name(self, repo):
+        repo_parsed = urlparse(repo)
+        if repo_parsed.path.endswith('.git'):
+            repo_parsed.path = repo_parsed.path.replace('.git', '')
+        return os.path.basename(repo_parsed.path)
+
     def run(self, tmp=None, task_vars=None):
         super(ActionModule, self).run(tmp, task_vars)
         ctx = self._build_dci_context()
         job_id = task_vars['job_info']['job']['id']
         team_id = task_vars['job_info']['job']['team_id']
         topic_id = task_vars['job_info']['job']['topic_id']
-
+        components = task_vars['job_info']['job']['components']
         git_args = self._task.args.copy()
+        _project_name = self._get_repo_project_name(git_args['repo'])
+
+        commit_id = self._git_to_reproduce(_project_name, components)
+        if commit_id:
+            git_args['version'] = commit_id
+            return self._execute_module(module_name='git',
+                                        module_args=git_args,
+                                        task_vars=task_vars, tmp=tmp)
+
         module_return = self._execute_module(module_name='git',
                                              module_args=git_args,
                                              task_vars=task_vars, tmp=tmp)
 
-        if 'after' not in module_return:
-            return module_return
+        _commit_id = module_return['after']
+        if git_args['repo'].endswith('.git'):
+            git_args['repo'] = git_args['repo'].replace('.git', '')
+        cmpt_name = _commit_id
+        cmpt_url = "%s/commit/%s" % (git_args['repo'], _commit_id)
 
-        # format = <repo name>:<commit id>
-        project_name = git_args['repo'].split('/')[-1]
+        repo_name = urlparse(git_args['repo'])
+        repo_name = repo_name.path
 
-        if project_name.endswith('.git'):
-            project_name = project_name[:-4]
-
-        cmpt_name = module_return['after']
         cmpt = dci_component.create(
             ctx,
             name=cmpt_name,
-            canonical_project_name='%s %s' % (project_name, cmpt_name[:7]),
+            canonical_project_name="%s %s" % (_project_name, _commit_id[0:7]),
             team_id=team_id,
             topic_id=topic_id,
-            url="%s/commit/%s" % (git_args['repo'], module_return['after']),
-            type=project_name)
+            url=cmpt_url,
+            type=_project_name)
         cmpt_id = None
         if cmpt.status_code == 201:
             cmpt_id = cmpt.json()['component']['id']
         else:
-            _where = "name:%s,type:%s" % (cmpt_name, project_name)
-            res = dci_topic.list_components(ctx, topic_id, where=_where)
+            res = dci_topic.list_components(ctx, topic_id)
             cmpts = res.json()['components']
-            if len(cmpts) > 0:
-                cmpt_id = cmpts[0]['id']
+            for cmpt in cmpts:
+                if cmpt['name'] == cmpt_name:
+                    cmpt_id = cmpt['id']
         if cmpt_id is None:
             raise ansible_errors.AnsibleError('component %s not found or not created' % cmpt_name)  # noqa
 
