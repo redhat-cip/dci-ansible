@@ -34,6 +34,7 @@ chmod 755 %{buildroot}%{_datadir}/dci
 chmod 755 %{buildroot}%{_datadir}/dci/modules
 chmod 755 %{buildroot}%{_datadir}/dci/module_utils
 chmod 755 %{buildroot}%{_datadir}/dci/callback
+chmod 755 %{buildroot}%{_datadir}/dci/action_plugins
 
 
 %files
@@ -43,6 +44,9 @@ chmod 755 %{buildroot}%{_datadir}/dci/callback
 
 
 %changelog
+* Tue 10 Nov 2020 Yassine Lamgarchal <ylamgarc@redhat.com> - 0.0.1-4
+- Adding action_plugins directory
+
 * Thu Jun 04 2020 Bill Peck <bpeck@rehdat.com> - 0.0.1-3
 - Rebuild for RHEL-8
 
