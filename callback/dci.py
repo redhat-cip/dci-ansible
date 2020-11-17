@@ -284,6 +284,12 @@ class CallbackModule(CallbackBase):
         name = "skipped/%s" % self.task_name(result)
         self.create_file(name, output)
 
+    def post_item_message(self, result, output, name_prefix=None):
+        name = result._result['item']
+        if name_prefix:
+            name = "%s/%s" % (name_prefix, name)
+        self.create_file(name, output)
+
     def create_jobstate(self, comment, status=None):
         if status:
             self._current_status = status
@@ -432,3 +438,24 @@ class CallbackModule(CallbackBase):
             comment=comment,
             status=play.get_vars().get('dci_status')
         )
+
+    def v2_runner_item_on_ok(self, result):
+        if not self._job_id:
+            return
+
+        super(CallbackModule, self).v2_runner_item_on_ok(result)
+        self.post_item_message(result, result._result['msg'], 'item_ok')
+
+    def v2_runner_item_on_failed(self, result):
+        if not self._job_id:
+            return
+
+        super(CallbackModule, self).v2_runner_item_on_failed(result)
+        self.post_item_message(result, result._result['msg'], 'item_failed')
+
+    def v2_runner_item_on_skipped(self, result):
+        if not self._job_id:
+            return
+
+        super(CallbackModule, self).v2_runner_item_on_skipped(result)
+        self.post_item_message(result, result._result['msg'], 'item_failed')
