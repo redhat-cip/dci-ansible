@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "eefd239f_1b64e0c2",
+        "filename": "callback/dci.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 455,
+      "author": {
+        "id": 20
+      },
+      "writtenOn": "2020-11-17T14:56:34Z",
+      "side": 1,
+      "message": "there is no unreachable callback?",
+      "revId": "010439969919af23741a13e07d5ec1c6d7458203",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
