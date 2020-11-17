@@ -1,0 +1,9 @@
+Code-Review+2: Frederic Lepied <flepied@redhat.com>
+Code-Review+2: Yassine Lamgarchal <yassine.lamgarchal@redhat.com>
+Workflow+1: Yassine Lamgarchal <yassine.lamgarchal@redhat.com>
+Verified+2: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-by: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-at: Tue, 17 Nov 2020 19:50:20 +0000
+Reviewed-on: https://softwarefactory-project.io/r/20089
+Project: dci-ansible
+Branch: refs/heads/master
