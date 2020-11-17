@@ -7,6 +7,7 @@ from ansible.plugins.callback import CallbackBase
 import base64
 import os
 import pprint
+import json
 from dciclient.v1.api import context as dci_context
 from dciclient.v1.api import jobstate as dci_jobstate
 from dciclient.v1.api import file as dci_file
@@ -364,7 +365,7 @@ class CallbackModule(CallbackBase):
 
         super(CallbackModule, self).v2_runner_on_unreachable(result)
         self.create_jobstate(comment=self.task_name(result), status='failure')
-        self.post_message(result, result._result['msg'])
+        self.post_message(result, "msg:%s\n%s" % json.dumps(result._result['results']))  # noqa
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         """Event executed after each command when it fails. Get the output
