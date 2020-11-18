@@ -86,7 +86,9 @@ class ActionModule(ActionBase):
             ctx,
             job_id=job_id,
             component_id=cmpt_id)
-        if cmpt.status_code != 201:
+        if cmpt.status_code == 409:
+            module_return['message_action_plugin_git'] = cmpt.text
+        elif cmpt.status_code != 201:
             raise ansible_errors.AnsibleError('error while attaching component %s to job %s: %s' % (cmpt_id, job_id, cmpt.text))  # noqa
 
         return module_return
