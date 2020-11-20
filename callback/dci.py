@@ -271,9 +271,14 @@ class CallbackModule(CallbackBase):
             'content': content and content.encode('UTF-8'),
             'mime': self._mime_type
         }
-        kwargs['job_id'] = self._job_id
-        if not self._mime_type == 'application/junit':
+        # attach junit file to the job otherwise to the jobstate
+        if self._mime_type == 'application/junit':
+            kwargs['job_id'] = self._job_id
+        elif self._jobstate_id:
             kwargs['jobstate_id'] = self._jobstate_id
+        else:
+            kwargs['job_id'] = self._job_id
+
         dci_file.create(self._dci_context, **kwargs)
 
     def post_message(self, result, output):
