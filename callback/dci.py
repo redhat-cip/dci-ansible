@@ -289,9 +289,11 @@ class CallbackModule(CallbackBase):
             name = "%s/%s" % (name_prefix, name)
         self.create_file(name, output)
 
-    def create_jobstate(self, comment, status=None):
-        if status:
-            self._current_status = status
+    def create_jobstate(self, comment, status):
+        if status == self._current_status:
+            return
+
+        self._current_status = status
 
         r = dci_jobstate.create(
             self._dci_context,
