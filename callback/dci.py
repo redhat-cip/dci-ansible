@@ -290,7 +290,7 @@ class CallbackModule(CallbackBase):
         self.create_file(name, output)
 
     def create_jobstate(self, comment, status=None):
-        if status:
+        if status and status != self._current_status:
             self._current_status = status
 
         r = dci_jobstate.create(
