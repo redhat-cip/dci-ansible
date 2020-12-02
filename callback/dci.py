@@ -93,6 +93,9 @@ class CallbackModule(CallbackBase):
         if self._explicit:
             return
 
+        if status == self._current_status:
+            return
+
         if status:
             self._current_status = status
 
