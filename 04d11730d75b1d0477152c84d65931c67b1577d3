@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8706a23d_a608acde",
+        "filename": "modules/dci_job.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 264,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-12-03T11:33:03Z",
+      "side": 1,
+      "message": "did you read DCI_CALLBACK_EXPLICIT somewhere ?",
+      "range": {
+        "startLine": 264,
+        "startChar": 12,
+        "endLine": 264,
+        "endChar": 56
+      },
+      "revId": "04d11730d75b1d0477152c84d65931c67b1577d3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
