@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fe0a3ffc_808e0b41",
+        "filename": "callback/dci.py",
+        "patchSetId": 19
+      },
+      "lineNbr": 353,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-12-04T10:44:13Z",
+      "side": 1,
+      "message": "I\u0027m not sure I understand, could you explicit in which cases it will be set (does \"jobstate\" need to be passed explicitly somewhere ?) and how it will affect the current behavior (which implicit jobstate creation will be prevented) ?",
+      "range": {
+        "startLine": 353,
+        "startChar": 0,
+        "endLine": 353,
+        "endChar": 33
+      },
+      "revId": "850acc055b671f9b340d41f5c986e55837b45122",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
