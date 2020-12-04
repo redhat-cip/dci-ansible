@@ -22,6 +22,30 @@
       "revId": "04d11730d75b1d0477152c84d65931c67b1577d3",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c3824b22_9152722f",
+        "filename": "modules/dci_job.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 264,
+      "author": {
+        "id": 20
+      },
+      "writtenOn": "2020-12-04T08:46:45Z",
+      "side": 1,
+      "message": "it was a leftover from the previous iteration. Good catch.",
+      "parentUuid": "8706a23d_a608acde",
+      "range": {
+        "startLine": 264,
+        "startChar": 12,
+        "endLine": 264,
+        "endChar": 56
+      },
+      "revId": "04d11730d75b1d0477152c84d65931c67b1577d3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
