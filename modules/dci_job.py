@@ -206,7 +206,7 @@ class DciJob(DciBase):
     def do_get(self, context):
         return dci_job.get(
             context, self.id,
-            embed='topic,remoteci,components')
+            **self.search_criterias)
 
     def find_components(self, context, topic_id):
         components = []
