@@ -66,6 +66,7 @@ class ActionModule(ActionBase):
         cmpt = dci_component.create(
             ctx,
             name=cmpt_name,
+            canonical_project_name='%s %s' % (project_name, cmpt_name[:7]),
             team_id=team_id,
             topic_id=topic_id,
             url="%s/commit/%s" % (git_args['repo'], module_return['after']),
