@@ -60,12 +60,20 @@ class ActionModule(ActionBase):
                                              module_args=git_args,
                                              task_vars=task_vars, tmp=tmp)
 
+        if 'after' not in module_return:
+            return module_return
+
         # format = <repo name>:<commit id>
         project_name = git_args['repo'].split('/')[-1]
+
+        if project_name.endswith('.git'):
+            project_name = project_name[:-4]
+
         cmpt_name = module_return['after']
         cmpt = dci_component.create(
             ctx,
             name=cmpt_name,
+            canonical_project_name='%s %s' % (project_name, cmpt_name[:7]),
             team_id=team_id,
             topic_id=topic_id,
             url="%s/commit/%s" % (git_args['repo'], module_return['after']),
