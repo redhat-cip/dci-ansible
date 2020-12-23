@@ -26,6 +26,7 @@ class CallbackModule(CallbackBase):
 
         super(CallbackModule, self).__init__()
 
+        self._mime_type = None
         self._jobstate_id = None
         self._job_id = None
         self._current_status = None
@@ -61,7 +62,7 @@ class CallbackModule(CallbackBase):
         kwargs = {
             'name': name,
             'content': content and content.encode('UTF-8'),
-            'mime': 'application/x-ansible-output'
+            'mime': self._mime_type
         }
         kwargs['job_id'] = self._job_id
         kwargs['jobstate_id'] = self._jobstate_id
@@ -113,6 +114,8 @@ class CallbackModule(CallbackBase):
             if hasattr(result._task, 'get_ds'):
                 if 'include_tasks' in result._task.get_ds():
                     name = '%s: %s' % (name, result._task.get_ds()['include_tasks'])  # noqa
+        if self._mime_type == 'application/junit' and not name.endswith('.xml'):  # noqa
+            name = '%s.xml' % name
         return name
 
     def v2_runner_on_ok(self, result, **kwargs):
@@ -145,11 +148,15 @@ class CallbackModule(CallbackBase):
                 comment='starting the update/upgrade',
                 status='pre-run'
             )
-        elif (result._task.action == 'set_fact' and
+        elif (result._task.action == 'dci_job' and
+              result._result['invocation']['module_args']['topic'] and
+              not result._result['invocation']['module_args']['id']):
+
+            self._job_id = result._result['job']['id']
+            self.create_jobstate(comment='start up', status='new')
+        elif ('ansible_facts' in result._result and
               'job_id' in result._result['ansible_facts']):
-            if self._job_id is None:
-                self._job_id = result._result['ansible_facts']['job_id']
-                self.create_jobstate(comment='start up', status='new')
+            self._job_id = result._result['ansible_facts']['job_id']
 
         output = json.dumps(result._result, indent=2)
 
