@@ -26,7 +26,7 @@
       dci_file:
         job_id: '{{ job_id }}'
         path: "{{ lookup('env', 'PWD')  }}/data/content"
-        name: content
+        name: job-test-result
 
 - hosts: localhost
   vars:
@@ -46,13 +46,15 @@
 
     - name: Verify that job the right number of files attached
       assert:
-        that: job_info.job.files|length == 10
+        # only job-test-result is a job's file
+        that: job_info.job.files|length == 1
 
     - debug:
         var: job_info.job.jobstates
 
     - name: Check the jobstates are all created
       assert:
+        # 5 = number of previous tasks in the previous play
         that: job_info.job.jobstates|length == 5
 
     - name: And the jobstates.status are set (1/3)
@@ -100,9 +102,9 @@
         embed: files,jobstates
       register: job_info
 
-    - name: Verify that job has just 1 file attached to it
+    - name: Verify that job has just 0 file attached to it
       assert:
-        that: job_info.job.files|length == 1
+        that: job_info.job.files|length == 0
 
     - name: Request a refresh keys
       dci_keys:
