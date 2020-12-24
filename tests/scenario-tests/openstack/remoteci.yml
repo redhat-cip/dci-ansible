@@ -47,7 +47,7 @@
     - name: Verify that job the right number of files attached
       assert:
         # only job-test-result is a job's file
-        that: job_info.job.files|length == 1
+        that: job_info.job.files|length == 9
 
     - debug:
         var: job_info.job.jobstates
