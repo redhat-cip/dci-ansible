@@ -1,0 +1,8 @@
+Code-Review+2: Haïkel Guémar <hguemar@fedoraproject.org>
+Workflow+1: Haïkel Guémar <hguemar@fedoraproject.org>
+Verified+2: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-by: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-at: Thu, 24 Dec 2020 12:23:36 +0000
+Reviewed-on: https://softwarefactory-project.io/r/20448
+Project: dci-ansible
+Branch: refs/heads/master
