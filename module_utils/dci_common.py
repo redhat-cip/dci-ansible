@@ -181,7 +181,8 @@ def parse_http_response(response, resource, context, module):
             }
         result['changed'] = False
     else:
-        result = response.json()
+        result = {'text': response.text}
+        result['status_code'] = response.status_code
         result['changed'] = True
 
     return result

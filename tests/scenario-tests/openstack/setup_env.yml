@@ -6,6 +6,10 @@
         name: OpenStack
       register: openstack_team
 
+    - name: debug
+      debug:
+        msg: "msggggg {{ openstack_team }}"
+
     - name: Create Product
       dci_product:
         name: OpenStack
