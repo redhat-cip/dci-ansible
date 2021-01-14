@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "880d7bd4_d8690a1e",
+        "filename": "module_utils/dci_common.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 186,
+      "author": {
+        "id": 606
+      },
+      "writtenOn": "2021-01-14T13:33:11Z",
+      "side": 1,
+      "message": "Isn\u0027t there a specific exception that json will throw if it can\u0027t parse it?",
+      "revId": "f35d869d4b1e18f091dc8a0270a70d5c98d3526e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
