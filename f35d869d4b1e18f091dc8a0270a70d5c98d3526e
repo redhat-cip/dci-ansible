@@ -16,6 +16,24 @@
       "revId": "f35d869d4b1e18f091dc8a0270a70d5c98d3526e",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8b21ca60_39d53c0b",
+        "filename": "module_utils/dci_common.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 186,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2021-01-14T13:40:29Z",
+      "side": 1,
+      "message": "Yes, most of the time it\u0027s because the server return a non json answer (i suspect that we didn\u0027t customize every http code answer from the server side).\n\nIn this case the exception doesn\u0027t matter since we are interested by the exact response of the server, thus using the text raw format.",
+      "parentUuid": "880d7bd4_d8690a1e",
+      "revId": "f35d869d4b1e18f091dc8a0270a70d5c98d3526e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
