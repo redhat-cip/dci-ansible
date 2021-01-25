@@ -11,9 +11,9 @@ RUN yum -y install https://packages.distributed-ci.io/dci-release.el7.noarch.rpm
     postgresql ansible python-dciclient && \
     yum clean all
 
-RUN pip install -U pip
+RUN pip install -U "pip<21.0" && \
 # python-tox is broken, install tox with pip instead
-RUN pip install -U tox
+    pip install -U tox
 
 WORKDIR /opt/dci-ansible
 ADD . /opt/dci-ansible/
