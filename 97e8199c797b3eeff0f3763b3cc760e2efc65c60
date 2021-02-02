@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "01caedec_bfd548a8",
+        "filename": "action_plugins/git.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 20
+      },
+      "writtenOn": "2021-02-02T04:18:55Z",
+      "side": 1,
+      "message": "it should be split on \u003d to be consistent with what we do in dci-pipeline.",
+      "revId": "97e8199c797b3eeff0f3763b3cc760e2efc65c60",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bca3c453_390ccc9f",
+        "filename": "action_plugins/git.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 20
+      },
+      "writtenOn": "2021-02-02T04:18:55Z",
+      "side": 1,
+      "message": "why switch to https?",
+      "revId": "97e8199c797b3eeff0f3763b3cc760e2efc65c60",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3804502d_a811540f",
+        "filename": "action_plugins/git.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 20
+      },
+      "writtenOn": "2021-02-02T04:18:55Z",
+      "side": 1,
+      "message": "it could be replaced by:\n\nrepo \u003d repo.replace(\u0027.git\u0027, \u0027\u0027)\nreturn repo",
+      "revId": "97e8199c797b3eeff0f3763b3cc760e2efc65c60",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
