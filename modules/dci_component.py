@@ -241,8 +241,7 @@ def main():
         else:
             result['changed'] = True
     except Exception:
-        result = {}
-        result['changed'] = False
+        module.fail_json(msg=res.text)
 
     module.exit_json(**result)
 
