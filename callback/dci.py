@@ -149,7 +149,6 @@ class CallbackModule(CallbackBase):
               'job_id' in result._result['ansible_facts']):
             if self._job_id is None:
                 self._job_id = result._result['ansible_facts']['job_id']
-                self.create_jobstate(comment='start up', status='new')
 
         output = json.dumps(result._result, indent=2)
 
