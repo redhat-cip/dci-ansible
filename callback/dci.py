@@ -14,6 +14,30 @@ from dciclient.version import __version__ as dciclient_version
 from dciauth.version import __version__ as dciauth_version
 
 
+def remove_duplicated_content(result):
+    try:
+        new_result = dict(result)
+        duplicated_keys = (
+            (
+                "stdout",
+                "stdout_lines",
+            ),
+            (
+                "stderr",
+                "stderr_lines",
+            ),
+        )
+        for keys in duplicated_keys:
+            key_to_keep = keys[0]
+            key_to_remove = keys[1]
+            if key_to_keep in new_result and key_to_remove in new_result:
+                del new_result[key_to_remove]
+
+        return new_result
+    except:  # noqa
+        return result
+
+
 class CallbackModule(CallbackBase):
     """
     This callback module tells you how long your plays ran for.
@@ -151,7 +175,8 @@ class CallbackModule(CallbackBase):
                 self._job_id = result._result['ansible_facts']['job_id']
                 self.create_jobstate(comment='start up', status='new')
 
-        output = json.dumps(result._result, indent=2)
+        cleaned_result = remove_duplicated_content(result._result)
+        output = json.dumps(cleaned_result, indent=2)
 
         if result._task.action != 'setup' and self._job_id:
             self.post_message(result, output)
@@ -175,7 +200,8 @@ class CallbackModule(CallbackBase):
 
         super(CallbackModule, self).v2_runner_on_failed(result, ignore_errors)
 
-        output = json.dumps(result._result, indent=2)
+        cleaned_result = remove_duplicated_content(result._result)
+        output = json.dumps(cleaned_result, indent=2)
 
         if ignore_errors:
             self.post_failed_message(result, output)
