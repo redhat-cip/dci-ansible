@@ -12,6 +12,7 @@ from dciclient.v1.api import file as dci_file
 from ansible.release import __version__ as ansible_version
 from dciclient.version import __version__ as dciclient_version
 from dciauth.version import __version__ as dciauth_version
+from ansible.module_utils.dci_formatter import remove_duplicated_content
 
 
 class CallbackModule(CallbackBase):
@@ -151,7 +152,8 @@ class CallbackModule(CallbackBase):
                 self._job_id = result._result['ansible_facts']['job_id']
                 self.create_jobstate(comment='start up', status='new')
 
-        output = json.dumps(result._result, indent=2)
+        cleaned_result = remove_duplicated_content(result._result)
+        output = json.dumps(cleaned_result, indent=2)
 
         if result._task.action != 'setup' and self._job_id:
             self.post_message(result, output)
@@ -175,7 +177,8 @@ class CallbackModule(CallbackBase):
 
         super(CallbackModule, self).v2_runner_on_failed(result, ignore_errors)
 
-        output = json.dumps(result._result, indent=2)
+        cleaned_result = remove_duplicated_content(result._result)
+        output = json.dumps(cleaned_result, indent=2)
 
         if ignore_errors:
             self.post_failed_message(result, output)
