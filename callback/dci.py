@@ -103,6 +103,10 @@ class CallbackModule(CallbackBase):
         name = "failed/%s" % self.task_name(result)
         self.create_file(name, output)
 
+    def post_ignored_message(self, result, output):
+        name = "ignored/%s" % self.task_name(result)
+        self.create_file(name, output)
+
     def post_unreachable_message(self, result, output):
         name = "unreachable/%s" % self.task_name(result)
         self.create_file(name, output)
@@ -204,7 +208,7 @@ class CallbackModule(CallbackBase):
         output = json.dumps(cleaned_result, indent=2)
 
         if ignore_errors:
-            self.post_failed_message(result, output)
+            self.post_ignored_message(result, output)
             return
 
         self.create_jobstate(comment=self.task_name(result), status='failure')
