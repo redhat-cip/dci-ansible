@@ -100,6 +100,7 @@ class CallbackModule(CallbackBase):
         self.create_file(name, output)
 
     def post_failed_message(self, result, output):
+        raise "post_failed_message"
         name = "failed/%s" % self.task_name(result)
         self.create_file(name, output)
 
