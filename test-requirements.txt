@@ -1,4 +1,4 @@
 pytest
 flake8
-ansible
+ansible==2.9.18
 dciclient

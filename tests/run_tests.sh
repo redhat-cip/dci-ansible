@@ -25,7 +25,7 @@ function run_unit_tests() {
 
     source ./admin.sh
     for module in $modules; do
-        ansible-playbook unit-tests/$module/playbook.yml -vvv
+        ansible-playbook unit-tests/$module/playbook.yml -v
         clean_db
     done
     clean_environment
@@ -39,15 +39,15 @@ function run_functional_tests() {
     environments='openstack rhel'
     for environment in $environments; do
         source ./admin.sh
-        ansible-playbook "scenario-tests/${environment}/setup_env.yml" -vvv
+        ansible-playbook "scenario-tests/${environment}/setup_env.yml" -v
         clean_environment
 
         source ./feeder.sh
-        ansible-playbook "scenario-tests/${environment}/feeder.yml" -vvv
+        ansible-playbook "scenario-tests/${environment}/feeder.yml" -v
         clean_environment
 
         source ./remoteci.sh
-        ansible-playbook "scenario-tests/${environment}/remoteci.yml" -vvv
+        ansible-playbook "scenario-tests/${environment}/remoteci.yml" -v
         clean_environment
 
         rm -f feeder.sh remoteci.sh content.download

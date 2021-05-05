@@ -2,47 +2,32 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible.plugins.callback import CallbackBase
-
 import os
-import json
-from dciclient.v1.api import context as dci_context
-from dciclient.v1.api import jobstate as dci_jobstate
-from dciclient.v1.api import file as dci_file
+
+from ansible import constants as C
+from ansible.plugins.callback.default import CallbackModule as CM_default
 from ansible.release import __version__ as ansible_version
-from dciclient.version import __version__ as dciclient_version
+
 from dciauth.version import __version__ as dciauth_version
+from dciclient.v1.api import context as dci_context
+from dciclient.v1.api import file as dci_file
+from dciclient.v1.api import jobstate as dci_jobstate
+from dciclient.version import __version__ as dciclient_version
 
 
-def remove_duplicated_content(result):
-    try:
-        new_result = dict(result)
-        duplicated_keys = (
-            (
-                "stdout",
-                "stdout_lines",
-            ),
-            (
-                "stderr",
-                "stderr_lines",
-            ),
-        )
-        for keys in duplicated_keys:
-            key_to_keep = keys[0]
-            key_to_remove = keys[1]
-            if key_to_keep in new_result and key_to_remove in new_result:
-                del new_result[key_to_remove]
-
-        return new_result
-    except:  # noqa
-        return result
+COMPAT_OPTIONS = (('display_skipped_hosts', C.DISPLAY_SKIPPED_HOSTS),
+                  ('display_ok_hosts', True),
+                  ('show_custom_stats', C.SHOW_CUSTOM_STATS),
+                  ('display_failed_stderr', False),
+                  ('check_mode_markers', False),
+                  ('show_per_host_start', False))
 
 
-class CallbackModule(CallbackBase):
-    """
-    This callback module tells you how long your plays ran for.
-    """
-    CALLBACK_VERSION = 2.0
+class CallbackModule(CM_default):
+    """This callback module uploads the Ansible output to a DCI control
+server."""
+    CALLBACK_VERSION = '2.0'
+    CALLBACK_TYPE = 'dci'
     CALLBACK_NAME = 'dci'
     CALLBACK_NEEDS_WHITELIST = True
 
@@ -50,11 +35,25 @@ class CallbackModule(CallbackBase):
 
         super(CallbackModule, self).__init__()
 
+        self._real_display = self._display
+        self.verbosity = self._display.verbosity
+        self._display = self
+
         self._jobstate_id = None
         self._job_id = None
         self._current_status = None
         self._dci_context = self._build_dci_context()
         self._explicit = False
+        self._backlog = []
+        self._name = None
+        self._content = ''
+        self._color = None
+
+    def get_option(self, name):
+        for key, val in COMPAT_OPTIONS:
+            if key == name:
+                return val
+        return False
 
     @staticmethod
     def _get_details():
@@ -81,48 +80,58 @@ class CallbackModule(CallbackBase):
             return dci_context.build_signature_context(url, client_id,
                                                        api_secret, user_agent)
 
+    def display(self, msg, color=None, screen_only=False, *args, **kwargs):
+        if screen_only:
+            return
+
+        if color is not None:
+            self._color = color
+
+        self._content += msg + '\n'
+
+    def banner(self, msg):
+        # upload the previous content when we have a new banner (start
+        # of task/play/playbook...)
+        if self._name:
+            if self._color == C.COLOR_SKIP:
+                prefix = 'skipped/'
+            elif self._color == C.COLOR_UNREACHABLE:
+                prefix = "unreachable/"
+            elif self._color == C.COLOR_ERROR:
+                prefix = 'failed/'
+            else:
+                prefix = ''
+
+            self.create_file(prefix + self._name,
+                             self._content if self._content != '' else ' ')
+            self._content = ''
+
+        self._name = msg
+
+    def deprecated(self, *args, **kwargs):
+        pass
+
     def create_file(self, name, content):
-        kwargs = {
-            'name': name,
-            'content': content and content.encode('UTF-8'),
-            'mime': 'application/x-ansible-output'
-        }
-        kwargs['job_id'] = self._job_id
-        kwargs['jobstate_id'] = self._jobstate_id
-        dci_file.create(self._dci_context, **kwargs)
+        if self._job_id is None:
+            self._backlog.append({'name': name, 'content': content})
+        else:
+            kwargs = {
+                'name': name,
+                'content': content and content.encode('UTF-8'),
+                'mime': 'application/x-ansible-output',
+                'job_id': self._job_id,
+                'jobstate_id': self._jobstate_id
+            }
+            dci_file.create(self._dci_context, **kwargs)
 
-    def post_message(self, result, output):
-        name = self.task_name(result)
-        self.create_file(name, output)
-
-    def post_skipped_message(self, result, output):
-        name = "skipped/%s" % self.task_name(result)
-        self.create_file(name, output)
-
-    def post_failed_message(self, result, output):
-        name = "failed/%s" % self.task_name(result)
-        self.create_file(name, output)
-
-    def post_ignored_message(self, result, output):
-        name = "ignored/%s" % self.task_name(result)
-        self.create_file(name, output)
-
-    def post_unreachable_message(self, result, output):
-        name = "unreachable/%s" % self.task_name(result)
-        self.create_file(name, output)
-
-    def post_item_message(self, result, output, name_prefix=None):
-        name = result._result['item']
-        if name_prefix:
-            name = "%s/%s" % (name_prefix, name)
-        self.create_file(name, output)
-
-    def create_jobstate(self, comment, status=None):
+    def create_jobstate(self, comment, status):
         if self._explicit:
             return
 
-        if status:
-            self._current_status = status
+        if not status or self._current_status == status:
+            return
+
+        self._current_status = status
 
         r = dci_jobstate.create(
             self._dci_context,
@@ -131,39 +140,35 @@ class CallbackModule(CallbackBase):
             job_id=self._job_id
         )
         ns = r.json()
-        self._jobstate_id = ns['jobstate']['id']
+        if 'jobstate' in ns and 'id' in ns['jobstate']:
+            self._jobstate_id = ns['jobstate']['id']
 
-    def task_name(self, result):
-        """Ensure we alway return a string"""
-        name = result._task.get_name()
-        # add the included file name in the task's name
-        if name == 'include_tasks':
-            if hasattr(result._task, 'get_ds'):
-                if 'include_tasks' in result._task.get_ds():
-                    name = '%s: %s' % (name, result._task.get_ds()['include_tasks'])  # noqa
-        return name
+    def v2_playbook_on_stats(self, stats):
+        super(CallbackModule, self).v2_playbook_on_stats(stats)
+        # do a fake call to banner to output the last content
+        self.banner('')
 
     def v2_runner_on_ok(self, result, **kwargs):
         """Event executed after each command when it succeed. Get the output
         of the command and create a file associated to the current
         jobstate.
         """
-
-        super(CallbackModule, self).v2_runner_on_ok(result, **kwargs)
-        # Check if the task that just run was the schedule of an upgrade
-        # job. If so, set self._job_id to the new job ID
-
         # Store the jobstate id when the there is an explicit call to
         # set it. Example in a playbook:
         #
         # dci_job:
         #   id: "{{ job_id }}"
         #   status: running
+        #
+        # switch to explicit mode (not reacting to the dci_status
+        # variable anymore).
         if ("jobstate" in result._result and
            "id" in result._result["jobstate"]):
             self._jobstate_id = result._result["jobstate"]["id"]
             self._explicit = True
 
+        # Check if the task that just run was the schedule of an upgrade
+        # job. If so, set self._job_id to the new job ID
         if (result._task.action == 'dci_job' and (
                 result._result['invocation']['module_args']['upgrade'] or
                 result._result['invocation']['module_args']['update'])):
@@ -174,59 +179,24 @@ class CallbackModule(CallbackBase):
                 status='pre-run'
             )
         elif (result._task.action == 'set_fact' and
-              'job_id' in result._result['ansible_facts']):
-            if self._job_id is None:
-                self._job_id = result._result['ansible_facts']['job_id']
-                self.create_jobstate(comment='start up', status='new')
+              'ansible_facts' in result._result and
+              'job_id' in result._result['ansible_facts'] and
+              result._result['ansible_facts']['job_id'] is not None):
 
-        cleaned_result = remove_duplicated_content(result._result)
-        output = json.dumps(cleaned_result, indent=2)
+            self._job_id = result._result['ansible_facts']['job_id']
+            self.create_jobstate(comment='start up', status='new')
 
-        if result._task.action != 'setup' and self._job_id:
-            self.post_message(result, output)
+            for rec in self._backlog:
+                self.create_file(rec['name'],
+                                 rec['content'])
+            self._backlog = []
 
-    def v2_runner_on_unreachable(self, result):
-
-        if not self._job_id:
-            return
-
-        super(CallbackModule, self).v2_runner_on_unreachable(result)
-        self.create_jobstate(comment=self.task_name(result), status='failure')
-        self.post_unreachable_message(result, "msg:%s\n%s" % json.dumps(result._result['results']))  # noqa
-
-    def v2_runner_on_failed(self, result, ignore_errors=False):
-        """Event executed after each command when it fails. Get the output
-        of the command and create a failure jobstate and a file associated.
-        """
-
-        if not self._job_id:
-            return
-
-        super(CallbackModule, self).v2_runner_on_failed(result, ignore_errors)
-
-        cleaned_result = remove_duplicated_content(result._result)
-        output = json.dumps(cleaned_result, indent=2)
-
-        if ignore_errors:
-            self.post_ignored_message(result, output)
-            return
-
-        self.create_jobstate(comment=self.task_name(result), status='failure')
-        self.post_failed_message(result, output)
-
-    def v2_runner_on_skipped(self, result):
-        super(CallbackModule, self).v2_runner_on_skipped(result)
-        if not self._job_id:
-            return
-        self.post_skipped_message(result, result._result['skip_reason'])
+        super(CallbackModule, self).v2_runner_on_ok(result, **kwargs)
 
     def v2_playbook_on_play_start(self, play):
         """Event executed before each play. Create a new jobstate and save
         the current jobstate id.
         """
-
-        if not self._job_id:
-            return
 
         def _get_comment(play):
             """ Return the comment for the new jobstate
@@ -251,29 +221,35 @@ class CallbackModule(CallbackBase):
 
         super(CallbackModule, self).v2_playbook_on_play_start(play)
 
+        if not self._job_id:
+            return
+
         comment = _get_comment(play)
         self.create_jobstate(
             comment=comment,
             status=play.get_vars().get('dci_status')
         )
 
-    def v2_runner_item_on_ok(self, result):
-        if not self._job_id:
-            return
+    def task_name(self, result):
+        """Ensure we alway return a string"""
+        name = result._task.get_name()
+        # add the included file name in the task's name
+        if name == 'include_tasks':
+            if hasattr(result._task, 'get_ds'):
+                if 'include_tasks' in result._task.get_ds():
+                    name = '%s: %s' % (name, result._task.get_ds()['include_tasks'])  # noqa
+        return name
 
-        super(CallbackModule, self).v2_runner_item_on_ok(result)
-        self.post_item_message(result, result._result['msg'], 'item_ok')
+    def v2_runner_on_unreachable(self, result):
+        self.create_jobstate(comment=self.task_name(result), status='failure')
+        super(CallbackModule, self).v2_runner_on_unreachable(result)
 
-    def v2_runner_item_on_failed(self, result):
-        if not self._job_id:
-            return
+    def v2_runner_on_failed(self, result, ignore_errors=False):
+        """Event executed after each command when it fails. Get the output
+        of the command and create a failure jobstate and a file associated.
+        """
+        if not ignore_errors:
+            self.create_jobstate(comment=self.task_name(result),
+                                 status='failure')
 
-        super(CallbackModule, self).v2_runner_item_on_failed(result)
-        self.post_item_message(result, result._result['msg'], 'item_failed')
-
-    def v2_runner_item_on_skipped(self, result):
-        if not self._job_id:
-            return
-
-        super(CallbackModule, self).v2_runner_item_on_skipped(result)
-        self.post_item_message(result, result._result['msg'], 'item_failed')
+        super(CallbackModule, self).v2_runner_on_failed(result, ignore_errors)
