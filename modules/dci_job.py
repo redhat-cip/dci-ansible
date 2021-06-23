@@ -77,6 +77,18 @@ options:
   team_id:
     required: false
     description: team of the new job
+  url:
+    required: false
+    description: URL attached to the job
+  name:
+    required: false
+    description: name of the job
+  configuration:
+    required: false
+    description: configuration name of the job
+  status_reason:
+    required: false
+    description: explanation of the status
   embed:
     required: false
     description:
@@ -146,12 +158,17 @@ class DciJob(DciBase):
         self.components = params.get('components', [])
         self.components_by_query = params.get('components_by_query', [])
         self.team_id = params.get('team_id')
+        self.url = params.get('url')
+        self.name = params.get('name')
+        self.configuration = params.get('configuration')
+        self.status_reason = params.get('status_reason')
         self.search_criterias = {
             'embed': params.get('embed'),
             'where': params.get('where')
         }
         self.deterministic_params = ['topic', 'comment', 'status',
-                                     'tags', 'team_id']
+                                     'tags', 'team_id', 'url', 'name',
+                                     'configuration', 'status_reason']
 
     def do_set_tags(self, context):
         for tag_name in self.tags:
@@ -279,6 +296,9 @@ def main():
         components=dict(type='list'),
         components_by_query=dict(type='list'),
         team_id=dict(type='str'),
+        url=dict(type='str'),
+        name=dict(type='str'),
+        configuration=dict(type='str'),
         embed=dict(type='str'),
         where=dict(type='str'),
         get=dict(type='str'),

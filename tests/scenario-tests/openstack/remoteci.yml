@@ -4,12 +4,18 @@
     - name: schedule a job
       dci_job:
         topic: OSP12
+        url: http://my.url
+        name: "my job name"
+        configuration: "my conf"
       register: job_info
 
     - name: Set global variables
       set_fact:
         job_id: '{{ hostvars.localhost.job_info.job.id  }}'
         components: '{{ hostvars.localhost.job_info.job.components  }}'
+        job_url: '{{ hostvars.localhost.job_info.job.url }}'
+        job_name: '{{ hostvars.localhost.job_info.job.name  }}'
+        job_conf: '{{ hostvars.localhost.job_info.job.configuration  }}'
 
 - hosts: localhost
   vars:
