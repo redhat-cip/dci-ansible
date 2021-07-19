@@ -209,7 +209,13 @@ class DciJob(DciBase):
                 )
 
             topic_id = topics[0]['id']
-            res = dci_job.schedule(context, topic_id=topic_id)
+            res = dci_job.schedule(context, topic_id,
+                                   comment=self.comment,
+                                   configuration=self.configuration,
+                                   name=self.name,
+                                   team_id=self.team_id,
+                                   url=self.url,
+                                   )
             if res.status_code == 201:
                 return dci_job.get(
                     context, context.last_job_id,
@@ -256,8 +262,13 @@ class DciJob(DciBase):
                 self.components.extend(self.find_components(context, topic_id))
 
             res = dci_job.create(
-                context, team_id=self.team_id, topic_id=topic_id,
-                components=self.components, comment=self.comment
+                context, topic_id,
+                comment=self.comment,
+                components=self.components,
+                configuration=self.configuration,
+                name=self.name,
+                team_id=self.team_id,
+                url=self.url,
             )
             if res.status_code == 201:
                 return dci_job.get(
