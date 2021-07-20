@@ -144,6 +144,10 @@ RETURN = '''
 '''
 
 
+def _nonify(value):
+    return None if not value else value
+
+
 class DciJob(DciBase):
 
     def __init__(self, params):
@@ -158,10 +162,10 @@ class DciJob(DciBase):
         self.components = params.get('components', [])
         self.components_by_query = params.get('components_by_query', [])
         self.team_id = params.get('team_id')
-        self.url = params.get('url')
-        self.name = params.get('name')
-        self.configuration = params.get('configuration')
-        self.status_reason = params.get('status_reason')
+        self.url = _nonify(params.get('url'))
+        self.name = _nonify(params.get('name'))
+        self.configuration = _nonify(params.get('configuration'))
+        self.status_reason = _nonify(params.get('status_reason'))
         self.search_criterias = {
             'embed': params.get('embed'),
             'where': params.get('where')
