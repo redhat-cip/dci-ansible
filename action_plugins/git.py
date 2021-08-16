@@ -71,7 +71,7 @@ class ActionModule(ActionBase):
     def _get_repo_project_name(self, repo):
         repo_parsed = urlparse(repo)
         if repo_parsed.path.endswith('.git'):
-            repo_parsed.path = repo_parsed.path.replace('.git', '')
+            return os.path.basename(repo_parsed.path.replace('.git', ''))
         return os.path.basename(repo_parsed.path)
 
     def run(self, tmp=None, task_vars=None):
