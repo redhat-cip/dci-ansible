@@ -86,6 +86,9 @@ options:
   configuration:
     required: false
     description: configuration name of the job
+  previous_job_id:
+    required: false
+    description: previous job
   status_reason:
     required: false
     description: explanation of the status
@@ -165,6 +168,7 @@ class DciJob(DciBase):
         self.url = _nonify(params.get('url'))
         self.name = _nonify(params.get('name'))
         self.configuration = _nonify(params.get('configuration'))
+        self.previous_job_id = _nonify(params.get('previous_job_id'))
         self.status_reason = _nonify(params.get('status_reason'))
         self.search_criterias = {
             'embed': params.get('embed'),
@@ -172,7 +176,8 @@ class DciJob(DciBase):
         }
         self.deterministic_params = ['topic', 'comment', 'status',
                                      'tags', 'team_id', 'url', 'name',
-                                     'configuration', 'status_reason']
+                                     'configuration', 'status_reason',
+                                     'previous_job_id']
 
     def do_set_tags(self, context):
         for tag_name in self.tags:
@@ -219,6 +224,7 @@ class DciJob(DciBase):
                                    name=self.name,
                                    team_id=self.team_id,
                                    url=self.url,
+                                   previous_job_id=self.previous_job_id,
                                    )
             if res.status_code == 201:
                 return dci_job.get(
@@ -273,6 +279,7 @@ class DciJob(DciBase):
                 name=self.name,
                 team_id=self.team_id,
                 url=self.url,
+                previous_job_id=self.previous_job_id,
             )
             if res.status_code == 201:
                 return dci_job.get(
@@ -314,6 +321,7 @@ def main():
         url=dict(type='str'),
         name=dict(type='str'),
         configuration=dict(type='str'),
+        previous_job_id=dict(type='str'),
         embed=dict(type='str'),
         where=dict(type='str'),
         get=dict(type='str'),
