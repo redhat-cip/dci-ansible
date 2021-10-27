@@ -16,8 +16,13 @@ from ansible.module_utils.dci_common import (authentication_argument_spec,
                                              get_standard_action,
                                              parse_http_response,
                                              run_action_func)
-from ansible.module_utils.dci_base import (DciBase,
-                                           DciResourceNotFoundException)
+from ansible.module_utils.dci_base import (
+    DciBase,
+    DciResourceNotFoundException,
+    DciUnauthorizedAccessException,
+    DciUnexpectedErrorException,
+    DciServerErrorException,
+)
 
 try:
     from dciclient.v1.api import job as dci_job
@@ -212,9 +217,10 @@ class DciJob(DciBase):
 
         if topic_res.status_code == 200:
             topics = topic_res.json()['topics']
-            if not len(topics):
+            if len(topics) == 0:
                 raise DciResourceNotFoundException(
-                    'Topic: %s resource not found' % self.topic
+                    'Not found or not enough permissions for topic %s' %
+                    self.topic
                 )
 
             topic_id = topics[0]['id']
@@ -247,13 +253,27 @@ class DciJob(DciBase):
             components_res = dci_topic.list_components(context,
                                                        topic_id,
                                                        where=component)
-            if components_res.status_code == 200:
-                _components = components_res.json()['components']
-                if not len(_components):
-                    raise DciResourceNotFoundException(
-                        'Component: %s resource not found' % component
-                    )
-                components.append(_components[0]['id'])
+            if components_res.status_code < 400:
+                if components_res.status_code == 200:
+                    _components = components_res.json()['components']
+                    if len(_components) == 0:
+                        raise DciResourceNotFoundException(
+                            'Not found or not enough permissions '
+                            'for component %s' % component
+                        )
+                    components.append(_components[0]['id'])
+            elif components_res.status_code in [401, 412]:
+                raise DciUnauthorizedAccessException(
+                    'Not enough permissions for component %s' % component
+                )
+            elif components_res.status_code >= 400 and \
+                    components_res.status_code < 500:
+                raise DciUnexpectedErrorException(
+                    'Received unexpected error while retrieving %s' % component
+                )
+            else:
+                raise DciServerErrorException('Server error')
+
         return components
 
     def do_create(self, context):
@@ -261,9 +281,10 @@ class DciJob(DciBase):
 
         if topic_res.status_code == 200:
             topics = topic_res.json()['topics']
-            if not len(topics):
+            if len(topics) == 0:
                 raise DciResourceNotFoundException(
-                    'Topic: %s resource not found' % self.topic
+                    'Not found or not enough permissions for topic %s' %
+                    self.topic
                 )
 
             topic_id = topics[0]['id']
@@ -334,7 +355,7 @@ def main():
     )
 
     if not dciclient_found:
-        module.fail_json(msg='The python dciclient module is required')
+        module.fail_json(msg='The python-dciclient module is required')
 
     context = build_dci_context(module)
     action_name = get_standard_action(module.params)

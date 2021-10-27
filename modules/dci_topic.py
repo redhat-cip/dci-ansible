@@ -140,7 +140,7 @@ class DciTopic(DciBase):
 
     def do_create(self, context):
         if not self.name:
-            raise DciParameterError('name parameter must be speficied')
+            raise DciParameterError('name parameter must be specified')
 
         return super(DciTopic, self).do_create(context)
 

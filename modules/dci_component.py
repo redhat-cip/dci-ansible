@@ -249,6 +249,10 @@ def main():
 
     try:
         result = res.json()
+        if res.status_code == 401:
+            module.fail_json(
+                msg='Not enough permissions to access the resource'
+            )
         if res.status_code == 404:
             module.fail_json(msg='The resource does not exist')
         if res.status_code == 409:

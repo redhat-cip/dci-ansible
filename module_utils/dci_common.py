@@ -19,6 +19,7 @@ from ansible.module_utils.dci_base import DciParameterError
 from ansible.module_utils.dci_base import DciServerErrorException
 from ansible.module_utils.dci_base import DciUnexpectedErrorException
 from ansible.module_utils.dci_base import DciResourceNotFoundException
+from ansible.module_utils.dci_base import DciUnauthorizedAccessException
 from dciclient.v1.api import context as dci_context
 from ansible.release import __version__ as ansible_version
 from dciclient.version import __version__ as dciclient_version
@@ -83,6 +84,8 @@ def run_action_func(action_func, context, module):
         res = action_func(context)
     except DciResourceNotFoundException as exc:
         module.fail_json(msg=exc.message)
+    except DciUnauthorizedAccessException as exc:
+        module.fail_json(msg=exc.message)
     except DciServerErrorException as exc:
         module.fail_json(msg=exc.message)
     except DciUnexpectedErrorException as exc:
@@ -146,13 +149,13 @@ def parse_http_response(response, resource, context, module):
     if response.status_code == 404:
         module.fail_json(msg='The specified resource does not exist')
 
-    elif response.status_code == 412:
+    elif response.status_code in [401, 412]:
         module.fail_json(msg='Unauthorized resource access')
 
     elif response.status_code == 500:
         module.fail_json(msg='Internal Server Error')
 
-    elif response.status_code == 400 or response.status_code == 401:
+    elif response.status_code == 400:
         error = response.json()
         module.fail_json(
             msg='%s - %s' % (error['message'], str(error['payload']))

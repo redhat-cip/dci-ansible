@@ -15,24 +15,29 @@
 # under the License.
 
 
+class DciUnauthorizedAccessException(Exception):
+    def __init__(self, msg):
+        self.message = msg
+
+
 class DciResourceNotFoundException(Exception):
-    pass
+    def __init__(self, msg):
+        self.message = msg
 
 
 class DciServerErrorException(Exception):
-
-    def __init__(self):
-        self.message = 'Internal Server Error'
+    def __init__(self, msg):
+        self.message = 'Internal Server Error %s' % msg
 
 
 class DciUnexpectedErrorException(Exception):
-
     def __init__(self, msg):
         self.message = 'Unexpected Error: %s' % msg
 
 
 class DciParameterError(Exception):
-    pass
+    def __init__(self, msg):
+        self.message = msg
 
 
 class DciBase(object):
@@ -46,11 +51,14 @@ class DciBase(object):
     def raise_error(self, res):
         """Parse the http response and raise the appropriate error."""
 
-        if res.status_code in [401, 404]:
+        if res.status_code == 404:
             raise DciResourceNotFoundException(
                 '%s: %s resource not found' % (self.resource_name, self.id)
             )
-
+        elif res.status_code == 401:
+            raise DciUnauthorizedAccessException(
+                '%s: %s not authorized' % (self.resource_name, self.id)
+            )
         elif res.status_code == 500:
             raise DciServerErrorException
         else:
