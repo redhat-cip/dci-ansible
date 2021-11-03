@@ -88,7 +88,7 @@ def main():
     res = dci_job.add_component(ctx, job_id, component_id)
 
     result = {'changed': False}
-    if res.status_code == 201:
+    if res.status_code in (201, 409):
         result = {
             'component_id': component_id,
             'job_id': job_id,
