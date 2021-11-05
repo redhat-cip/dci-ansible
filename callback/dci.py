@@ -169,10 +169,10 @@ server."""
 
         # Check if the task that just run was the schedule of an upgrade
         # job. If so, set self._job_id to the new job ID
-        if (result._task.action == 'dci_job' and (
-                result._result['invocation']['module_args']['upgrade'] or
-                result._result['invocation']['module_args']['update'])):
-
+        if (result._task.action == 'dci_job' and
+            'invocation' in result._result and
+            (result._result['invocation']['module_args']['upgrade'] or
+             result._result['invocation']['module_args']['update'])):
             self._job_id = result._result['job']['id']
             self.create_jobstate(
                 comment='starting the update/upgrade',
