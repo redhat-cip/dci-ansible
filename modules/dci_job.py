@@ -228,7 +228,6 @@ class DciJob(DciBase):
                                    comment=self.comment,
                                    configuration=self.configuration,
                                    name=self.name,
-                                   team_id=self.team_id,
                                    url=self.url,
                                    previous_job_id=self.previous_job_id,
                                    )
