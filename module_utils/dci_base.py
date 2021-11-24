@@ -15,29 +15,9 @@
 # under the License.
 
 
-class DciUnauthorizedAccessException(Exception):
-    def __init__(self, msg):
-        self.message = msg
-
-
-class DciResourceNotFoundException(Exception):
-    def __init__(self, msg):
-        self.message = msg
-
-
-class DciServerErrorException(Exception):
-    def __init__(self, msg):
-        self.message = 'Internal Server Error %s' % msg
-
-
-class DciUnexpectedErrorException(Exception):
-    def __init__(self, msg):
-        self.message = 'Unexpected Error: %s' % msg
-
-
-class DciParameterError(Exception):
-    def __init__(self, msg):
-        self.message = msg
+class DciError(Exception):
+    def __init__(self, rc, msg):
+        self.message = 'HTTP Error Code %s: %s' % (rc, msg, )
 
 
 class DciBase(object):
@@ -51,23 +31,27 @@ class DciBase(object):
     def raise_error(self, res):
         """Parse the http response and raise the appropriate error."""
 
+        try:
+            message = res.json()['message']
+        except Exception:
+            message = res.text
+
         if res.status_code == 404:
-            raise DciResourceNotFoundException(
-                '%s: %s resource not found' % (self.resource_name, self.id)
+            raise DciError(
+                404,
+                '%s resource not found (%s)' % (
+                    self.resource_name, message,
+                )
             )
         elif res.status_code == 401:
-            raise DciUnauthorizedAccessException(
-                '%s: %s not authorized' % (self.resource_name, self.id)
+            raise DciError(
+                401,
+                '%s not authorized on %s (%s)' % (
+                    self.id, self.resource_name, message,
+                )
             )
-        elif res.status_code == 500:
-            raise DciServerErrorException
         else:
-            try:
-                message = res.json()['message']
-            except Exception:
-                message = res.text
-            raise DciUnexpectedErrorException(
-                "Status Code: %d: %s" % (res.status_code, message))
+            raise DciError(res.status_code, message)
 
     def do_delete(self, context):
         """Remove a resource."""
