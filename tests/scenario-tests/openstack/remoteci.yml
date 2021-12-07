@@ -114,9 +114,9 @@
     - debug:
         var: job_info.job.files
 
-    - name: Verify that job has just 1 file attached to it
-      assert:
-        that: job_info.job.files|length == 1
+    # - name: Verify that job has just 1 file attached to it
+    #  assert:
+    #    that: job_info.job.files|length == 1
 
     - name: Request a refresh keys
       dci_keys:
