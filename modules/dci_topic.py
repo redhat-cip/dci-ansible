@@ -123,7 +123,6 @@ class DciTopic(DciBase):
         self.id = params.get('id')
         self.name = params.get('name')
         self.data = params.get('data')
-        self.label = params.get('label')
         self.product_id = params.get('product_id')
         self.next_topic_id = params.get('next_topic_id')
         self.component_types = params.get('component_types')
@@ -134,7 +133,7 @@ class DciTopic(DciBase):
             'embed': params.get('embed'),
             'where': params.get('where')
         }
-        self.deterministic_params = ['name', 'label', 'product_id', 'active',
+        self.deterministic_params = ['name', 'product_id', 'active',
                                      'component_types', 'next_topic_id',
                                      'data', 'export_control']
 
@@ -163,7 +162,6 @@ def main():
         id=dict(type='str'),
         name=dict(type='str'),
         data=dict(type='json'),
-        label=dict(type='str'),
         product_id=dict(type='str'),
         next_topic_id=dict(type='str'),
         component_types=dict(type='list'),
