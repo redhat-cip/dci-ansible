@@ -1,5 +1,5 @@
 Name:		dci-ansible
-Version:	0.1.0
+Version:	0.2.0
 Release:	1.VERS%{?dist}
 Summary:	DCI Ansible modules and callback
 License:	ASL 2.0
@@ -9,9 +9,9 @@ Source0:	dci-ansible-%{version}.tar.gz
 BuildArch:	noarch
 Requires:	ansible >= 2.3
 %if 0%{?rhel} && 0%{?rhel} < 8
-Requires:    python2-dciclient
+Requires:    python2-dciclient >= 2.2.0
 %else
-Requires:    python3-dciclient
+Requires:    python3-dciclient >= 2.2.0
 %endif
 
 %description
@@ -38,6 +38,9 @@ chmod 755 %{buildroot}%{_datadir}/dci/*
 
 
 %changelog
+* Tue Dec 21 2021 Tony Garcia <togarcia@redhat.com> - 0.2.0-1.VERS
+- Use get_or_create method from python-dciclient
+
 * Tue Nov 10 2020 Yassine Lamgarchal <ylamgarc@redhat.com> - 0.1.0-1.VERS
 - Adding action_plugins directory
 
