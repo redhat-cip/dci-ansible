@@ -133,6 +133,10 @@ server."""
 
         self._current_status = status
 
+        if self._job_id is None:
+            self._backlog.append({'comment': comment, 'status': status})
+            return
+
         r = dci_jobstate.create(
             self._dci_context,
             status=self._current_status,
@@ -187,8 +191,11 @@ server."""
             self.create_jobstate(comment='start up', status='new')
 
             for rec in self._backlog:
-                self.create_file(rec['name'],
-                                 rec['content'])
+                if 'status' in rec:
+                    self.create_jobstate(rec['comment', rec['status']])
+                else:
+                    self.create_file(rec['name'],
+                                     rec['content'])
             self._backlog = []
 
         super(CallbackModule, self).v2_runner_on_ok(result, **kwargs)
