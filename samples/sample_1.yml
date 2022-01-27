@@ -6,26 +6,13 @@
 # we hence register those data for later consumptions
 #
 - hosts: localhost
+  gather_facts: false
   tasks:
-    - name: Schedule a new job
-      dci_job:
-        topic: 'OSP8'
-        remoteci: 'dci-env-ovb-1'
-      register: job_info
 
+    - include_tasks: 'new.yml'
 
-# New state
-#
-# User is free to do whaterver she needs before entering pre-run state.
-# Usually this is used to sync the components the job is relying on.
-#
-- hosts: localhost
-  vars:
-    dci_status: 'new'
-  tasks:
-    - name: echo 'New'
-      shell: echo 'New'
-
+    - name: New
+      command: echo 'new'
 
 # Pre-run state
 #
@@ -33,13 +20,15 @@
 # Usually this is used to spawn the undercloud vm
 #
 - hosts: localhost
-  vars:
-    dci_status: 'pre-run'
-    dci_comment: 'Pre-run state commands'
+  gather_facts: false
   tasks:
-    - name: echo 'Pre-run'
-      shell: echo 'pre-run'
+    - name: Set job state - pre-run
+      dci_job:
+        id: "{{ job_info.job.id }}"
+        status: "pre-run"
 
+    - name: Pre-run
+      command: echo 'pre-run'
 
 # Running state
 #
@@ -47,13 +36,16 @@
 # Usually this is used to provision the undercloud and the overcloud
 #
 - hosts: localhost
-  vars:
-    dci_status: 'running'
-    dci_comment: 'Running state commands'
+  gather_facts: false
   tasks:
-    - name: echo 'Running'
-      shell: echo 'Running'
 
+    - name: Set job state - running
+      dci_job:
+        id: "{{ job_info.job.id }}"
+        status: "running"
+
+    - name: Running
+      command: echo 'running'
 
 # Post-run state
 #
@@ -61,12 +53,19 @@
 # Usually this is used to run tests on the overcloud
 #
 - hosts: localhost
+  gather_facts: false
   vars:
     dci_status: 'post-run'
     dci_comment: 'Post-run state commands'
   tasks:
-    - name: echo 'Post-run'
-      shell: echo 'Post-run'
+
+    - name: Set job state - post-run
+      dci_job:
+        id: "{{ job_info.job.id }}"
+        status: "post-run"
+
+    - name: Post-Run
+      command: echo 'post-run'
 
 
 # Success state
@@ -75,9 +74,16 @@
 # Usually this is used to teardown the plateform
 #
 - hosts: localhost
-  vars:
-    dci_status: 'success'
-    dci_comment: 'Success state commands'
+  gather_facts: false
   tasks:
-    - name: echo 'Success'
-      shell: echo 'Succes'
+    - name: Set job state - success
+      dci_job:
+        id: "{{ job_info.job.id }}"
+        status: "success"
+
+    - name: Success
+      command: echo 'Succes'
+
+    - name: "Final step"
+      debug:
+        msg: "The job is now finished. Review the log at: {{ lookup('env','DCI_UI_URL') | default('https://www.distributed-ci.io', True) }}/jobs/{{ job_info.job.id }}/jobStates"

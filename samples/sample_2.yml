@@ -6,24 +6,11 @@
 # we hence register those data for later consumptions
 #
 - hosts: localhost
+  gather_facts: false
   tasks:
-    - name: Schedule a new job
-      dci_job:
-        topic: 'OSP8'
-        remoteci: 'dci-env-ovb-1'
-      register: job_info
 
+    - include_tasks: 'new.yml'
 
-# New state
-#
-# User is free to do whaterver she needs before entering pre-run state.
-# Usually this is used to sync the components the job is relying on.
-#
-- hosts: localhost
-  vars:
-    dci_status: 'new'
-    dci_comment: 'New state commands'
-  tasks:
     - block:
       - name: echo 'New'
         shell: echo 'New'
@@ -40,6 +27,7 @@
 # Usually this is used to spawn the undercloud vm
 #
 - hosts: localhost
+  gather_facts: false
   any_errors_fatal: true
   vars:
     dci_status: 'pre-run'
@@ -60,6 +48,7 @@
 # Usually this is used to provision the undercloud and the overcloud
 #
 - hosts: localhost
+  gather_facts: false
   any_errors_fatal: true
   vars:
     dci_status: 'running'
@@ -84,6 +73,7 @@
 # Usually this is used to run tests on the overcloud
 #
 - hosts: localhost
+  gather_facts: false
   any_errors_fatal: true
   vars:
     dci_status: 'post-run'
@@ -108,6 +98,7 @@
 # Usually this is used to teardown the plateform
 #
 - hosts: localhost
+  gather_facts: false
   any_errors_fatal: true
   vars:
     dci_status: 'success'
@@ -115,3 +106,7 @@
   tasks:
     - name: echo 'Success'
       shell: echo 'Succes'
+
+    - name: "Final step"
+      debug:
+        msg: "The job is now finished. Review the log at: {{ lookup('env','DCI_UI_URL') | default('https://www.distributed-ci.io', True) }}/jobs/{{ job_info.job.id }}/jobStates"

@@ -131,11 +131,11 @@ server."""
         if not status or self._current_status == status:
             return
 
-        self._current_status = status
-
         if self._job_id is None:
             self._backlog.append({'comment': comment, 'status': status})
             return
+
+        self._current_status = status
 
         r = dci_jobstate.create(
             self._dci_context,
@@ -182,23 +182,35 @@ server."""
                 comment='starting the update/upgrade',
                 status='pre-run'
             )
+        # Capture job_id from a set_fact task (needed for dci-pipeline)
         elif (result._task.action == 'set_fact' and
               'ansible_facts' in result._result and
               'job_id' in result._result['ansible_facts'] and
               result._result['ansible_facts']['job_id'] is not None):
 
             self._job_id = result._result['ansible_facts']['job_id']
-            self.create_jobstate(comment='start up', status='new')
+            self.process_backlog()
+        # Capture job_id from a dci_job task (job created in playbook)
+        elif (result._task.action == 'dci_job' and
+              'job' in result._result and
+              'id' in result._result['job'] and
+              result._result['job']['id'] is not None):
 
-            for rec in self._backlog:
-                if 'status' in rec:
-                    self.create_jobstate(rec['comment', rec['status']])
-                else:
-                    self.create_file(rec['name'],
-                                     rec['content'])
-            self._backlog = []
+            self._job_id = result._result['job']['id']
+            self.process_backlog()
 
         super(CallbackModule, self).v2_runner_on_ok(result, **kwargs)
+
+    def process_backlog(self):
+        self.create_jobstate(comment='start up', status='new')
+
+        for rec in self._backlog:
+            if 'status' in rec:
+                self.create_jobstate(rec['comment', rec['status']])
+            else:
+                self.create_file(rec['name'],
+                                 rec['content'])
+        self._backlog = []
 
     def v2_playbook_on_play_start(self, play):
         """Event executed before each play. Create a new jobstate and save

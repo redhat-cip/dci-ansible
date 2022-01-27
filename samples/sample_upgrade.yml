@@ -7,16 +7,7 @@
 #
 - hosts: localhost
   tasks:
-    - name: Schedule a new job
-      dci_job:
-        topic: 'OSP10'
-        remoteci: 'dci-env-ovb-1'
-      register: job_info
-
-# New state
-# Pre-run state
-# Running state
-# Post-run state
+    - include_tasks: 'new.yml'
 
 # Success state
 #
@@ -33,7 +24,8 @@
   tasks:
     - name: Schedule an upgrade job
       dci_job:
-        id: "{{ job_info['id'] }}"
+        id: "{{ job_info.job.id }}"
+        topic: "{{ topics.topics[-1].name }}"
         upgrade: true
       register: job_info
 
