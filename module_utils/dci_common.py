@@ -15,11 +15,7 @@
 # under the License.
 
 from ansible.module_utils.basic import env_fallback
-from ansible.module_utils.dci_base import DciParameterError
-from ansible.module_utils.dci_base import DciServerErrorException
-from ansible.module_utils.dci_base import DciUnexpectedErrorException
-from ansible.module_utils.dci_base import DciResourceNotFoundException
-from ansible.module_utils.dci_base import DciUnauthorizedAccessException
+from ansible.module_utils.dci_base import DciError
 from dciclient.v1.api import context as dci_context
 from ansible.release import __version__ as ansible_version
 from dciclient.version import __version__ as dciclient_version
@@ -82,15 +78,7 @@ def run_action_func(action_func, context, module):
 
     try:
         res = action_func(context)
-    except DciResourceNotFoundException as exc:
-        module.fail_json(msg=exc.message)
-    except DciUnauthorizedAccessException as exc:
-        module.fail_json(msg=exc.message)
-    except DciServerErrorException as exc:
-        module.fail_json(msg=exc.message)
-    except DciUnexpectedErrorException as exc:
-        module.fail_json(msg=exc.message)
-    except DciParameterError as exc:
+    except DciError as exc:
         module.fail_json(msg=exc.message)
 
     return res

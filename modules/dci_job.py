@@ -18,10 +18,7 @@ from ansible.module_utils.dci_common import (authentication_argument_spec,
                                              run_action_func)
 from ansible.module_utils.dci_base import (
     DciBase,
-    DciResourceNotFoundException,
-    DciUnauthorizedAccessException,
-    DciUnexpectedErrorException,
-    DciServerErrorException,
+    DciError,
 )
 
 try:
@@ -215,12 +212,18 @@ class DciJob(DciBase):
     def do_schedule(self, context):
         topic_res = dci_topic.list(context, where='name:' + self.topic)
 
+        try:
+            message = topic_res.json()['message']
+        except Exception:
+            message = topic_res.text
+
         if topic_res.status_code == 200:
             topics = topic_res.json()['topics']
             if len(topics) == 0:
-                raise DciResourceNotFoundException(
-                    'Not found or not enough permissions for topic %s' %
-                    self.topic
+                raise DciError(
+                    '403|404',
+                    'Not found or not enough permissions on topic %s (%s)' %
+                    (self.topic, message,)
                 )
 
             topic_id = topics[0]['id']
@@ -252,38 +255,50 @@ class DciJob(DciBase):
             components_res = dci_topic.list_components(context,
                                                        topic_id,
                                                        where=component)
+            try:
+                message = components_res.json()['message']
+            except Exception:
+                message = components_res.text
+
             if components_res.status_code < 400:
                 if components_res.status_code == 200:
                     _components = components_res.json()['components']
                     if len(_components) == 0:
-                        raise DciResourceNotFoundException(
+                        raise DciError(
+                            '403|404',
                             'Not found or not enough permissions '
-                            'for component %s' % component
+                            'on component %s (%s)' % (component, message,)
                         )
                     components.append(_components[0]['id'])
             elif components_res.status_code in [401, 412]:
-                raise DciUnauthorizedAccessException(
-                    'Not enough permissions for component %s' % component
-                )
-            elif components_res.status_code >= 400 and \
-                    components_res.status_code < 500:
-                raise DciUnexpectedErrorException(
-                    'Received unexpected error while retrieving %s' % component
+                raise DciError(
+                    components.status_code,
+                    'Not enough permissions on component %s (%s)' %
+                    (component, message,)
                 )
             else:
-                raise DciServerErrorException('Server error')
+                raise DciError(
+                    components_res.status_code,
+                    'Error while retrieving %s (%s)' % (component, message,)
+                )
 
         return components
 
     def do_create(self, context):
         topic_res = dci_topic.list(context, where='name:' + self.topic)
 
+        try:
+            message = topic_res.json()['message']
+        except Exception:
+            message = topic_res.text
+
         if topic_res.status_code == 200:
             topics = topic_res.json()['topics']
             if len(topics) == 0:
-                raise DciResourceNotFoundException(
-                    'Not found or not enough permissions for topic %s' %
-                    self.topic
+                raise DciError(
+                    '403|404',
+                    'Not found or not enough permissions on topic %s (%s)' %
+                    (self.topic, message,)
                 )
 
             topic_id = topics[0]['id']

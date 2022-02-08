@@ -12,7 +12,6 @@
         fullname: John Doe
         password: password
         email: jdoe@example.org
-        team_id: '{{ foo_team.team.id }}'
       register: jdoe_user
 
     - name: Retrieve all users
