@@ -15,7 +15,7 @@
 # under the License.
 
 from ansible.module_utils.basic import env_fallback
-from ansible.module_utils.dci_base import DciError
+from ansible.module_utils.dci_base import DciError, DciParameterError
 from dciclient.v1.api import context as dci_context
 from ansible.release import __version__ as ansible_version
 from dciclient.version import __version__ as dciclient_version
@@ -78,7 +78,7 @@ def run_action_func(action_func, context, module):
 
     try:
         res = action_func(context)
-    except DciError as exc:
+    except (DciError, DciParameterError) as exc:
         module.fail_json(msg=exc.message)
 
     return res

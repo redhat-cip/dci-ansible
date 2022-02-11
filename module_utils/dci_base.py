@@ -20,6 +20,11 @@ class DciError(Exception):
         self.message = 'HTTP Error Code %s: %s' % (rc, msg, )
 
 
+class DciParameterError(Exception):
+    def __init__(self, msg):
+        self.message = msg
+
+
 class DciBase(object):
     """A Base DCI resource."""
 
