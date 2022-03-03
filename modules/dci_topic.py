@@ -109,6 +109,12 @@ EXAMPLES = '''
   dci_topic:
     state: absent
     id: XXXXX
+
+
+- name: Search a topic by name
+  dci_topic:
+    state: search
+    name: YYYY
 '''
 
 # TODO
@@ -157,7 +163,7 @@ def main():
     resource_argument_spec = dict(
         state=dict(
             default='present',
-            choices=['present', 'absent'],
+            choices=['present', 'absent', 'search'],
             type='str'),
         id=dict(type='str'),
         name=dict(type='str'),
@@ -182,16 +188,34 @@ def main():
         module.fail_json(msg='The python dciclient module is required')
 
     context = build_dci_context(module)
-    action_name = get_standard_action(module.params)
-    if action_name == 'update':
-        if module.params['team_ids']:
-            action_name = 'attach_team'
 
-    topic = DciTopic(module.params)
-    action_func = getattr(topic, 'do_%s' % action_name)
+    if module.params['state'] == 'search':
+        clause = ""
+        for key in ('name', 'id'):
+            if module.params[key]:
+                clause += '%s:%s,' % (key, module.params[key])
+        kwargs = {'where': clause[:-1]}
+        response = dci_topic.list(context, **kwargs)
+        if response.status_code != 200:
+            error = response.json()
+            if 'message' in error and 'payload' in error:
+                module.fail_json(
+                    msg='%s - %s' % (error['message'], str(error['payload']))
+                )
+            else:
+                module.fail_json(msg=str(error))
+        result = {"topics": response.json()["topics"]}
+    else:
+        action_name = get_standard_action(module.params)
+        if action_name == 'update':
+            if module.params['team_ids']:
+                action_name = 'attach_team'
 
-    http_response = run_action_func(action_func, context, module)
-    result = parse_http_response(http_response, dci_topic, context, module)
+        topic = DciTopic(module.params)
+        action_func = getattr(topic, 'do_%s' % action_name)
+
+        http_response = run_action_func(action_func, context, module)
+        result = parse_http_response(http_response, dci_topic, context, module)
 
     module.exit_json(**result)
 
