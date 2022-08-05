@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2017-2022 Red Hat, Inc
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -79,6 +83,9 @@ options:
   team_id:
     required: false
     description: team of the new job
+  pipeline_id:
+    required: false
+    description: pipeline id of the new job
   url:
     required: false
     description: URL attached to the job
@@ -167,6 +174,7 @@ class DciJob(DciBase):
         self.components = params.get('components', [])
         self.components_by_query = params.get('components_by_query', [])
         self.team_id = params.get('team_id')
+        self.pipeline_id = params.get('pipeline_id')
         self.url = _nonify(params.get('url'))
         self.name = _nonify(params.get('name'))
         self.configuration = _nonify(params.get('configuration'))
@@ -177,8 +185,8 @@ class DciJob(DciBase):
             'where': params.get('where')
         }
         self.deterministic_params = ['topic', 'comment', 'status',
-                                     'tags', 'team_id', 'url', 'name',
-                                     'configuration', 'status_reason',
+                                     'tags', 'team_id', 'pipeline_id', 'url',
+                                     'name', 'configuration', 'status_reason',
                                      'previous_job_id']
 
     def do_set_tags(self, context):
@@ -313,6 +321,7 @@ class DciJob(DciBase):
                 configuration=self.configuration,
                 name=self.name,
                 team_id=self.team_id,
+                pipeline_id=self.pipeline_id,
                 url=self.url,
                 previous_job_id=self.previous_job_id,
             )
@@ -353,6 +362,7 @@ def main():
         components=dict(type='list'),
         components_by_query=dict(type='list'),
         team_id=dict(type='str'),
+        pipeline_id=dict(type='str'),
         url=dict(type='str'),
         name=dict(type='str'),
         configuration=dict(type='str'),
