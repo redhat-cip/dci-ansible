@@ -139,7 +139,7 @@ def main():
                         )
                     if v["result"].lower() == "true":
                         jd_fd.write(
-                            f'<testcase classname="oval" name="{name}"><failure message={message}></failure></testcase>\n'
+                            f'<testcase classname="oval" name="{name}"><failure message="{message}"></failure></testcase>\n'
                         )
                 jd_fd.write("</testsuite>\n</testsuites>")
     except Exception as e:
