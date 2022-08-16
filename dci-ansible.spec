@@ -7,12 +7,19 @@ URL:		https://github.com/redhat-cip/dci-ansible
 Source0:	dci-ansible-%{version}.tar.gz
 
 BuildArch:	noarch
-Requires:	ansible >= 2.3, ansible < 2.10
-Conflicts:	ansible-core
+# Python2 for < Rhel 8
 %if 0%{?rhel} && 0%{?rhel} < 8
 Requires:    python2-dciclient >= 2.2.0
 %else
 Requires:    python3-dciclient >= 2.2.0
+%endif
+
+# Ansible 2.9 for Rhel 8 and older
+%if 0%{?rhel} && 0%{?rhel} <= 8
+Requires:	ansible >= 2.3, ansible < 2.10
+Conflicts:	ansible-core
+%else
+Requires:	ansible
 %endif
 
 %description
