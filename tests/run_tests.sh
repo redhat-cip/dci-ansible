@@ -31,6 +31,14 @@ function run_unit_tests() {
     clean_environment
 }
 
+# --- Start plugin tests
+function run_plugin_tests() {
+    plugins='filter_plugins/version_sort'
+
+    for plugin in $plugins; do
+        ansible-playbook unit-tests/${plugin}/playbook.yml -v
+    done
+}
 
 # --- Starting scenario-tests
 
@@ -57,12 +65,15 @@ function run_functional_tests() {
 if [[ ! -z ${1+x} ]]; then
     if [[ "$1" == "unit" ]]; then
         run_unit_tests
+    elif [[ "$1" == "plugins" ]]; then
+        run_plugin_tests
     elif [[ "$1" == "functional" ]]; then
         run_functional_tests
     else
-        echo "Usage: run_test.sh [unit|functional]"
+        echo "Usage: run_test.sh [unit|plugins|functional]"
     fi
 else
   run_unit_tests
+  run_plugin_tests
   run_functional_tests
 fi

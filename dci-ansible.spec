@@ -1,5 +1,5 @@
 Name:		dci-ansible
-Version:	0.2.0
+Version:	0.3.0
 Release:	1.VERS%{?dist}
 Summary:	DCI Ansible modules and callback
 License:	ASL 2.0
@@ -35,7 +35,7 @@ control server
 
 %install
 mkdir -p %{buildroot}%{_datadir}/dci
-cp -r modules module_utils callback action_plugins %{buildroot}%{_datadir}/dci/
+cp -r modules module_utils callback action_plugins filter_plugins %{buildroot}%{_datadir}/dci/
 chmod 755 %{buildroot}%{_datadir}/dci
 chmod 755 %{buildroot}%{_datadir}/dci/*
 
@@ -46,6 +46,9 @@ chmod 755 %{buildroot}%{_datadir}/dci/*
 
 
 %changelog
+* Thu Sep  8 2022 Tony Garcia <tonyg@redhat.com> - 0.3.0-1.VERS
+- Add filter plugins
+
 * Tue Dec 21 2021 Tony Garcia <togarcia@redhat.com> - 0.2.0-1.VERS
 - Use get_or_create method from python-dciclient
 

@@ -1,0 +1,28 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Data sets of descending versions
+      set_fact:
+        ocp_versions:
+          - "4.11.4-2022-09-07-124828"
+          - "4.11.3"
+          - "4.10.31"
+          - "4.10.22-2022-07-06-084748"
+          - "4.9.47"
+          - "4.9.23"
+          - "4.9.9"
+        rhel_versions:
+          - "RHEL-9.1.0-20220909.0"
+          - "RHEL-9.0.0-updates-20220622.0"
+          - "RHEL-8.8.0-20220909.0"
+
+    - name: Shuffle sets and sort with filter
+      set_fact:
+        ocp_versions_sorted: "{{ ocp_versions | shuffle(seed=42) | version_sort }}"
+        rhel_versions_sorted: "{{ rhel_versions | shuffle(seed=42) | version_sort }}"
+
+    - name: Verify sort matches original set in reverse order
+      assert:
+        that:
+          - ocp_versions_sorted == ocp_versions | reverse | list
+          - rhel_versions_sorted == rhel_versions | reverse | list
