@@ -45,6 +45,7 @@ server."""
         self._dci_context = self._build_dci_context()
         self._explicit = False
         self._backlog = []
+        self._file_backlog = []
         self._name = None
         self._content = ''
         self._color = None
@@ -129,7 +130,17 @@ server."""
                 'job_id': self._job_id,
                 'jobstate_id': self._jobstate_id
             }
-            dci_file.create(self._dci_context, **kwargs)
+            for idx in range(len(self._file_backlog)):
+                ret = dci_file.create(self._dci_context,
+                                      **self._file_backlog[idx])
+                if ret.status_code // 100 != 2:
+                    self._file_backlog = self._file_backlog[idx:]
+                    self._file_backlog.append(kwargs)
+                    return
+            self._file_backlog = []
+            ret = dci_file.create(self._dci_context, **kwargs)
+            if ret.status_code // 100 != 2:
+                self._file_backlog.append(kwargs)
 
     def create_jobstate(self, comment, status):
         if self._explicit:
