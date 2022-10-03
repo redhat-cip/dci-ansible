@@ -94,6 +94,9 @@ class ActionModule(ActionBase):
                                              module_args=git_args,
                                              task_vars=task_vars, tmp=tmp)
 
+        if 'failed' in module_return:
+            return module_return
+
         _commit_id = module_return['after']
         if git_args['repo'].endswith('.git'):
             git_args['repo'] = git_args['repo'].replace('.git', '')
