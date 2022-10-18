@@ -117,7 +117,7 @@ server."""
             try:
                 return name, content and content.encode('UTF-8')
             except ValueError as ve:
-                return "failed/%s" % name, "invalid content, not able to encode to utf-8: %s" % str(ve)
+                return "warn/%s" % name, "invalid content, not able to encode to utf-8: %s" % str(ve)
 
         name, content = _content_to_utf8()
         if self._job_id is None:
