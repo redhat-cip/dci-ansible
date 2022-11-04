@@ -71,6 +71,13 @@ EXAMPLES = '''
   dci_component:
     state: absent
     id: {{ component_id }}
+
+- name: list components and sort result
+  dci_component:
+    state: search
+    topic_id: '{{ topic_id }}'
+    sort: name
+    register: list_components
 '''
 
 # TODO
@@ -124,6 +131,7 @@ def main():
         active=dict(default=True, type='bool'),
         embed=dict(type='str'),
         tags=dict(type='str'),
+        sort=dict(type='str')
     )
     resource_argument_spec.update(authentication_argument_spec())
 
@@ -240,7 +248,11 @@ def main():
                     'team_id', 'tags'):
             if module.params[key]:
                 clause += '%s:%s,' % (key, module.params[key])
-        kwargs = {'where': clause[:-1]}
+        kwargs = {}
+        if clause:
+            kwargs = {'where': clause[:-1]}
+        if module.params["sort"]:
+            kwargs["sort"] = module.params["sort"]
         res = dci_topic.list_components(
             ctx, module.params['topic_id'], **kwargs)
 

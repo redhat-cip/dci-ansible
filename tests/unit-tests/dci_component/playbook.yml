@@ -1,9 +1,15 @@
 ---
 - hosts: localhost
   tasks:
+    - name: Create product osp
+      dci_product:
+        name: osp
+      register: product_osp
+
     - name: Create the OSPX topic
       dci_topic:
         name: OSPX
+        product_id: "{{ product_osp.product.id }}"
         component_types:
           - osp_puddles
       register: ospx_topic
@@ -37,10 +43,26 @@
         id: '{{ ospx_component.component.id }}'
       register: ospx_component
 
-    - name: Ensure ospx component changed
-      assert:
+    - name: Create a second Component
+      dci_component:
+        name: Linux
+        type: linux
+        topic_id: '{{ ospx_topic.topic.id }}'
+        active: True
+      register: other_component
+
+    - name: search components and sort result
+      dci_component:
+        state: search
+        topic_id: '{{ ospx_topic.topic.id }}'
+        sort: name
+      register: list_components
+
+    - name: assert components sorted by name
+      ansible.builtin.assert:
         that:
-          - ospx_component.component.state == 'active'
+          - "list_components.components[0].name == 'Linux'"
+        msg: "first component myst be Linux"
 
     - name: Delete ospx component
       dci_component:
