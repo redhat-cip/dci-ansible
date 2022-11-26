@@ -27,11 +27,24 @@
         id: '{{ ospx_component.component.id }}'
       register: ospx_component
 
+    - name: Set a tag on the ospx component
+      dci_component:
+        id: '{{ ospx_component.component.id }}'
+        url: 'https://www.redhat.com/'
+        data:
+          key: 'value'
+        tags:
+          - tag
+      register: ospx_component
+
     - name: Ensure ospx component exists
       assert:
         that:
           - ospx_component.component.name == 'OSP10-2017.10.08'
           - ospx_component.component.state == 'inactive'
+          - ospx_component.component.tags == ['tag']
+          - ospx_component.component.url == 'https://www.redhat.com/'
+          - "{{ ospx_component.component.data == {'key': 'value'} }}"
 
     - name: Update ospx component
       dci_component:

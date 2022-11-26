@@ -1,3 +1,18 @@
+#
+# Copyright (C) 2020-2022 Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
@@ -75,26 +90,28 @@ class ActionModule(ActionBase):
 
     def run(self, tmp=None, task_vars=None):
         super(ActionModule, self).run(tmp, task_vars)
-        ctx = self._build_dci_context()
-        job_id = task_vars['job_info']['job']['id']
-        team_id = task_vars['job_info']['job']['team_id']
-        topic_id = task_vars['job_info']['job']['topic_id']
-        components = task_vars['job_info']['job']['components']
         git_args = self._task.args.copy()
-        _project_name = self._get_repo_project_name(git_args['repo'])
 
-        commit_id = self._git_to_reproduce(_project_name, components)
-        if commit_id:
-            git_args['version'] = commit_id
-            return self._execute_module(module_name='git',
-                                        module_args=git_args,
-                                        task_vars=task_vars, tmp=tmp)
+        if 'job_info' in task_vars:
+            ctx = self._build_dci_context()
+            job_id = task_vars['job_info']['job']['id']
+            team_id = task_vars['job_info']['job']['team_id']
+            topic_id = task_vars['job_info']['job']['topic_id']
+            components = task_vars['job_info']['job']['components']
+            _project_name = self._get_repo_project_name(git_args['repo'])
+
+            commit_id = self._git_to_reproduce(_project_name, components)
+            if commit_id:
+                git_args['version'] = commit_id
+                return self._execute_module(module_name='git',
+                                            module_args=git_args,
+                                            task_vars=task_vars, tmp=tmp)
 
         module_return = self._execute_module(module_name='git',
                                              module_args=git_args,
                                              task_vars=task_vars, tmp=tmp)
 
-        if 'failed' in module_return:
+        if 'failed' in module_return or 'job_info' not in task_vars:
             return module_return
 
         _commit_id = module_return['after']
@@ -121,13 +138,14 @@ class ActionModule(ActionBase):
             raise ansible_errors.AnsibleError('error while getting or creating component %s: %s' % (cmpt_name, cmpt.text))  # noqa
         cmpt_id = cmpt.json()['component']['id']
 
-        cmpt = dci_job.add_component(
+        ret = dci_job.add_component(
             ctx,
             job_id=job_id,
             component_id=cmpt_id)
-        if cmpt.status_code == 409:
-            module_return['message_action_plugin_git'] = cmpt.text
-        elif cmpt.status_code != 201:
+        if ret.status_code == 409:
+            module_return['message_action_plugin_git'] = ret.text
+        elif ret.status_code != 201:
             raise ansible_errors.AnsibleError('error while attaching component %s to job %s: %s' % (cmpt_id, job_id, cmpt.text))  # noqa
 
+        module_return['component'] = cmpt.json()['component']
         return module_return

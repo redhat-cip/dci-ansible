@@ -175,36 +175,43 @@ def main():
     elif module.params['dest']:
         res = download_file(module, ctx)
 
-    # Action required: Get component informations
-    # Endpoint called: /components/<component_id> GET
-    #                  via dci_component.get()
-    #
-    # Get component informations
+    # Get or update
     elif module.params['id']:
-        kwargs = {}
-        if module.params['embed']:
-            kwargs['embed'] = module.params['embed']
-        res = dci_component.get(ctx, module.params['id'], **kwargs)
+        is_update = module.params['url'] or module.params['data'] or module.params['tags']
 
-    # Action required: Update an existing component
-    # Endpoint called: /components/<component_id> PUT
-    #                  via dci_component.update()
-    #
-    # Update the component with the specified parameters.
-    elif module.params['id']:
-        res = dci_component.get(ctx, module.params['id'])
-        if res.status_code not in [400, 401, 404, 409]:
-            updated_kwargs = {
-                'id': module.params['id'],
-                'etag': res.json()['component']['etag']
-            }
-            if module.params['active']:
-                updated_kwargs['state'] = 'active'
-            else:
-                updated_kwargs['state'] = 'inactive'
-
-            res = dci_component.update(ctx, **updated_kwargs)
-
+        if not is_update:
+            # Action required: Get component informations
+            # Endpoint called: /components/<component_id> GET
+            #                  via dci_component.get()
+            #
+            # Get component informations
+            kwargs = {}
+            if module.params['embed']:
+                kwargs['embed'] = module.params['embed']
+            res = dci_component.get(ctx, module.params['id'], **kwargs)
+        else:
+            # Action required: Update an existing component
+            # Endpoint called: /components/<component_id> PUT
+            #                  via dci_component.update()
+            #
+            # Update the component with the specified parameters.
+            res = dci_component.get(ctx, module.params['id'])
+            if res.status_code not in [400, 401, 404, 409]:
+                updated_kwargs = {
+                    'id': module.params['id'],
+                    'etag': res.json()['component']['etag']
+                }
+                if module.params['active']:
+                    updated_kwargs['state'] = 'active'
+                else:
+                    updated_kwargs['state'] = 'inactive'
+                for key in ('url', 'data', 'tags'):
+                    if key in module.params:
+                        if key == 'tags':
+                            updated_kwargs[key] = list(set(module.params[key].split(',')))
+                        else:
+                            updated_kwargs[key] = module.params[key]
+                res = dci_component.update(ctx, **updated_kwargs)
     # Action required: Create a new component
     # Endpoint called: /component POST via dci_component.create()
     #
