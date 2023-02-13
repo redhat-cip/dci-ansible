@@ -3,3 +3,4 @@ tests/content.download
 tests/feeder.sh
 tests/remoteci.sh
 .tox
+venv/

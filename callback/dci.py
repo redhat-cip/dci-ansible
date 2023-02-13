@@ -93,13 +93,22 @@ server."""
     def banner(self, msg):
         # upload the previous content when we have a new banner (start
         # of task/play/playbook...)
+
+        def check_failed_item(content):
+            import re
+            failed_re = re.compile(r"\nfailed: \[")
+            return bool(failed_re.search(content))
+
         if self._name:
             if self._color == C.COLOR_SKIP:
                 prefix = 'skipped/'
             elif self._color == C.COLOR_UNREACHABLE:
                 prefix = "unreachable/"
             elif self._color == C.COLOR_ERROR:
-                prefix = 'failed/'
+                prefix = "failed/"
+            elif check_failed_item(self._content):
+                self._color = C.COLOR_ERROR
+                prefix = "failed/"
             else:
                 prefix = ''
 
