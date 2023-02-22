@@ -61,6 +61,9 @@ options:
   where:
     required: false
     description: Specific criterias for search
+  query:
+    required: false
+    description: query language
 '''
 
 EXAMPLES = '''
@@ -110,7 +113,8 @@ class DciTeam(DciBase):
         self.active = params.get('active')
         self.search_criterias = {
             'embed': params.get('embed'),
-            'where': params.get('where')
+            'where': params.get('where'),
+            'query': params.get('query')
         }
         self.deterministic_params = ['name', 'country', 'active']
 
@@ -134,6 +138,7 @@ def main():
         active=dict(default=True, type='bool'),
         embed=dict(type='str'),
         where=dict(type='str'),
+        query=dict(type='str')
     )
     resource_argument_spec.update(authentication_argument_spec())
 

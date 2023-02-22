@@ -51,10 +51,9 @@ options:
   active:
     required: false
     description: Wether of not the resource should be active
-  embed:
+  query:
     required: false
-    description:
-      - List of field to embed within the retrieved resource
+    description: query language
 '''
 
 EXAMPLES = '''
@@ -131,7 +130,8 @@ def main():
         active=dict(default=True, type='bool'),
         embed=dict(type='str'),
         tags=dict(type='str'),
-        sort=dict(type='str')
+        sort=dict(type='str'),
+        query=dict(type='str')
     )
     resource_argument_spec.update(authentication_argument_spec())
 

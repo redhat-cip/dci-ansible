@@ -97,7 +97,7 @@ def get_standard_action(params):
 
     non_determistic_params = ['dci_login', 'dci_password', 'dci_cs_url',
                               'dci_client_id', 'dci_api_secret', 'embed',
-                              'mime', 'state', 'where', 'active']
+                              'mime', 'state', 'where', 'query', 'active']
     deterministic_params = {k: v for k, v in params.items()
                             if k not in non_determistic_params}
     non_empty_values = [item for item in deterministic_params

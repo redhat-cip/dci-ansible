@@ -108,6 +108,9 @@ options:
   where:
     required: false
     description: Specific criterias for search
+  query:
+    required: false
+    description: query language
 '''
 
 EXAMPLES = '''
@@ -182,7 +185,8 @@ class DciJob(DciBase):
         self.status_reason = _nonify(params.get('status_reason'))
         self.search_criterias = {
             'embed': params.get('embed'),
-            'where': params.get('where')
+            'where': params.get('where'),
+            'query': params.get('query')
         }
         self.deterministic_params = ['topic', 'comment', 'status',
                                      'tags', 'team_id', 'pipeline_id', 'url',
@@ -370,6 +374,7 @@ def main():
         embed=dict(type='str'),
         where=dict(type='str'),
         get=dict(type='str'),
+        query=dict(type='str')
     )
     resource_argument_spec.update(authentication_argument_spec())
 

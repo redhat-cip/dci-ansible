@@ -66,6 +66,9 @@ options:
     required: false
     description:
       - List of field to embed within the retrieved resource
+  query:
+    required: false
+    description: query language
 '''
 
 EXAMPLES = '''
@@ -125,7 +128,8 @@ class DciFile(DciBase):
         self.mime = params.get('mime')
         self.search_criterias = {
             'embed': params.get('embed'),
-            'where': params.get('where')
+            'where': params.get('where'),
+            'query': params.get('query')
         }
         self.deterministic_params = ['name', 'mime', 'file_path', 'content',
                                      'job_id', 'jobstate_id']
@@ -169,6 +173,7 @@ def main():
         mime=dict(default='text/plain', type='str'),
         embed=dict(type='str'),
         where=dict(type='str'),
+        query=dict(type='str')
     )
     resource_argument_spec.update(authentication_argument_spec())
 
