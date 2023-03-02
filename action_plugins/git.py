@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020-2022 Red Hat, Inc.
+# Copyright (C) 2020-2023 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -125,13 +125,13 @@ class ActionModule(ActionBase):
 
         cmpt, _ = dci_component.get_or_create(
             ctx,
-            name=cmpt_name,
+            display_name="%s %s" % (_project_name, _commit_id[0:7]),
+            version=_commit_id[0:7],
+            uid=_commit_id,
             team_id=team_id,
             topic_id=topic_id,
             type=_project_name,
             defaults={
-                "canonical_project_name": "%s %s" % (_project_name,
-                                                     _commit_id[0:7]),
                 "url": cmpt_url})
 
         if not cmpt.ok:

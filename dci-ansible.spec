@@ -1,5 +1,5 @@
 Name:		dci-ansible
-Version:	0.3.0
+Version:	0.3.1
 Release:	1.VERS%{?dist}
 Summary:	DCI Ansible modules and callback
 License:	ASL 2.0
@@ -9,9 +9,9 @@ Source0:	dci-ansible-%{version}.tar.gz
 BuildArch:	noarch
 # Python2 for < Rhel 8
 %if 0%{?rhel} && 0%{?rhel} < 8
-Requires:    python2-dciclient >= 2.2.0
+Requires:    python2-dciclient >= 3.1.0
 %else
-Requires:    python3-dciclient >= 2.2.0
+Requires:    python3-dciclient >= 3.1.0
 %endif
 
 # Ansible 2.9 for Rhel 8 and older
@@ -21,6 +21,9 @@ Conflicts:	ansible-core
 %else
 Requires:	ansible
 %endif
+
+Conflicts:      dci-openshift-agent < 0.5.6
+Conflicts:      dci-openshift-app-agent < 0.5.5
 
 %description
 A set of Ansible modules and callback to interact with the DCI
@@ -46,6 +49,10 @@ chmod 755 %{buildroot}%{_datadir}/dci/*
 
 
 %changelog
+* Fri Apr 28 2023 Frederic Lepied <flepied@redhat.com> 0.3.1-1.VERS
+- Requires dciclient >= 3.1.0 for the new component fields
+- Conflicts with the old versions of the OCP agents
+
 * Thu Sep  8 2022 Tony Garcia <tonyg@redhat.com> - 0.3.0-1.VERS
 - Add filter plugins
 

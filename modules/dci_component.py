@@ -119,9 +119,10 @@ def main():
             type='str'),
         id=dict(type='str'),
         dest=dict(type='str'),
-        name=dict(type='str'),
+        uid=dict(type='str'),
+        display_name=dict(type='str'),
+        version=dict(type='str'),
         type=dict(type='str'),
-        canonical_project_name=dict(type='str'),
         url=dict(type='str'),
         data=dict(type='dict'),
         topic_id=dict(type='str'),
@@ -213,23 +214,25 @@ def main():
                             updated_kwargs[key] = module.params[key]
                 res = dci_component.update(ctx, **updated_kwargs)
     # Action required: Create a new component
-    # Endpoint called: /component POST via dci_component.create()
+    # Endpoint called: /component POST via dci_component.create_v2()
     #
     # Create a new component
     elif module.params['state'] == 'present':
-        if not module.params['name']:
-            module.fail_json(msg='name parameter must be speficied')
+        if not module.params['display_name']:
+            module.fail_json(msg='display_name parameter must be specified')
         if not module.params['type']:
             module.fail_json(msg='type parameter must be speficied')
 
         kwargs = {
-            'name': module.params['name'],
+            'display_name': module.params['display_name'],
             'type': module.params['type'],
         }
-
-        if module.params['canonical_project_name']:
-            canonical_project_name = module.params['canonical_project_name']
-            kwargs['canonical_project_name'] = canonical_project_name
+        if module.params['display_name']:
+            kwargs['display_name'] = module.params['display_name']
+        if module.params['version']:
+            kwargs['version'] = module.params['version']
+        if module.params['uid']:
+            kwargs['uid'] = module.params['uid']
         if module.params['url']:
             kwargs['url'] = module.params['url']
         if module.params['data']:
@@ -239,7 +242,7 @@ def main():
         if module.params['team_id']:
             kwargs['team_id'] = module.params['team_id']
         kwargs['state'] = 'active' if module.params['active'] else 'inactive'
-        res = dci_component.create(ctx, **kwargs)
+        res = dci_component.create_v2(ctx, **kwargs)
 
     # Action required: Search components in a topic
     # Endpoint called: /topics/<id>/components POST
@@ -251,7 +254,7 @@ def main():
             module.fail_json(msg='topic_id parameter must be speficied')
 
         clause = ""
-        for key in ('name', 'type', 'canonical_project_name',
+        for key in ('display_name', 'type', 'version', 'uid',
                     'team_id', 'tags'):
             if module.params[key]:
                 clause += '%s:%s,' % (key, module.params[key])
@@ -278,7 +281,7 @@ def main():
             result = {
                 'component': dci_topic.list_components(
                     ctx, module.params['topic_id'],
-                    where='name:' + module.params['name']
+                    where='display_name:' + module.params['display_name']
                 ).json()['components'][0],
             }
         if res.status_code in [400, 401, 409]:

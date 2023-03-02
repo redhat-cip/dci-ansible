@@ -10,23 +10,23 @@
 
     - name: Create new RHEL component
       dci_component:
-        name: "{{ _topics.topics[0].name }}.6-20180809.n.0"
         type: Compose
-        canonical_project_name: "{{ _topics.topics[0].name }}.6-20180809.n.0"
+        display_name: "{{ _topics.topics[0].name }}.6-20180809.n.0"
+        version: "6-20180809.n.0"
         url: https://www.example.com
         topic_id: '{{ _topics.topics[0].id }}'
       register: rhel_component
 
     - name: Create new hwcert component
       dci_component:
-        name: hwcert-20180809
+        display_name: hwcert-20180809
         type: hwcert
         topic_id: '{{ _topics.topics[0].id }}'
       register: hwcert_component
 
     - name: Create new extras component
       dci_component:
-        name: extras-20180809
+        display_name: extras-20180809
         type: extras
         topic_id: '{{ _topics.topics[0].id }}'
       register: extras_component
