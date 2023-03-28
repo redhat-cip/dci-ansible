@@ -241,6 +241,7 @@ class DciJob(DciBase):
                                    name=self.name,
                                    url=self.url,
                                    previous_job_id=self.previous_job_id,
+                                   pipeline_id=self.pipeline_id,
                                    )
             if res.status_code == 201:
                 return dci_job.get(
