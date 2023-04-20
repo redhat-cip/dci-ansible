@@ -39,11 +39,11 @@ server."""
         self.verbosity = self._display.verbosity
         self._display = self
 
-        self._jobstate_id = None
-        self._job_id = None
+        self._jobstate_id = os.getenv("DCI_JOBSTATE_ID")
+        self._job_id = os.getenv("DCI_JOB_ID")
         self._current_status = None
         self._dci_context = self._build_dci_context()
-        self._explicit = False
+        self._explicit = self._job_id is not None
         self._backlog = []
         self._file_backlog = []
         self._name = None
@@ -176,6 +176,7 @@ server."""
         ns = r.json()
         if 'jobstate' in ns and 'id' in ns['jobstate']:
             self._jobstate_id = ns['jobstate']['id']
+            os.environ["DCI_JOBSTATE_ID"] = self._jobstate_id
 
     def v2_playbook_on_stats(self, stats):
         super(CallbackModule, self).v2_playbook_on_stats(stats)
@@ -200,6 +201,7 @@ server."""
            "id" in result._result["jobstate"]):
             self._jobstate_id = result._result["jobstate"]["id"]
             self._explicit = True
+            os.environ["DCI_JOBSTATE_ID"] = self._jobstate_id
 
         # Check if the task that just run was the schedule of an upgrade
         # job. If so, set self._job_id to the new job ID
