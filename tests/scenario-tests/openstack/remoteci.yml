@@ -145,3 +145,70 @@
     - name: Verify that job has 3 tags
       assert:
         that: job_info.job.tags|length == 3
+
+
+- name: Test warning messages
+  hosts: localhost
+  tasks:
+    - name: Single item OK warning
+      shell: dnf --version
+
+    - name: Loop item OK warning
+      shell: |
+          sed -e 's/foo/{{ item }}/g' << _EOF_
+          foo
+          _EOF_
+      loop:
+        - bar
+        - car
+        - zar
+
+    - block:
+        - name: Single item KO warning
+          shell: rm /tmp/does.not.exist
+      rescue:
+        - debug:
+            msg: Single item KO warning failed as expected
+
+    - block:
+        - name: Loop item KO warning
+          shell: "curl -I {{ item }}"
+          loop:
+            - https://redhat.com
+            - https://does.no.exist
+            - https://docs.openshift.com
+      rescue:
+        - debug:
+            msg: Loop item KO warning failed as expected
+
+    - block:
+        - name: Deprecated warning
+          openssl_certificate:
+            key_usage_strict: no
+      rescue:
+        - debug:
+            msg: Deprecated warning failed as intended
+
+    - name: Checking task files
+      shell: "dcictl file-list {{ job_id }}"
+      register: dcictl_file_list
+
+    - name: Assert single item OK warning
+      assert:
+        that: '"warn/TASK [Single item OK warning]" in dcictl_file_list.stdout'
+
+    - name: Assert loop item OK warning
+      assert:
+        that: '"warn/TASK [Loop item OK warning]" in dcictl_file_list.stdout'
+
+    - name: Assert single item KO warning
+      assert:
+        that: '"failed/warn/TASK [Single item KO warning]" in dcictl_file_list.stdout'
+
+    - name: Assert loop item KO warning
+      assert:
+        that: '"failed/warn/TASK [Loop item KO warning]" in dcictl_file_list.stdout'
+
+    - name: Assert deprecated warning
+      assert:
+        that: '"failed/warn/TASK [Deprecated warning]" in dcictl_file_list.stdout'
