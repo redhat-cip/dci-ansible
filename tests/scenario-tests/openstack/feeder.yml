@@ -11,9 +11,10 @@
 
     - name: Create new component
       dci_component:
-        name: "RH7-RHOS-{{ item.name }}-2018-01-13"
         type: puddles
-        canonical_project_name: "RH7-RHOS-{{ item.name }}.0-2018-01-13"
+        display_name: "RH7-RHOS-{{ item.name }}-2018-01-13"
+        version: "2018-01-13"
+        uid: "puddle-uid"
         url: https://www.example.com
         topic_id: '{{ item.id }}'
       register: components
@@ -28,29 +29,29 @@
         state: directory
       register: temp_dir
 
-    - name: Create canonical_component_name dir
+    - name: Create component_name dir
       file:
         state: directory
-        path: '{{ temp_dir.path }}/{{ item.component.canonical_project_name }}'
+        path: '{{ temp_dir.path }}/{{ item.component.display_name }}'
       with_items: "{{ components.results }}"
 
     - name: Copy images_list.yaml
       copy:
         remote_src: true
         src: "{{ lookup('env', 'PWD')  }}/data/images_list.yaml"
-        dest: '{{ temp_dir.path }}/{{ item.component.canonical_project_name }}'
+        dest: '{{ temp_dir.path }}/{{ item.component.display_name }}'
       with_items: "{{ components.results }}"
 
     - name: Build the component archive
       archive:
-        path: "{{ temp_dir.path }}/{{ item.component.canonical_project_name }}"
-        dest: "{{ temp_dir.path }}/{{ item.component.canonical_project_name }}.tar"
+        path: "{{ temp_dir.path }}/{{ item.component.display_name }}"
+        dest: "{{ temp_dir.path }}/{{ item.component.display_name }}.tar"
         format: tar
       with_items: "{{ components.results }}"
 
     - name: Get size of the component archive
       stat:
-        path: "{{ temp_dir.path }}/{{ item.component.canonical_project_name }}.tar"
+        path: "{{ temp_dir.path }}/{{ item.component.display_name }}.tar"
       register: stat_archive
       with_items: "{{ components.results }}"
 
@@ -61,7 +62,7 @@
     - name: Upload the component content
       dci_component:
         id: '{{ item.component.id }}'
-        path: "{{ temp_dir.path }}/{{ item.component.canonical_project_name }}.tar"
+        path: "{{ temp_dir.path }}/{{ item.component.display_name }}.tar"
       with_items: "{{ components.results }}"
 
     - name: Create temporary directory - for archive extraction
@@ -72,12 +73,12 @@
     - name: Download component content
       dci_component:
         id: '{{ item.component.id }}'
-        dest: "{{ temp_dir_extraction.path }}/{{ item.component.canonical_project_name }}.download.tar"
+        dest: "{{ temp_dir_extraction.path }}/{{ item.component.display_name }}.download.tar"
       with_items: "{{ components.results }}"
 
     - name: Get size of the component archive downloaded
       stat:
-        path: "{{ temp_dir_extraction.path }}/{{ item.component.canonical_project_name }}.download.tar"
+        path: "{{ temp_dir_extraction.path }}/{{ item.component.display_name }}.download.tar"
       register: stat_archive_download
       with_items: "{{ components.results }}"
 
@@ -88,12 +89,12 @@
 
     - name: Unarchive component
       unarchive:
-        src: "{{ temp_dir_extraction.path }}/{{ item.component.canonical_project_name }}.download.tar"
+        src: "{{ temp_dir_extraction.path }}/{{ item.component.display_name }}.download.tar"
         dest: "{{ temp_dir_extraction.path}}/"
       with_items: "{{ components.results }}"
 
     - name: Register content of the download file
-      command: "cat {{ temp_dir_extraction.path  }}/{{ components.results[0].component.canonical_project_name }}/images_list.yaml"
+      command: "cat {{ temp_dir_extraction.path  }}/{{ components.results[0].component.display_name }}/images_list.yaml"
       register: component_file_after_download
 
     - name: Ensure proper file has been downloaded

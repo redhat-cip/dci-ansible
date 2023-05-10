@@ -1,1 +1,3 @@
 dciclient
+ansible<2.10
+selinux

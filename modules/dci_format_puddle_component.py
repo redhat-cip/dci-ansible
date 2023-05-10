@@ -15,7 +15,6 @@ from six.moves.urllib.parse import urlparse
 
 import StringIO
 import yaml
-from datetime import datetime
 
 try:
     import requests
@@ -56,29 +55,7 @@ RETURN = '''
 '''
 
 
-def get_canonical_project_name(type, name, repo_name):
-    """Return canonical_project_name. """
-
-    if 'puddle_osp' in type:
-        canonical_project_name = repo_name
-    elif type == 'snapshot_rdo':
-        canonical_project_name = name
-
-    return canonical_project_name
-
-
-def get_name(type, name_label, repo_name, version, repo_date):
-    """Return name. """
-
-    if 'puddle_osp' in type:
-        name = '%s %s' % (repo_name, version)
-    elif type == 'snapshot_rdo':
-        name = '%s %s %s' % (name_label, repo_date, version)
-
-    return name
-
-
-def get_data(type, name, repo_name, version, base_url, section_name,
+def get_data(type, repo_name, version, base_url, section_name,
              raw_base_url):
     """Return data. """
 
@@ -98,7 +75,7 @@ def get_data(type, name, repo_name, version, base_url, section_name,
         commit_information_file_path = '%s/import_data/commit.yaml' % \
             '/'.join(raw_base_url.split('/')[0:-3])
     elif type == 'snapshot_rdo':
-        data['repo_name'] = name
+        data['repo_name'] = repo_name
         commit_information_file_path = '%s/commit.yaml' % raw_base_url
 
     if ('puddle_osp' in type and float(osp_version) >= 10.0) or \
@@ -114,7 +91,7 @@ def get_data(type, name, repo_name, version, base_url, section_name,
     return data
 
 
-def get_repo_information(url, type, name):
+def get_repo_information(url, type):
     repo_file_obj = requests.get(url)
     repo_file = repo_file_obj._content
     output = StringIO.StringIO(repo_file)
@@ -134,17 +111,12 @@ def get_repo_information(url, type, name):
             version = base_url.split('/')[-1]
     repo_name = config.get(section_name, 'name')
 
-    repo_file_date = repo_file_obj.headers['Last-Modified']
-    dt = datetime.strptime(repo_file_date, '%a, %d %b %Y %H:%M:%S GMT')
-    repo_date = '%s-%s-%s' % (dt.year, dt.month, dt.day)
-
     component_informations = {
-        'canonical_project_name': get_canonical_project_name(
-            type, name, repo_name),
-        'name': get_name(type, name, repo_name, version, repo_date),
+        'version': version,
+        'display_name': repo_name,
         'url': base_url,
         'data': get_data(
-            type, name, repo_name, version, base_url, section_name,
+            type, repo_name, version, base_url, section_name,
             raw_base_url
         ),
     }
@@ -160,8 +132,7 @@ def main():
                 choices=['present', 'absent'],
                 type='str'),
             url=dict(required=True, type='str'),
-            type=dict(required=True, type='str'),
-            name=dict(required=True, type='str'),
+            type=dict(required=True, type='str')
         ),
     )
 
@@ -169,11 +140,10 @@ def main():
         module.fail_json(msg='The python requests module is required')
 
     information = get_repo_information(module.params['url'],
-                                       module.params['type'],
-                                       module.params['name'])
+                                       module.params['type'])
     puddle_component = {
-        'canonical_project_name': information['canonical_project_name'],
-        'name': information['name'],
+        'version': information['version'],
+        'display_name': information['display_name'],
         'url': information['url'],
         'data': information['data'],
         'changed': False

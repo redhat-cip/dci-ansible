@@ -118,9 +118,9 @@
 
       - name: Add repository
         yum_repository:
-          name: '{{ item["canonical_project_name"] }}'
-          description: '{{ item["canonical_project_name"] }}'
-          baseurl: '{{ mirror_url }}/{{ job_id }}/{{ item["canonical_project_name"] }}'
+          name: '{{ item["display_name"] }}'
+          description: '{{ item["display_name"] }}'
+          baseurl: '{{ mirror_url }}/{{ job_id }}/{{ item["display_name"] }}'
           priority: 1
         with_items: "{{ components }}"
 
