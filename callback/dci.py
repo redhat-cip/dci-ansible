@@ -135,6 +135,9 @@ server."""
         if self._job_id is None:
             self._backlog.append({'name': name, 'content': content})
         else:
+            if self._jobstate_id is None:
+                self.create_jobstate("implicit new state", "new", True)
+
             kwargs = {
                 'name': name,
                 'content': content,
@@ -154,8 +157,8 @@ server."""
             if ret.status_code // 100 != 2:
                 self._file_backlog.append(kwargs)
 
-    def create_jobstate(self, comment, status):
-        if self._explicit:
+    def create_jobstate(self, comment, status, force=False):
+        if self._explicit and not force:
             return
 
         if not status or self._current_status == status:
