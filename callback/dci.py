@@ -49,6 +49,9 @@ server."""
         self._name = None
         self._content = ''
         self._color = None
+        self._warns = []
+        self._warn_prefix = False
+        self._item_failed = False
 
     def get_option(self, name):
         for key, val in COMPAT_OPTIONS:
@@ -81,6 +84,33 @@ server."""
             return dci_context.build_signature_context(url, client_id,
                                                        api_secret, user_agent)
 
+    def warning(self, msg):
+        pass
+
+    def deprecated(self, *args, **kwargs):
+        pass
+
+    def _handle_warnings(self, res):
+        """If displaying warning messages is enabled and the current task has
+        any, add them to the task content and activate the flag so the task is
+        marked and formatted properly in the CS. This ignores warning messages
+        that have already occurred in the execution."""
+        if C.ACTION_WARNINGS:
+            if 'warnings' in res:
+                for warning in res['warnings']:
+                    if warning not in self._warns:
+                        self._content += "[WARNING]: " + warning + "\n"
+                        self._warns.append(warning)
+                        self._warn_prefix = True
+            if 'deprecations' in res:
+                for warning in res['deprecations']:
+                    if warning["msg"] not in self._warns:
+                        self._content += "[DEPRECATION WARNING]: " + warning["msg"] + "\n"
+                        self._warns.append(warning["msg"])
+                        self._warn_prefix = True
+
+        super(CallbackModule, self)._handle_warnings(res)
+
     def display(self, msg, color=None, screen_only=False, *args, **kwargs):
         if screen_only:
             return
@@ -94,23 +124,21 @@ server."""
         # upload the previous content when we have a new banner (start
         # of task/play/playbook...)
 
-        def check_failed_item(content):
-            import re
-            failed_re = re.compile(r"\nfailed: \[")
-            return bool(failed_re.search(content))
-
         if self._name:
             if self._color == C.COLOR_SKIP:
                 prefix = 'skipped/'
             elif self._color == C.COLOR_UNREACHABLE:
                 prefix = "unreachable/"
-            elif self._color == C.COLOR_ERROR:
-                prefix = "failed/"
-            elif check_failed_item(self._content):
-                self._color = C.COLOR_ERROR
+            elif self._color == C.COLOR_ERROR or self._item_failed:
                 prefix = "failed/"
             else:
                 prefix = ''
+
+            self._item_failed = False
+
+            if self._warn_prefix:
+                prefix += "warn/"
+                self._warn_prefix = False
 
             self.create_file(prefix + self._name,
                              self._content if self._content != '' else ' ')
@@ -118,13 +146,10 @@ server."""
 
         self._name = msg
 
-    def warning(self, msg):
-        pass
-
-    def deprecated(self, *args, **kwargs):
-        pass
-
     def create_file(self, name, content):
+        """If the job ID already exists, create task files for every task in the
+        backlog and clear it. If it does not, store the new task content in
+        the backlog."""
         def _content_to_utf8():
             try:
                 return name, content and content.encode('UTF-8')
@@ -307,3 +332,10 @@ server."""
                                  status='failure')
 
         super(CallbackModule, self).v2_runner_on_failed(result, ignore_errors)
+
+    def v2_runner_item_on_failed(self, result):
+        """When a loop item fails, enable a flag for the banner to be formatted
+        accordingly.
+        """
+        self._item_failed = True
+        super(CallbackModule, self).v2_runner_item_on_failed(result)
