@@ -55,6 +55,12 @@ EXAMPLES = '''
   dci_job_component:
     job_id: {{ job_id }}
     component_id: {{ component_id }}
+
+- name: Remove a component from a job
+  dci_job_component:
+    job_id: {{ job_id }}
+    component_id: {{ component_id }}
+    state: absent
 '''
 
 # TODO
@@ -67,7 +73,7 @@ def main():
     resource_argument_spec = dict(
         state=dict(
             default='present',
-            choices=['present'],
+            choices=['present', 'absent'],
             type='str'),
         job_id=dict(type='str', required=True),
         component_id=dict(type='str', required=True)
@@ -85,7 +91,10 @@ def main():
     job_id = module.params['job_id'].strip()
     component_id = module.params['component_id'].strip()
 
-    res = dci_job.add_component(ctx, job_id, component_id)
+    if module.params['state'] == 'present':
+        res = dci_job.add_component(ctx, job_id, component_id)
+    else:
+        res = dci_job.remove_component(ctx, job_id, component_id)
 
     result = {'changed': False}
     if res.status_code in (201, 409):

@@ -1,5 +1,5 @@
 Name:		dci-ansible
-Version:	0.3.1
+Version:	0.4.0
 Release:	1.VERS%{?dist}
 Summary:	DCI Ansible modules and callback
 License:	ASL 2.0
@@ -9,9 +9,9 @@ Source0:	dci-ansible-%{version}.tar.gz
 BuildArch:	noarch
 # Python2 for < Rhel 8
 %if 0%{?rhel} && 0%{?rhel} < 8
-Requires:    python2-dciclient >= 3.1.0
+Requires:    python2-dciclient >= 3.2.0
 %else
-Requires:    python3-dciclient >= 3.1.0
+Requires:    python3-dciclient >= 3.2.0
 %endif
 
 # Ansible 2.9 for Rhel 8 and older
@@ -49,17 +49,20 @@ chmod 755 %{buildroot}%{_datadir}/dci/*
 
 
 %changelog
-* Fri Apr 28 2023 Frederic Lepied <flepied@redhat.com> 0.3.1-1.VERS
+* Sun Jun  4 2023 Frederic Lepied <flepied@redhat.com> 0.4.0-1
+- requires dciclient >= 3.2.0 for job.delete_component api call
+
+* Fri Apr 28 2023 Frederic Lepied <flepied@redhat.com> 0.3.1-1
 - Requires dciclient >= 3.1.0 for the new component fields
 - Conflicts with the old versions of the OCP agents
 
-* Thu Sep  8 2022 Tony Garcia <tonyg@redhat.com> - 0.3.0-1.VERS
+* Thu Sep  8 2022 Tony Garcia <tonyg@redhat.com> - 0.3.0-1
 - Add filter plugins
 
-* Tue Dec 21 2021 Tony Garcia <togarcia@redhat.com> - 0.2.0-1.VERS
+* Tue Dec 21 2021 Tony Garcia <togarcia@redhat.com> - 0.2.0-1
 - Use get_or_create method from python-dciclient
 
-* Tue Nov 10 2020 Yassine Lamgarchal <ylamgarc@redhat.com> - 0.1.0-1.VERS
+* Tue Nov 10 2020 Yassine Lamgarchal <ylamgarc@redhat.com> - 0.1.0-1
 - Adding action_plugins directory
 
 * Thu Jun 04 2020 Bill Peck <bpeck@rehdat.com> - 0.0.1-3

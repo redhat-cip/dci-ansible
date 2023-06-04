@@ -12,10 +12,38 @@
     - name: Set global variables
       set_fact:
         job_id: '{{ hostvars.localhost.job_info.job.id  }}'
+        topic_id: '{{ hostvars.localhost.job_info.job.topic_id  }}'
+        team_id: '{{ hostvars.localhost.job_info.job.team_id  }}'
         components: '{{ hostvars.localhost.job_info.job.components  }}'
         job_url: '{{ hostvars.localhost.job_info.job.url }}'
         job_name: '{{ hostvars.localhost.job_info.job.name  }}'
         job_conf: '{{ hostvars.localhost.job_info.job.configuration  }}'
+
+    - name: Create new component
+      dci_component:
+        type: my-component
+        display_name: "My Component 2023-06-05"
+        version: "2023-06-05"
+        topic_id: '{{ topic_id }}'
+        team_id: '{{ team_id }}'
+      register: comp
+
+    - name: Attach a component
+      dci_job_component:
+        job_id: "{{ job_id }}"
+        component_id: "{{ comp.component.id }}"
+
+    - name: Remove a component
+      dci_job_component:
+        job_id: "{{ job_id }}"
+        component_id: "{{ comp.component.id }}"
+        state: absent
+
+    - name: Remove a component (second time)
+      dci_job_component:
+        job_id: "{{ job_id }}"
+        component_id: "{{ comp.component.id }}"
+        state: absent
 
 - hosts: localhost
   vars:
