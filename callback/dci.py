@@ -126,7 +126,12 @@ server."""
 
         if self._name:
             if self._color == C.COLOR_SKIP:
-                prefix = 'skipped/'
+                if self._item_failed:
+                    prefix = 'failed/'
+                elif self._item_actioned:
+                    prefix = ''
+                else:
+                    prefix = 'skipped/'
             elif self._color == C.COLOR_UNREACHABLE:
                 prefix = "unreachable/"
             elif self._color == C.COLOR_ERROR or self._item_failed:
@@ -135,6 +140,7 @@ server."""
                 prefix = ''
 
             self._item_failed = False
+            self._item_actioned = False
 
             if self._warn_prefix:
                 prefix += "warn/"
@@ -339,3 +345,10 @@ server."""
         """
         self._item_failed = True
         super(CallbackModule, self).v2_runner_item_on_failed(result)
+
+    def v2_runner_item_on_ok(self, result):
+        """When a loop item completes, enable a flag for the banner to be
+        formatted accordingly.
+        """
+        self._item_actioned = True
+        super(CallbackModule, self).v2_runner_item_on_ok(result)
