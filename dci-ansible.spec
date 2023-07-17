@@ -1,5 +1,5 @@
 Name:		dci-ansible
-Version:	0.4.0
+Version:	0.5.0
 Release:	1.VERS%{?dist}
 Summary:	DCI Ansible modules and callback
 License:	ASL 2.0
@@ -49,6 +49,9 @@ chmod 755 %{buildroot}%{_datadir}/dci/*
 
 
 %changelog
+* Mon Jul 17 2023 François Charlier <fcharlie@redhat.com> 0.5.0-1
+- deprecate dci_keys module
+
 * Sun Jun  4 2023 Frederic Lepied <flepied@redhat.com> 0.4.0-1
 - requires dciclient >= 3.2.0 for job.delete_component api call
 

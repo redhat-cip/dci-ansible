@@ -21,7 +21,7 @@ function clean_db() {
 # --- Starting unit-tests
 
 function run_unit_tests() {
-    modules='dci_user dci_team dci_topic dci_component dci_feeder dci_product dci_job dci_keys'
+    modules='dci_user dci_team dci_topic dci_component dci_feeder dci_product dci_job'
 
     source ./admin.sh
     for module in $modules; do
