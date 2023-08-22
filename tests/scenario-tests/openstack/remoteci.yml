@@ -208,6 +208,12 @@
         - debug:
             msg: Deprecated warning failed as intended
 
+    - name: Loop item skipped
+      debug:
+        msg: "Test item: {{ item }}"
+      when: item == 3
+      loop: [1, 2, 3, 4, 5]
+
     - name: Checking task files
       shell: "dcictl file-list {{ job_id }}"
       register: dcictl_file_list
@@ -231,3 +237,9 @@
     - name: Assert deprecated warning
       assert:
         that: '"failed/warn/TASK [Deprecated warning]" in dcictl_file_list.stdout'
+
+    - name: Assert loop item skipped
+      assert:
+        that:
+          - '"TASK [Loop item skipped]" in dcictl_file_list.stdout'
+          - '"skipped/TASK [Loop item skipped]" not in dcictl_file_list.stdout'
