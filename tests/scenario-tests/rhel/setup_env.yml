@@ -4,6 +4,7 @@
     - name: Create Product Team
       dci_team:
         name: RHEL
+        has_pre_release_access: true
       register: rhel_team
 
     - name: Create Product

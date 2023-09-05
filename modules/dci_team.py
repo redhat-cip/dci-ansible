@@ -51,6 +51,9 @@ options:
   country:
     required: false
     description: Team country
+  has_pre_release_access:
+    required: false
+    description: Wether of not the team should have access to pre release content
   active:
     required: false
     description: Wether of not the resource should be active
@@ -111,12 +114,13 @@ class DciTeam(DciBase):
         self.name = params.get('name')
         self.country = params.get('country')
         self.active = params.get('active')
+        self.has_pre_release_access = params.get('has_pre_release_access')
         self.search_criterias = {
             'embed': params.get('embed'),
             'where': params.get('where'),
             'query': params.get('query')
         }
-        self.deterministic_params = ['name', 'country', 'active']
+        self.deterministic_params = ['name', 'country', 'active', 'has_pre_release_access']
 
     def do_create(self, context):
         if not self.name:
@@ -136,6 +140,7 @@ def main():
         name=dict(type='str'),
         country=dict(type='str'),
         active=dict(default=True, type='bool'),
+        has_pre_release_access=dict(default=False, type='bool'),
         embed=dict(type='str'),
         where=dict(type='str'),
         query=dict(type='str')

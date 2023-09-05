@@ -9,6 +9,7 @@
     - name: Create Product Team
       dci_team:
         name: OpenStack
+        has_pre_release_access: true
       register: openstack_team
 
     - name: Create Product
