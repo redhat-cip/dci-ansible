@@ -63,9 +63,6 @@ options:
   next_topic_id:
     required: false
     description: The next topic id to upgrade to.
-  team_ids:
-    required: false
-    description: List of Teams attach to this topic
   active:
     required: false
     description: Wether of not the resource should be active
@@ -135,7 +132,6 @@ class DciTopic(DciBase):
         self.product_id = params.get('product_id')
         self.next_topic_id = params.get('next_topic_id')
         self.component_types = params.get('component_types')
-        self.team_ids = params.get('team_ids')
         self.active = params.get('active')
         self.export_control = params.get('export_control')
         self.search_criterias = {
@@ -156,11 +152,6 @@ class DciTopic(DciBase):
     def do_delete(self, context):
         return self.resource.delete(context, self.id)
 
-    def do_attach_team(self, context):
-        for team in self.team_ids:
-            res = dci_topic.attach_team(context, self.id, team)
-        return res
-
 
 def main():
 
@@ -175,7 +166,6 @@ def main():
         product_id=dict(type='str'),
         next_topic_id=dict(type='str'),
         component_types=dict(type='list'),
-        team_ids=dict(type='list'),
         active=dict(default=True, type='bool'),
         export_control=dict(type='bool'),
         embed=dict(type='str'),
@@ -212,9 +202,6 @@ def main():
         result = {"topics": response.json()["topics"]}
     else:
         action_name = get_standard_action(module.params)
-        if action_name == 'update':
-            if module.params['team_ids']:
-                action_name = 'attach_team'
 
         topic = DciTopic(module.params)
         action_func = getattr(topic, 'do_%s' % action_name)

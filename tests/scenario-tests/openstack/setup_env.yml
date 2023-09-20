@@ -38,12 +38,6 @@
           releasename: queens
       register: openstack_topic_osp13
 
-    - name: Attach OpenStack team to OSP13 topic
-      dci_topic:
-        id: '{{ openstack_topic_osp13.topic.id }}'
-        team_ids:
-          - '{{ openstack_team.team.id }}'
-
     - name: Create an OSP12 topic
       dci_topic:
         name: OSP12
@@ -58,12 +52,6 @@
             password: null
           releasename: pike
       register: openstack_topic_osp12
-
-    - name: Attach OpenStack team to OSP12 topic
-      dci_topic:
-        id: '{{ openstack_topic_osp12.topic.id }}'
-        team_ids:
-          - '{{ openstack_team.team.id }}'
 
     - name: Create Product Owner for OpenStack
       dci_user:

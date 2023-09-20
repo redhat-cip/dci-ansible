@@ -29,12 +29,6 @@
         product_id: '{{ rhel_product.product.id }}'
       register: rhel_topic_rhel7
 
-    - name: Attach RHEL team to RHEL7 topic
-      dci_topic:
-        id: '{{ rhel_topic_rhel7.topic.id }}'
-        team_ids:
-          - '{{ rhel_team.team.id }}'
-
     - name: Create Product Owner for RHEL
       dci_user:
         name: rhel-po
