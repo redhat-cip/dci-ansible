@@ -1,0 +1,53 @@
+---
+- name: Test cmdline_to_json filter
+  hosts: localhost
+  tasks:
+    - name: Set cmdline
+      set_fact:
+        cmdline: >-
+          BOOT_IMAGE=(hd0,gpt3)/ostree/rhcos-e360817922291b1798e91def049a70a101dfb18530e2a62737c2f6aaf3bd9cbb/vmlinuz-5.14.0-284.32.1.el9_2.x86_64
+          ignition.platform.id=metal ostree=/ostree/boot.0/rhcos/e360817922291b1798e91def049a70a101dfb18530e2a62737c2f6aaf3bd9cbb/0
+          ip=dhcp root=UUID=34b47a7d-cb1b-494e-a3a6-e49e86b076c7 rw rootflags=prjquota boot=UUID=ed8f4229-ff7c-41e4-9043-e43accbe03f7
+          systemd.unified_cgroup_hierarchy=0 systemd.legacy_systemd_cgroup_controller=1 skew_tick=1 nohz=on rcu_nocbs=6-15
+          tuned.non_isolcpus=0000003f systemd.cpu_affinity=0,1,2,3,4,5 intel_iommu=on iommu=pt isolcpus=managed_irq,6-15
+          nohz_full=6-15 tsc=reliable nosoftlockup nmi_watchdog=0 mce=off rcutree.kthread_prio=11 intel_pstate=disable
+        expected_json:
+          BOOT_IMAGE: "(hd0,gpt3)/ostree/rhcos-e360817922291b1798e91def049a70a101dfb18530e2a62737c2f6aaf3bd9cbb/vmlinuz-5.14.0-284.32.1.el9_2.x86_64"
+          ignition.platform.id: "metal"
+          ostree: "/ostree/boot.0/rhcos/e360817922291b1798e91def049a70a101dfb18530e2a62737c2f6aaf3bd9cbb/0"
+          ip: "dhcp"
+          root: "UUID=34b47a7d-cb1b-494e-a3a6-e49e86b076c7"
+          rw: ""
+          rootflags: "prjquota"
+          boot: "UUID=ed8f4229-ff7c-41e4-9043-e43accbe03f7"
+          systemd.unified_cgroup_hierarchy: "0"
+          systemd.legacy_systemd_cgroup_controller: "1"
+          skew_tick: "1"
+          nohz: "on"
+          rcu_nocbs: "6-15"
+          tuned.non_isolcpus: "0000003f"
+          systemd.cpu_affinity:
+            - "0"
+            - "1"
+            - "2"
+            - "3"
+            - "4"
+            - "5"
+          intel_iommu: "on"
+          iommu: "pt"
+          isolcpus:
+            - "managed_irq"
+            - "6-15"
+          nohz_full: "6-15"
+          tsc: "reliable"
+          nosoftlockup: ""
+          nmi_watchdog: "0"
+          mce: "off"
+          rcutree.kthread_prio: "11"
+          intel_pstate: "disable"
+
+    - name: Verify filter matches expected output
+      vars:
+        cmdline_in_json: "{{ cmdline | cmdline_to_json }}"
+      assert:
+        that: cmdline_in_json == expected_json
