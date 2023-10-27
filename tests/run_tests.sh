@@ -2,6 +2,8 @@
 
 set -eux
 
+BASEDIR="$(cd "$(dirname "$0")"||exit 1; pwd)"
+
 function clean_environment() {
     unset DCI_LOGIN
     unset DCI_PASSWORD
@@ -23,7 +25,7 @@ function clean_db() {
 function run_unit_tests() {
     modules='dci_user dci_team dci_topic dci_component dci_feeder dci_product dci_job'
 
-    source ./admin.sh
+    source $BASEDIR/admin.sh
     for module in $modules; do
         ansible-playbook unit-tests/$module/playbook.yml -v
         clean_db
@@ -46,7 +48,7 @@ function run_functional_tests() {
 
     environments='openstack rhel'
     for environment in $environments; do
-        source ./admin.sh
+        source $BASEDIR/admin.sh
         ansible-playbook "scenario-tests/${environment}/setup_env.yml" -v
         clean_environment
 
@@ -61,6 +63,8 @@ function run_functional_tests() {
         rm -f feeder.sh remoteci.sh content.download
     done
 }
+
+cd $BASEDIR
 
 if [[ ! -z ${1+x} ]]; then
     if [[ "$1" == "unit" ]]; then
