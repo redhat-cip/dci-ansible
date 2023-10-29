@@ -19,6 +19,17 @@
         job_name: '{{ hostvars.localhost.job_info.job.name  }}'
         job_conf: '{{ hostvars.localhost.job_info.job.configuration  }}'
 
+    - name: Set a key/value
+      dci_job:
+        id: "{{ job_id }}"
+        key: answer
+        value: 42
+      register: kv
+
+    - name: Test the key/value
+      assert:
+        that: "kv.job.keys_values[0]['key'] == 'answer' and kv.job.keys_values[0]['value'] == 42.0"
+
     - name: Create new component
       dci_component:
         type: my-component

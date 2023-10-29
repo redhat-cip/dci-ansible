@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2017 Red Hat, Inc
+# Copyright (C) 2015-2023 Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -111,6 +111,9 @@ def get_standard_action(params):
 
     elif not non_empty_values:
         return 'list'
+
+    elif 'key' in non_empty_values:
+        return 'set_key_value'
 
     elif non_empty_values == ['id']:
         return 'get'
