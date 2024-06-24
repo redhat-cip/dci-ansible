@@ -1,5 +1,5 @@
 Name:		dci-ansible
-Version:	0.6.0
+Version:	0.7.0
 Release:	1.VERS%{?dist}
 Summary:	DCI Ansible modules and callback
 License:	ASL 2.0
@@ -14,16 +14,9 @@ Requires:    python2-dciclient >= 3.2.0
 Requires:    python3-dciclient >= 3.2.0
 %endif
 
-# Ansible 2.9 for Rhel 8 and older
-%if 0%{?rhel} && 0%{?rhel} <= 8
-Requires:	ansible >= 2.3, ansible < 2.10
-Conflicts:	ansible-core
-%else
-Requires:	ansible
-%endif
-
-Conflicts:      dci-openshift-agent < 0.5.6
-Conflicts:      dci-openshift-app-agent < 0.5.5
+Requires:	(ansible-core or (ansible < 2.10.0 with ansible >= 2.9.10))
+Conflicts:	dci-openshift-agent < 0.5.6
+Conflicts:	dci-openshift-app-agent < 0.5.5
 
 %description
 A set of Ansible modules and callback to interact with the DCI
@@ -49,6 +42,9 @@ chmod 755 %{buildroot}%{_datadir}/dci/*
 
 
 %changelog
+* Mon Jun 24 2024 Tony Garcia <tonyg@redhat.com> - 0.7.0-1
+- Use ansible-core or ansible depending on its versions
+
 * Wed Sep 20 2023 Guillaume Vincent <gvincent@redhat.com> 0.6.0-1
 - Remove team_ids on topic module
 
