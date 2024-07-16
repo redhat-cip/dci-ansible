@@ -1,22 +1,18 @@
-Name:		dci-ansible
-Version:	0.7.0
-Release:	1.VERS%{?dist}
-Summary:	DCI Ansible modules and callback
-License:	ASL 2.0
-URL:		https://github.com/redhat-cip/dci-ansible
-Source0:	dci-ansible-%{version}.tar.gz
+Name:       dci-ansible
+Version:    0.7.1
+Release:    1.VERS%{?dist}
+Summary:    DCI Ansible modules and callback
+License:    ASL 2.0
+URL:        https://github.com/redhat-cip/dci-ansible
+Source0:    dci-ansible-%{version}.tar.gz
 
-BuildArch:	noarch
-# Python2 for < Rhel 8
-%if 0%{?rhel} && 0%{?rhel} < 8
-Requires:    python2-dciclient >= 3.2.0
-%else
-Requires:    python3-dciclient >= 3.2.0
-%endif
+BuildArch:   noarch
+Requires:    python3-dciclient
+Requires:    python3-dciauth
 
-Requires:	(ansible-core or (ansible < 2.10.0 with ansible >= 2.9.10))
-Conflicts:	dci-openshift-agent < 0.5.6
-Conflicts:	dci-openshift-app-agent < 0.5.5
+Requires:    (ansible-core or (ansible < 2.10.0 with ansible >= 2.9.10))
+Conflicts:    dci-openshift-agent < 0.5.6
+Conflicts:    dci-openshift-app-agent < 0.5.5
 
 %description
 A set of Ansible modules and callback to interact with the DCI
@@ -42,19 +38,22 @@ chmod 755 %{buildroot}%{_datadir}/dci/*
 
 
 %changelog
+* Tue Jul 16 2024 Guillaume Vincent <gvincent@redhat.com> - 0.7.1-1
+- Add dciauth requirement
+
 * Mon Jun 24 2024 Tony Garcia <tonyg@redhat.com> - 0.7.0-1
 - Use ansible-core or ansible depending on its versions
 
-* Wed Sep 20 2023 Guillaume Vincent <gvincent@redhat.com> 0.6.0-1
+* Wed Sep 20 2023 Guillaume Vincent <gvincent@redhat.com> - 0.6.0-1
 - Remove team_ids on topic module
 
-* Mon Jul 17 2023 François Charlier <fcharlie@redhat.com> 0.5.0-1
+* Mon Jul 17 2023 François Charlier <fcharlie@redhat.com> - 0.5.0-1
 - deprecate dci_keys module
 
-* Sun Jun  4 2023 Frederic Lepied <flepied@redhat.com> 0.4.0-1
+* Sun Jun  4 2023 Frederic Lepied <flepied@redhat.com> - 0.4.0-1
 - requires dciclient >= 3.2.0 for job.delete_component api call
 
-* Fri Apr 28 2023 Frederic Lepied <flepied@redhat.com> 0.3.1-1
+* Fri Apr 28 2023 Frederic Lepied <flepied@redhat.com> - 0.3.1-1
 - Requires dciclient >= 3.1.0 for the new component fields
 - Conflicts with the old versions of the OCP agents
 
