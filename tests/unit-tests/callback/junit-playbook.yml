@@ -1,0 +1,14 @@
+---
+
+- name: "Execute initial step"
+  hosts: localhost
+  gather_facts: False
+  tasks:
+
+    - name: Test_ a var
+      assert:
+        that: "my_var == 'test'"
+      vars:
+        my_var: "test"
+
+...

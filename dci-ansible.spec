@@ -1,10 +1,10 @@
-Name:       dci-ansible
-Version:    0.7.1
-Release:    1.VERS%{?dist}
-Summary:    DCI Ansible modules and callback
-License:    ASL 2.0
-URL:        https://github.com/redhat-cip/dci-ansible
-Source0:    dci-ansible-%{version}.tar.gz
+Name:		dci-ansible
+Version:	0.8.0
+Release:	1.VERS%{?dist}
+Summary:	DCI Ansible modules and callback
+License:	ASL 2.0
+URL:		https://github.com/redhat-cip/dci-ansible
+Source0:	dci-ansible-%{version}.tar.gz
 
 BuildArch:   noarch
 Requires:    python3-dciclient
@@ -34,10 +34,14 @@ chmod 755 %{buildroot}%{_datadir}/dci/*
 %files
 %doc README.md
 %license LICENSE
+%license COPYING
 %{_datadir}/dci
 
 
 %changelog
+* Thu Jul 18 2024 Frederic Lepied <flepied@redhat.com> 0.8.0-1
+- provide the dcijunit callback plugin
+
 * Tue Jul 16 2024 Guillaume Vincent <gvincent@redhat.com> - 0.7.1-1
 - Add dciauth requirement
 

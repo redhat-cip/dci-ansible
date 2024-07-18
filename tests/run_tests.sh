@@ -4,6 +4,8 @@ set -eux
 
 BASEDIR="$(cd "$(dirname "$0")"||exit 1; pwd)"
 
+export ANSIBLE_CONFIG=$PWD/ansible.cfg
+
 function clean_environment() {
     unset DCI_LOGIN
     unset DCI_PASSWORD
@@ -40,6 +42,11 @@ function run_plugin_tests() {
     for plugin in $plugins; do
         ansible-playbook unit-tests/${plugin}/playbook.yml -v
     done
+
+    rm -f junit-playbook.xml
+    env JUNIT_OUTPUT_DIR=$PWD JUNIT_TEST_CASE_REGEX='(test|validate)_ ' ansible-playbook unit-tests/callback/junit-playbook.yml -vvvv
+    test -r junit-playbook.xml
+    grep -C 5 "All assertions passed" junit-playbook.xml
 }
 
 # --- Starting scenario-tests
