@@ -157,6 +157,10 @@ server."""
         """If the job ID already exists, create task files for every task in the
         backlog and clear it. If it does not, store the new task content in
         the backlog."""
+        if self._job_id is None:
+            self._backlog.append({'name': name, 'content': content})
+            return
+
         def _content_to_utf8():
             try:
                 return name, content and content.encode('UTF-8')
@@ -164,30 +168,27 @@ server."""
                 return "warn/%s" % name, "invalid content, not able to encode to utf-8: %s" % str(ve)
 
         name, content = _content_to_utf8()
-        if self._job_id is None:
-            self._backlog.append({'name': name, 'content': content})
-        else:
-            if self._jobstate_id is None:
-                self.create_jobstate("implicit new state", "new", True)
+        if self._jobstate_id is None:
+            self.create_jobstate("implicit new state", "new", True)
 
-            kwargs = {
-                'name': name,
-                'content': content,
-                'mime': 'application/x-ansible-output',
-                'job_id': self._job_id,
-                'jobstate_id': self._jobstate_id
-            }
-            for idx in range(len(self._file_backlog)):
-                ret = dci_file.create(self._dci_context,
-                                      **self._file_backlog[idx])
-                if ret.status_code // 100 != 2:
-                    self._file_backlog = self._file_backlog[idx:]
-                    self._file_backlog.append(kwargs)
-                    return
-            self._file_backlog = []
-            ret = dci_file.create(self._dci_context, **kwargs)
+        kwargs = {
+            'name': name,
+            'content': content,
+            'mime': 'application/x-ansible-output',
+            'job_id': self._job_id,
+            'jobstate_id': self._jobstate_id
+        }
+        for idx in range(len(self._file_backlog)):
+            ret = dci_file.create(self._dci_context,
+                                  **self._file_backlog[idx])
             if ret.status_code // 100 != 2:
+                self._file_backlog = self._file_backlog[idx:]
                 self._file_backlog.append(kwargs)
+                return
+        self._file_backlog = []
+        ret = dci_file.create(self._dci_context, **kwargs)
+        if ret.status_code // 100 != 2:
+            self._file_backlog.append(kwargs)
 
     def create_jobstate(self, comment, status, force=False):
         if self._explicit and not force:
