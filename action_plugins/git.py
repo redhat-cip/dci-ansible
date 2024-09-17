@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020-2023 Red Hat, Inc.
+# Copyright (C) 2020-2024 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -119,14 +119,27 @@ class ActionModule(ActionBase):
             git_args['repo'] = git_args['repo'].replace('.git', '')
         cmpt_name = _commit_id
         cmpt_url = "%s/commit/%s" % (git_args['repo'], _commit_id)
+        cmpt_version = _commit_id[0:7]
 
         repo_name = urlparse(git_args['repo'])
         repo_name = repo_name.path
 
+        # try to get the git tag corresponding to the commit using git describe --tags --exact-match <commit>
+        # if the command fails, the commit is not tagged
+        try:
+            git_tag = self._execute_module(module_name='command',
+                                           module_args={'_raw_params': 'git describe --tags --exact-match %s' % _commit_id,
+                                                        "chdir": git_args['dest']},
+                                           task_vars=task_vars, tmp=tmp)
+            if 'failed' not in git_tag and git_tag['rc'] == 0 and len(git_tag['stdout_lines']) > 0:
+                cmpt_version = git_tag['stdout_lines'][0]
+        except ansible_errors.AnsibleError:
+            pass
+
         cmpt, _ = dci_component.get_or_create(
             ctx,
-            display_name="%s %s" % (_project_name, _commit_id[0:7]),
-            version=_commit_id[0:7],
+            display_name="%s %s" % (_project_name, cmpt_version),
+            version=cmpt_version,
             uid=_commit_id,
             team_id=team_id,
             topic_id=topic_id,

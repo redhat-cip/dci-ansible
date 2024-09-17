@@ -56,6 +56,24 @@
         component_id: "{{ comp.component.id }}"
         state: absent
 
+    - name: Clone a git repo
+      git:
+        repo: 'https://github.com/redhat-best-practices-for-k8s/certsuite.git'
+        dest: /tmp/certsuite
+        version: "d703cf166"
+
+    - name: Get job info
+      dci_job:
+        id: '{{ job_id }}'
+      register: job_info
+
+    - name: Ensure certsuite component is attached with the right version
+      assert:
+        that:
+          - job_info.job.components|length == 2
+          - job_info.job.components[1].type == 'certsuite'
+          - job_info.job.components[1].version == 'v5.3.3'
+
 - hosts: localhost
   vars:
     dci_status: running
