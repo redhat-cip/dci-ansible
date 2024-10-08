@@ -20,7 +20,8 @@ COMPAT_OPTIONS = (('display_skipped_hosts', C.DISPLAY_SKIPPED_HOSTS),
                   ('show_custom_stats', C.SHOW_CUSTOM_STATS),
                   ('display_failed_stderr', False),
                   ('check_mode_markers', False),
-                  ('show_per_host_start', False))
+                  ('show_per_host_start', False),
+                  ('result_format', 'json'))
 
 
 class CallbackModule(CM_default):
