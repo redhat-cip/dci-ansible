@@ -189,7 +189,7 @@ server."""
         self._file_backlog = []
         ret = dci_file.create(self._dci_context, **kwargs)
         if ret.status_code // 100 != 2:
-            self._file_backlog.append(kwargs)
+            return "warn/%s" % name, "failed to create file: %s" % ret.text
 
     def create_jobstate(self, comment, status, force=False):
         if self._explicit and not force:
