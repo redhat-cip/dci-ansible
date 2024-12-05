@@ -177,12 +177,13 @@ server."""
         # to be replaced by the following:
         # TASK [/...<end of path> : Get pods from example-cnf namespace]
         if len(name) > 255:
-            start, end = name.split(' : ', 1)
-            elts = start.split('/')
-            if len(elts) > 1:
-                # compute the number of characters to remove from the path
-                idx = len(name) - 255 + 4
-                name = elts[0] + '/...' + '/'.join(elts[1:])[idx - 1:] + ' : ' + end
+            if ' : ' in name:
+                start, end = name.split(' : ', 1)
+                elts = start.split('/')
+                if len(elts) > 1:
+                    # compute the number of characters to remove from the path
+                    idx = len(name) - 255 + 4
+                    name = elts[0] + '/...' + '/'.join(elts[1:])[idx - 1:] + ' : ' + end
             # fallback if the name didn't respect the expected format
             if len(name) > 255:
                 name = name[:255]
@@ -199,7 +200,7 @@ server."""
             if ret.status_code // 100 != 2:
                 self._file_backlog = self._file_backlog[idx:]
                 self._file_backlog.append(kwargs)
-                return
+                return "warn/%s" % name, "failed to create file: %s" % ret.text
         self._file_backlog = []
         ret = dci_file.create(self._dci_context, **kwargs)
         if ret.status_code // 100 != 2:

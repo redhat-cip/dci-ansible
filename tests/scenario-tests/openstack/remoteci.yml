@@ -19,6 +19,24 @@
         job_name: '{{ hostvars.localhost.job_info.job.name  }}'
         job_conf: '{{ hostvars.localhost.job_info.job.configuration  }}'
 
+    - name: "supersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersupersuper longlonglong task"
+      debug:
+        msg: "This should appear in DCI UI"
+
+    - name: Check the task a long name has been created
+      shell: |
+        set -ex
+        dcictl job-list-file {{ job_id }} | grep supersupersuper
+      
+    - name: "/long/pathlong/path/long/path//long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/ : name of my task"
+      debug:
+        msg: "This should appear in DCI UI"
+
+    - name: Check the task a long name with a path has been created
+      shell: |
+        set -ex
+        dcictl job-list-file {{ job_id }} | grep "name of my task"
+      
     - name: Set a key/value
       dci_job:
         id: "{{ job_id }}"
@@ -61,6 +79,7 @@
         repo: 'https://github.com/redhat-best-practices-for-k8s/certsuite.git'
         dest: /tmp/certsuite
         version: "d703cf166"
+        depth: 1
 
     - name: Get job info
       dci_job:
