@@ -172,6 +172,20 @@ server."""
         if self._jobstate_id is None:
             self.create_jobstate("implicit new state", "new", True)
 
+        # Restrict name to 255 characters by truncating the path at the beginning.
+        # Example: TASK [<very long path> : Get pods from example-cnf namespace]
+        # to be replaced by the following:
+        # TASK [/...<end of path> : Get pods from example-cnf namespace]
+        if len(name) > 255:
+            start, end = name.split(' : ', 1)
+            elts = start.split('/')
+            if len(elts) > 1:
+                # compute the number of characters to remove from the path
+                idx = len(name) - 255 + 4
+                name = elts[0] + '/...' + '/'.join(elts[1:])[idx - 1:] + ' : ' + end
+            # fallback if the name didn't respect the expected format
+            if len(name) > 255:
+                name = name[:255]
         kwargs = {
             'name': name,
             'content': content,
