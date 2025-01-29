@@ -27,7 +27,7 @@
       shell: |
         set -ex
         dcictl job-list-file {{ job_id }} | grep supersupersuper
-      
+
     - name: "/long/pathlong/path/long/path//long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/long/path/ : name of my task"
       debug:
         msg: "This should appear in DCI UI"
@@ -36,7 +36,7 @@
       shell: |
         set -ex
         dcictl job-list-file {{ job_id }} | grep "name of my task"
-      
+
     - name: Set a key/value
       dci_job:
         id: "{{ job_id }}"
