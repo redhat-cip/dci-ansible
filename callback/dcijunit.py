@@ -402,6 +402,8 @@ class CallbackModule(CallbackBase):
         JUNIT_TEST_CASE_REGEX (optional): Consider a task only as test case if it matches this regular expression.
                                      test cases.
                                      Default: <empty>
+        JUNIT_GENERATE_TASK_NAME (optional): Name of the task to generate the jUnit report.
+                                     Default: Verify mandatory tests
     """
 
     CALLBACK_VERSION = 2.0
@@ -422,11 +424,15 @@ class CallbackModule(CallbackBase):
         self._hide_task_arguments = os.getenv('JUNIT_HIDE_TASK_ARGUMENTS', 'False').lower()
         self._test_case_regex = os.getenv('JUNIT_TEST_CASE_REGEX', '')
         self._replace_out_of_tree_path = os.getenv('JUNIT_REPLACE_OUT_OF_TREE_PATH', None)
+        self._generate_task_name = os.getenv('JUNIT_GENERATE_TASK_NAME', 'Verify mandatory tests')
         self._playbook_path = None
         self._playbook_name = None
+        self._loader = None
+        self._play = None
         self._play_name = None
         self._task_data = None
         self._test_case_re = None if self._test_case_regex == '' else re.compile(self._test_case_regex, re.IGNORECASE)
+        self._generated = False
 
         self.disabled = False
 
@@ -437,6 +443,17 @@ class CallbackModule(CallbackBase):
 
         if not os.path.exists(self._output_dir):
             os.makedirs(self._output_dir)
+
+    def _get_job_logs(self):
+        """Return the value of job_logs from jumphost or localhost hostvars."""
+        vm = self._play.get_variable_manager()
+        vars = vm.get_vars()
+        for host in ('jumphost', 'localhost'):
+            try:
+                return vars['hostvars'][host]['job_logs']['path']
+            except KeyError:
+                continue
+        return None
 
     def _start_task(self, task):
         """ record the start of a task for one or more hosts """
@@ -457,6 +474,15 @@ class CallbackModule(CallbackBase):
                 name += ' ' + args
 
         self._task_data[uuid] = TaskData(uuid, name, path, play, action)
+
+        # Need to generate the report before the end of the playbook
+        # if the task name matches the given name. This is useful for
+        # the case we need to check the file inside the playbook at a
+        # particular stage. For example in doaa, it checks the
+        # mandatory tests.
+        if self._generate_task_name and name.find(self._generate_task_name) != -1:
+            log_dir = self._get_job_logs()
+            self._generate_report(log_dir)
 
     def _finish_task(self, status, result):
         """ record the results of a task for a single host """
@@ -540,8 +566,12 @@ class CallbackModule(CallbackBase):
         """ convert surrogate escapes to the unicode replacement character to avoid XML encoding errors """
         return to_text(to_bytes(value, errors='surrogateescape'), errors='replace')
 
-    def _generate_report(self):
+    def _generate_report(self, odir=None):
         """ generate a TestSuite report from the collected TaskData and HostData """
+
+        # generate the report only once
+        if self._generated:
+            return
 
         test_cases = []
 
@@ -556,16 +586,20 @@ class CallbackModule(CallbackBase):
         test_suites = TestSuites(suites=[test_suite])
         report = test_suites.to_pretty_xml()
 
-        output_file = os.path.join(self._output_dir, '%s.xml' % (self._playbook_name))
+        output_file = os.path.join(odir if odir else self._output_dir, '%s.xml' % (self._playbook_name))
 
         with open(output_file, 'wb') as xml:
             xml.write(to_bytes(report, errors='surrogate_or_strict'))
 
+        self._generated = True
+
     def v2_playbook_on_start(self, playbook):
         self._playbook_path = playbook._file_name
         self._playbook_name = os.path.splitext(os.path.basename(self._playbook_path))[0]
+        self._loader = playbook.get_loader()
 
     def v2_playbook_on_play_start(self, play):
+        self._play = play
         self._play_name = play.get_name()
 
     def v2_runner_on_no_hosts(self, task):
