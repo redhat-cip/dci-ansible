@@ -16,7 +16,7 @@ from ansible.module_utils.dci_common import *
 from xml.etree import ElementTree as et
 
 
-DOCUMENTATION = """
+DOCUMENTATION = '''
 ---
 module: dci_oval_to_junit
 short_description: module to convert oval file format to junit
@@ -30,14 +30,14 @@ options:
   junit_dest:
     required: true
     description: Junit file destination path
-"""
+'''
 
-EXAMPLES = """
+EXAMPLES = '''
 - name: Convert oval file to junit file
   dci_oval_to_junit:
     oval_result_src: {{ oval_src_path }}
     junit_dest: {{ junit_dest_path }}
-"""
+'''
 
 
 oval_def_ns = "{http://oval.mitre.org/XMLSchema/oval-definitions-5}"
