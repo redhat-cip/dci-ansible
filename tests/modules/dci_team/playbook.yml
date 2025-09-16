@@ -1,0 +1,56 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Generate a random team_name
+      set_fact:
+        random_team_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+
+    - name: Create team
+      dci_team:
+        name: "{{ random_team_name }}"
+      register: team_created
+
+    - name: Retrieve all teams
+      dci_team:
+      register: all_teams
+
+    - name: Ensure team is in list
+      assert:
+        that:
+          - (all_teams.teams | selectattr('name', 'equalto', random_team_name) | list | length) > 0
+        fail_msg: "Team {{ random_team_name }} does not exist in all_teams.teams"
+        success_msg: "Team {{ random_team_name }} exists"
+
+    - name: Retrieve team
+      dci_team:
+        id: '{{ team_created.team.id }}'
+      register: team_created
+
+    - name: Ensure team name
+      assert:
+        that:
+          - team_created.team.name == random_team_name
+
+    - name: Generate a random team_name
+      set_fact:
+        new_team_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+
+    - name: Update team_created
+      dci_team:
+        id: '{{ team_created.team.id }}'
+        name: '{{ new_team_name }}'
+
+    - name: Retrieve team
+      dci_team:
+        id: '{{ team_created.team.id }}'
+      register: team_updated
+
+    - name: Ensure team changed
+      assert:
+        that:
+          - team_updated.team.name == new_team_name
+
+    - name: Delete team
+      dci_team:
+        id: '{{ team_updated.team.id }}'
+        state: absent

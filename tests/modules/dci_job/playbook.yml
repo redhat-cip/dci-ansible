@@ -1,0 +1,125 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Generate random variables
+      set_fact:
+        team_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        product_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        topic_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        component_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        remoteci_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+
+    - name: Create team
+      dci_team:
+        name: '{{ team_name }}'
+        has_pre_release_access: true
+      register: team
+
+    - name: Create product
+      dci_product:
+        name: '{{ product_name }}'
+      register: product
+
+    - name: Attach the product to the team
+      dci_product:
+        id: "{{ product.product.id }}"
+        team_ids:
+          - "{{ team.team.id }}"
+
+    - name: Create topic
+      dci_topic:
+        name: '{{ topic_name }}'
+        component_types:
+          - rpm
+        product_id: '{{ product.product.id }}'
+        data:
+          foo: 'bar'
+        export_control: true
+      register: topic
+
+    - name: Create component
+      dci_component:
+        display_name: '{{ component_name }}'
+        type: rpm
+        topic_id: '{{ topic.topic.id }}'
+      register: component
+
+    - name: Create a remoteci
+      dci_remoteci:
+        name: '{{ remoteci_name }}'
+        team_id: '{{ team.team.id }}'
+      register: remoteci
+
+    - name: Export env vars
+      set_fact:
+        ansible_env:
+          DCI_CLIENT_ID: "remoteci/{{ remoteci.remoteci.id }}"
+          DCI_API_SECRET: "{{ remoteci.remoteci.api_secret }}"
+          DCI_LOGIN: ""
+          DCI_PASSWORD: ""
+
+- hosts: localhost
+  tasks:
+    - name: schedule a job
+      dci_job:
+        topic: '{{ topic_name }}'
+      register: job_info
+      environment: "{{ ansible_env }}"
+
+    - name: Set global variables
+      set_fact:
+        job_id: '{{ hostvars.localhost.job_info.job.id  }}'
+        components: '{{ hostvars.localhost.job_info.job.components  }}'
+
+- hosts: localhost
+  vars:
+    dci_status: running
+  tasks:
+    - name: echo runnning
+      command: echo "running"
+
+- hosts: localhost
+  vars:
+    dci_status: post-run
+  tasks:
+    - name: Attach result to job
+      dci_file:
+        job_id: '{{ job_id }}'
+        path: "./content"
+        name: job-test-result
+
+- hosts: localhost
+  vars:
+    dci_status: success
+  tasks:
+    - name: echo success
+      command: echo "success"
+
+
+- hosts: localhost
+  tasks:
+    - name: Ensure job_id has proper file and jobstates attached to it
+      dci_job:
+        id: '{{ job_id }}'
+        embed: files,jobstates
+      register: job_info
+
+    - name: Check the jobstates are all created
+      assert:
+        that: job_info.job.jobstates|length == 4
+
+    - name: And the jobstates.status are set (1/4)
+      assert:
+        that: job_info.job.jobstates[0].status == "new"
+
+    - name: And the jobstates.status are set (2/4)
+      assert:
+        that: job_info.job.jobstates[1].status == "running"
+
+    - name: And the jobstates.status are set (3/4)
+      assert:
+        that: job_info.job.jobstates[2].status == "post-run"
+
+    - name: And the jobstates.status are set (4/4)
+      assert:
+        that: job_info.job.jobstates[3].status == "success"

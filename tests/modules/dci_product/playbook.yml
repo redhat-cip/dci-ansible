@@ -1,0 +1,53 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Generate random variables
+      set_fact:
+        product_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        second_product_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+
+    - name: Create product
+      dci_product:
+        name: '{{ product_name }}'
+      register: product
+
+    - name: Retrieve all products
+      dci_product:
+      register: all_products
+
+    - name: Ensure product is in list
+      assert:
+        that:
+          - (all_products.products | selectattr('name', 'equalto', product_name) | list | length) > 0
+        fail_msg: "Product {{ product_name }} does not exist in all_products.products"
+        success_msg: "Product {{ product_name }} exists"
+
+    - name: Retrieve product
+      dci_product:
+        id: '{{ product.product.id }}'
+      register: product
+
+    - name: Ensure name is correct
+      assert:
+        that:
+          - product.product.name == product_name
+
+    - name: Update product
+      dci_product:
+        id: '{{ product.product.id }}'
+        name: '{{ second_product_name }}'
+
+    - name: Retrieve product
+      dci_product:
+        id: '{{ product.product.id }}'
+      register: updated_product
+
+    - name: Ensure update is correct
+      assert:
+        that:
+          - updated_product.product.name == second_product_name
+
+    - name: Delete product
+      dci_product:
+        id: '{{ updated_product.product.id }}'
+        state: absent

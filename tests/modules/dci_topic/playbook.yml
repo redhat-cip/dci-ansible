@@ -1,0 +1,84 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Generate random variables
+      set_fact:
+        team_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        product_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        topic_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        second_topic_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+
+    - name: Create team
+      dci_team:
+        name: '{{ team_name }}'
+      register: team
+
+    - name: Create product
+      dci_product:
+        name: '{{ product_name }}'
+      register: product
+
+    - name: Create topic
+      dci_topic:
+        name: '{{ topic_name }}'
+        component_types:
+          - osp_puddles
+        product_id: '{{ product.product.id }}'
+        data:
+          foo: 'bar'
+        export_control: true
+      register: topic
+
+    - name: Retrieve all topics
+      dci_topic:
+      register: all_topics
+
+    - name: Ensure topic is in list
+      assert:
+        that:
+          - (all_topics.topics | selectattr('name', 'equalto', topic_name) | list | length) > 0
+        fail_msg: "Topic {{ topic_name }} does not exist in all_topics.topics"
+        success_msg: "Topic {{ topic_name }} exists"
+
+    - name: Retrieve topic
+      dci_topic:
+        id: '{{ topic.topic.id }}'
+      register: topic
+
+    - name: Ensure topic exists
+      assert:
+        that:
+          - topic.topic.name == topic_name
+          - topic.topic.export_control == true
+
+    - name: Update topic
+      dci_topic:
+        id: '{{ topic.topic.id }}'
+        name: '{{ second_topic_name }}'
+        export_control: false
+
+    - name: Retrieve topic
+      dci_topic:
+        id: '{{ topic.topic.id }}'
+      register: topic
+
+    - name: Ensure topic changed
+      assert:
+        that:
+          - topic.topic.name == second_topic_name
+          - topic.topic.export_control == false
+
+    - name: Delete topic
+      dci_topic:
+        id: '{{ topic.topic.id }}'
+        state: absent
+
+    - name: Delete product
+      dci_product:
+        id: '{{ product.product.id }}'
+        state: absent
+
+    - name: Delete team
+      dci_team:
+        id: '{{ team.team.id }}'
+        state: absent

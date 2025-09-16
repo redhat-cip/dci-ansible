@@ -149,9 +149,6 @@ class DciTopic(DciBase):
 
         return super(DciTopic, self).do_create(context)
 
-    def do_delete(self, context):
-        return self.resource.delete(context, self.id)
-
 
 def main():
 

@@ -1,0 +1,100 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Generate random variables
+      set_fact:
+        product_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        topic_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        component_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        second_component_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+
+    - name: Create product
+      dci_product:
+        name: '{{ product_name }}'
+      register: product
+
+    - name: Create topic
+      dci_topic:
+        name: '{{ topic_name }}'
+        product_id: "{{ product.product.id }}"
+        component_types:
+          - rpm
+      register: topic
+
+    - name: Create component
+      dci_component:
+        display_name: '{{ component_name }}'
+        type: rpm
+        topic_id: '{{ topic.topic.id }}'
+        active: False
+      register: component
+
+    - name: Ensure create is correct
+      assert:
+        that:
+          - component.component.name == component_name
+          - component.component.state == 'inactive'
+          - component.component.tags == []
+          - component.component.url == ""
+          - component.component.data == {}
+
+    - name: Retrieve component
+      dci_component:
+        id: '{{ component.component.id }}'
+      register: component
+
+    - name: Update component
+      dci_component:
+        id: '{{ component.component.id }}'
+        url: 'https://www.redhat.com/'
+        data:
+          key: 'value'
+        tags:
+          - tag
+        active: True
+      register: component
+
+    - name: Ensure update is correct
+      assert:
+        that:
+          - component.component.name == component_name
+          - component.component.state == 'active'
+          - component.component.tags == ['tag']
+          - component.component.url == 'https://www.redhat.com/'
+          - component.component.data.key == 'value'
+
+    - name: Create a second component
+      dci_component:
+        display_name: '{{ second_component_name }}'
+        type: linux
+        topic_id: '{{ topic.topic.id }}'
+        active: True
+      register: other_component
+
+    - name: search components and sort result
+      dci_component:
+        state: search
+        topic_id: '{{ topic.topic.id }}'
+        sort: name
+      register: list_components
+
+    - name: assert components sorted by name
+      ansible.builtin.assert:
+        that:
+          - list_components.components | map(attribute='name') | list == (list_components.components | map(attribute='name') | list | sort)
+        fail_msg: "Components are not sorted by name"
+        success_msg: "Components are sorted by name"
+
+    - name: Delete components
+      dci_component:
+        id: '{{ item.id }}'
+        etag: '{{ item.etag }}'
+        state: absent
+      loop:
+        - "{{ component.component }}"
+        - "{{ other_component.component }}"
+
+    - name: Delete topic
+      dci_topic:
+        id: '{{ topic.topic.id }}'
+        state: absent

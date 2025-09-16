@@ -4,87 +4,72 @@ set -eux
 
 BASEDIR="$(cd "$(dirname "$0")"||exit 1; pwd)"
 
-export ANSIBLE_CONFIG=$PWD/ansible.cfg
+export DCI_LOGIN="${DCI_LOGIN:-admin}"
+export DCI_PASSWORD="${DCI_PASSWORD:-admin}"
+export DCI_CS_URL="${DCI_CS_URL:-http://localhost}"
 
-function clean_environment() {
-    unset DCI_LOGIN
-    unset DCI_PASSWORD
-    unset DCI_API_SECRET
-    unset DCI_CLIENT_ID
+function create_venv(){
+    rm -rf venv
+    python3 -m venv venv
+    source venv/bin/activate
+    python3 -m pip install --upgrade pip
+    python3 --version
+    pip --version
+    pip install ansible
+    pip install dciclient
 }
 
-function clean_db() {
-    DB_HOST="${DB_HOST:-localhost}"
-    echo "
-      truncate products cascade;
-      delete from teams where name <> 'admin';" | \
-        PGPASSWORD=dci psql -h ${DB_HOST} -U dci -d dci
+function activate_venv(){
+    source venv/bin/activate
 }
 
+function debug(){
+    ansible --version
+    ansible-playbook --version
+}
 
-# --- Starting unit-tests
-
-function run_unit_tests() {
+function run_modules_tests() {
     modules='dci_user dci_team dci_topic dci_component dci_feeder dci_product dci_job'
 
-    source $BASEDIR/admin.sh
     for module in $modules; do
-        ansible-playbook unit-tests/$module/playbook.yml -v
-        clean_db
+        ansible-playbook modules/$module/playbook.yml -v
     done
-    clean_environment
 }
 
-# --- Start plugin tests
-function run_plugin_tests() {
-    plugins='filter_plugins/version_sort filter_plugins/cmdline_to_json'
+function run_filter_plugins_tests() {
+    plugins='version_sort cmdline_to_json'
 
     for plugin in $plugins; do
-        ansible-playbook unit-tests/${plugin}/playbook.yml -v
+        ansible-playbook filter_plugins/${plugin}/playbook.yml -v
     done
+}
+
+function run_callbacks_tests() {
+    ansible-playbook callbacks/dci.yml -v
 
     rm -f junit-playbook.xml
-    env JUNIT_OUTPUT_DIR=$PWD JUNIT_TEST_CASE_REGEX='(test|validate)_ ' ansible-playbook unit-tests/callback/junit-playbook.yml -vvvv
+    env JUNIT_OUTPUT_DIR=$PWD JUNIT_TEST_CASE_REGEX='(test|validate)_ ' ansible-playbook callbacks/junit-playbook.yml -vvvv
     test -r junit-playbook.xml
     grep -C 5 "All assertions passed" junit-playbook.xml
 }
 
-# --- Starting scenario-tests
-
-function run_functional_tests() {
-
-    environments='openstack rhel'
-    for environment in $environments; do
-        source $BASEDIR/admin.sh
-        ansible-playbook "scenario-tests/${environment}/setup_env.yml" -v
-        clean_environment
-
-        source ./feeder.sh
-        ansible-playbook "scenario-tests/${environment}/feeder.yml" -v
-        clean_environment
-
-        source ./remoteci.sh
-        ansible-playbook "scenario-tests/${environment}/remoteci.yml" -v
-        clean_environment
-
-        rm -f feeder.sh remoteci.sh content.download
-    done
-}
-
 cd $BASEDIR
+create_venv
+activate_venv
+debug
 
 if [[ ! -z ${1+x} ]]; then
-    if [[ "$1" == "unit" ]]; then
-        run_unit_tests
+    if [[ "$1" == "modules" ]]; then
+        run_modules_tests
     elif [[ "$1" == "plugins" ]]; then
-        run_plugin_tests
-    elif [[ "$1" == "functional" ]]; then
-        run_functional_tests
+        run_filter_plugins_tests
+    elif [[ "$1" == "callbacks" ]]; then
+        run_callbacks_tests
     else
-        echo "Usage: run_test.sh [unit|plugins|functional]"
+        echo "Usage: run_test.sh [modules|plugins|callbacks]"
     fi
 else
-  run_unit_tests
-  run_plugin_tests
-  run_functional_tests
+  run_modules_tests
+  run_filter_plugins_tests
+  run_callbacks_tests
 fi

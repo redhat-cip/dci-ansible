@@ -1,0 +1,135 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Generate random variables
+      set_fact:
+        team_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        product_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        topic_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        component_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        remoteci_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+
+    - name: Create team
+      dci_team:
+        name: '{{ team_name }}'
+        has_pre_release_access: true
+      register: team
+
+    - name: Create product
+      dci_product:
+        name: '{{ product_name }}'
+      register: product
+
+    - name: Attach the product to the team
+      dci_product:
+        id: "{{ product.product.id }}"
+        team_ids:
+          - "{{ team.team.id }}"
+
+    - name: Create topic
+      dci_topic:
+        name: '{{ topic_name }}'
+        component_types:
+          - rpm
+        product_id: '{{ product.product.id }}'
+        data:
+          foo: 'bar'
+        export_control: true
+      register: topic
+
+    - name: Create component
+      dci_component:
+        display_name: '{{ component_name }}'
+        type: rpm
+        topic_id: '{{ topic.topic.id }}'
+      register: component
+
+    - name: Create a remoteci
+      dci_remoteci:
+        name: '{{ remoteci_name }}'
+        team_id: '{{ team.team.id }}'
+      register: remoteci
+
+    - name: Export env vars
+      set_fact:
+        ansible_env:
+          DCI_CLIENT_ID: "remoteci/{{ remoteci.remoteci.id }}"
+          DCI_API_SECRET: "{{ remoteci.remoteci.api_secret }}"
+          DCI_LOGIN: ""
+          DCI_PASSWORD: ""
+
+- hosts: localhost
+  tasks:
+    - name: schedule a job
+      dci_job:
+        topic: '{{ topic_name }}'
+      register: job_info
+      environment: "{{ ansible_env }}"
+
+    - name: Set global variables
+      set_fact:
+        job_id: '{{ hostvars.localhost.job_info.job.id  }}'
+        components: '{{ hostvars.localhost.job_info.job.components  }}'
+
+    - name: Single item warn
+      shell: |
+        mkdir /tmp/does.exist
+        rm -r /tmp/does.exist
+
+    - name: Loop item warn
+      shell: |
+        mkdir {{ item }}
+        rm -r {{ item }}
+      loop:
+        - /tmp/does.exist1
+        - /tmp/does.exist2
+
+    - block:
+        - name: Single item failed
+          shell: rm /tmp/does.not.exist
+      rescue:
+        - debug:
+            msg: Single item failed failed as expected
+    - block:
+        - name: Loop item failed
+          shell: "rm {{ item }}"
+          loop:
+            - /tmp/does.not.exist1
+            - /tmp/does.not.exist2
+            - /tmp/does.not.exist3
+      rescue:
+        - debug:
+            msg: Loop item failed failed as expected
+    - name: Loop item skipped
+      debug:
+        msg: "Test item: {{ item }}"
+      when: item == 3
+      loop: [1, 2, 3, 4, 5]
+
+    - name: Checking task files
+      shell: "dcictl file-list {{ job_id }}"
+      register: dcictl_file_list
+
+    - name: Assert single item warn
+      assert:
+        that: '"warn/TASK [Single item warn]" in dcictl_file_list.stdout'
+      ignore_errors: true # TODO: gvincent update ansible callback to works with ansible 2.15+
+
+    - name: Assert loop item warn
+      assert:
+        that: '"warn/TASK [Loop item warn]" in dcictl_file_list.stdout'
+      ignore_errors: true # TODO: gvincent update ansible callback to works with ansible 2.15+
+
+    - name: Assert single item failed
+      assert:
+        that: '"failed/TASK [Single item failed]" in dcictl_file_list.stdout'
+
+    - name: Assert loop item failed
+      assert:
+        that: '"failed/TASK [Loop item failed]" in dcictl_file_list.stdout'
+
+    - name: Assert loop item skipped
+      assert:
+        that:
+          - '"TASK [Loop item skipped]" in dcictl_file_list.stdout'
+          - '"skipped/TASK [Loop item skipped]" not in dcictl_file_list.stdout'

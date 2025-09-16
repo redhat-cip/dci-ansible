@@ -118,6 +118,7 @@ def main():
             choices=['present', 'absent', 'search'],
             type='str'),
         id=dict(type='str'),
+        etag=dict(type='str'),
         dest=dict(type='str'),
         uid=dict(type='str'),
         display_name=dict(type='str'),
@@ -130,7 +131,7 @@ def main():
         path=dict(type='str'),
         active=dict(default=True, type='bool'),
         embed=dict(type='str'),
-        tags=dict(type='str'),
+        tags=dict(type='list'),
         sort=dict(type='str'),
         query=dict(type='str')
     )
@@ -155,7 +156,9 @@ def main():
     if module.params['state'] == 'absent':
         if not module.params['id']:
             module.fail_json(msg='id parameter is required')
-        res = dci_component.delete(ctx, module.params['id'])
+        if not module.params['etag']:
+            module.fail_json(msg='etag parameter is required')
+        res = dci_component.delete(ctx, module.params['id'], etag=module.params['etag'])
 
     # Action required: Attach a file to a component
     # Endpoint called: /components/<component_id>/files/ POST
@@ -208,10 +211,7 @@ def main():
                     updated_kwargs['state'] = 'inactive'
                 for key in ('url', 'data', 'tags'):
                     if key in module.params:
-                        if key == 'tags':
-                            updated_kwargs[key] = list(set(module.params[key].split(',')))
-                        else:
-                            updated_kwargs[key] = module.params[key]
+                        updated_kwargs[key] = module.params[key]
                 res = dci_component.update(ctx, **updated_kwargs)
     # Action required: Create a new component
     # Endpoint called: /component POST via dci_component.create_v2()

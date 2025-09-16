@@ -1,0 +1,65 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Generate random variables
+      set_fact:
+        team_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        feeder_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+        second_feeder_name: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+
+    - name: Create team
+      dci_team:
+        name: '{{ team_name }}'
+      register: team
+
+    - name: Create feeder
+      dci_feeder:
+        name: '{{ feeder_name }}'
+        team_id: '{{ team.team.id }}'
+      register: feeder
+
+    - name: Retrieve all feeders
+      dci_feeder:
+      register: all_feeders
+
+    - name: Ensure feeder is in list
+      assert:
+        that:
+          - (all_feeders.feeders | selectattr('name', 'equalto', feeder_name) | list | length) > 0
+        fail_msg: "Feeder {{ feeder_name }} does not exist in all_feeders.feeders"
+        success_msg: "Feeder {{ feeder_name }} exists"
+
+    - name: Retrieve feeder
+      dci_feeder:
+        id: '{{ feeder.feeder.id }}'
+      register: feeder
+
+    - name: Ensure name is correct
+      assert:
+        that:
+          - feeder.feeder.name == feeder_name
+
+    - name: Update feeder
+      dci_feeder:
+        id: '{{ feeder.feeder.id }}'
+        name: '{{ second_feeder_name }}' 
+
+    - name: Retrieve feeder
+      dci_feeder:
+        id: '{{ feeder.feeder.id }}'
+      register: updated_feeder
+
+    - name: Ensure feeder name changed
+      assert:
+        that:
+          - updated_feeder.feeder.name == second_feeder_name
+
+    - name: Delete feeder
+      dci_feeder:
+        id: '{{ updated_feeder.feeder.id }}'
+        state: absent
+
+    - name: Delete team
+      dci_team:
+        id: '{{ team.team.id }}'
+        state: absent

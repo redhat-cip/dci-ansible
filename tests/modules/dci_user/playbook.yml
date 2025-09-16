@@ -1,0 +1,55 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Generate a random username
+      set_fact:
+        random_username: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+
+    - name: "Create {{ random_username }} user"
+      dci_user:
+        name: "{{ random_username }}"
+        fullname: Random User
+        password: password
+        email: "{{ random_username }}@example.org"
+      register: random_user
+
+    - name: Retrieve all users
+      dci_user:
+      register: all_users
+
+    - name: Ensure user is in list
+      assert:
+        that:
+          - (all_users.users | selectattr('name', 'equalto', random_username) | list | length) > 0
+        fail_msg: "User {{ random_username }} does not exist in all_users.users"
+        success_msg: "User {{ random_username }} exists"
+
+    - name: Get user created
+      dci_user:
+        id: '{{ random_user.user.id }}'
+      register: random_user
+
+    - name: Ensure fullname is correctly setted
+      assert:
+        that:
+          - random_user.user.fullname == 'Random User'
+
+    - name: Update user
+      dci_user:
+        id: '{{ random_user.user.id }}'
+        fullname: 'Random User Updated'
+
+    - name: Get user
+      dci_user:
+        id: '{{ random_user.user.id }}'
+      register: random_user_updated
+
+    - name: Ensure user full name changed
+      assert:
+        that:
+          - random_user_updated.user.fullname == 'Random User Updated'
+
+    - name: Delete user
+      dci_user:
+        id: '{{ random_user_updated.user.id }}'
+        state: absent
