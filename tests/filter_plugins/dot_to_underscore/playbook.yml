@@ -1,0 +1,96 @@
+---
+
+- name: Test dot_to_underscore filter
+  hosts: localhost
+  tasks:
+    - name: Set test data with various scenarios
+      set_fact:
+        simple_dict:
+          "key.with.dots": "value1"
+          "another.key": "value2"
+          "normal_key": "value3"
+
+        nested_dict:
+          "parent.key":
+            "child.key": "nested.value"
+            "another.child":
+              "deep.key": "deep.value"
+          "sibling.key": "sibling_value"
+
+        list_with_dicts:
+          - "item.key": "value1"
+          - "another.item": "value2"
+
+        mixed_data:
+          "top.key": "top_value"
+          "nested":
+            "inner.key": "inner_value"
+            "list":
+              - "list.item": "list_value"
+              - "normal": "normal_value"
+          "simple": "simple_value"
+
+    - name: Test simple dictionary transformation
+      vars:
+        result: "{{ simple_dict | dot_to_underscore }}"
+      assert:
+        that:
+          - result['key_with_dots'] == "value1"
+          - result['another_key'] == "value2"
+          - result['normal_key'] == "value3"
+          - result.keys() | length == 3
+
+    - name: Test nested dictionary transformation
+      vars:
+        result: "{{ nested_dict | dot_to_underscore }}"
+      assert:
+        that:
+          - result['parent_key']['child_key'] == "nested.value"
+          - result['parent_key']['another_child']['deep_key'] == "deep.value"
+          - result['sibling_key'] == "sibling_value"
+          - result.keys() | length == 2
+
+    - name: Test list with dictionaries transformation
+      vars:
+        result: "{{ list_with_dicts | dot_to_underscore }}"
+      assert:
+        that:
+          - result[0]['item_key'] == "value1"
+          - result[1]['another_item'] == "value2"
+          - result | length == 2
+
+    - name: Test mixed data transformation
+      vars:
+        result: "{{ mixed_data | dot_to_underscore }}"
+      assert:
+        that:
+          - result['top_key'] == "top_value"
+          - result['nested']['inner_key'] == "inner_value"
+          - result['nested']['list'][0]['list_item'] == "list_value"
+          - result['nested']['list'][1]['normal'] == "normal_value"
+          - result['simple'] == "simple_value"
+
+    - name: Test non-dictionary data (should remain unchanged)
+      vars:
+        string_data: "simple string"
+        number_data: 42
+        list_data: ["item1", "item2"]
+        string_result: "{{ string_data | dot_to_underscore }}"
+        number_result: "{{ number_data | dot_to_underscore }}"
+        list_result: "{{ list_data | dot_to_underscore }}"
+      assert:
+        that:
+          - string_result == "simple string"
+          - number_result == "42"  # Ansible converts numbers to strings in set_fact
+          - list_result == ["item1", "item2"]
+
+    - name: Test empty dictionary
+      vars:
+        empty_dict: {}
+        result: "{{ empty_dict | dot_to_underscore }}"
+      assert:
+        that:
+          - result == {}
+          - result.keys() | length == 0
+
+...
